@@ -1,0 +1,640 @@
+<!DOCTYPE html>
+<html lang="kk">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0F1115">
+<title>Handoff · Квиз</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@600;800&family=Inter:wght@400;500;600;700&display=swap">
+<style>
+:root{
+  --bg:#0F1115;--s1:#171A21;--s2:#1F232C;--line:#2A2F3A;--tx:#F3F4F6;--mut:#9AA1AE;
+  --a0:#E5484D;--a1:#3E7BFA;--a2:#F5A524;--a3:#2FB36D;--ok:#2FB36D;--bad:#E5484D;--ice:#9BDCFF;
+  --disp:"Inter Tight",Inter,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+  --txt:Inter,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;height:100%;background:var(--bg);color:var(--tx);font-family:var(--txt)}
+body{overflow-x:hidden}
+button{font:inherit;color:inherit;border:0;background:none;cursor:pointer;padding:0}
+input{font:inherit}
+.hidden{display:none!important}
+.disp{font-family:var(--disp);letter-spacing:-.02em}
+.mut{color:var(--mut)}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:10px;height:52px;padding:0 24px;border-radius:12px;background:var(--tx);color:var(--bg);font-weight:700;font-size:17px;transition:transform .12s,opacity .2s}
+.btn:active{transform:scale(.97)}
+.btn.ghost{background:var(--s2);color:var(--tx)}
+.btn[disabled]{opacity:.4;pointer-events:none}
+.net{position:fixed;top:12px;right:12px;z-index:50;display:flex;align-items:center;gap:8px;font-size:13px;color:var(--mut);background:var(--s1);border:1px solid var(--line);padding:6px 12px;border-radius:999px}
+.net i{width:8px;height:8px;border-radius:50%;background:var(--bad)}
+.net.on i{background:var(--ok)}
+.net.on{opacity:.0;pointer-events:none;transition:opacity .6s 1.5s}
+.shape{width:28px;height:28px;flex:none}
+@keyframes pop{0%{transform:scale(.6);opacity:0}70%{transform:scale(1.06)}100%{transform:scale(1);opacity:1}}
+@keyframes up{from{transform:translateY(14px);opacity:0}to{transform:none;opacity:1}}
+@keyframes shake{0%,100%{transform:none}20%{transform:translateX(-10px)}40%{transform:translateX(9px)}60%{transform:translateX(-6px)}80%{transform:translateX(4px)}}
+.up{animation:up .35s ease both}
+
+/* ---------- HOST ---------- */
+.host{min-height:100vh;display:flex;flex-direction:column;padding:28px 40px 24px}
+.htop{display:flex;align-items:center;justify-content:space-between;gap:20px;min-height:44px}
+.tag{font-size:15px;font-weight:600;color:var(--mut);letter-spacing:.02em}
+.hbody{flex:1;display:flex;flex-direction:column;justify-content:center;padding:20px 0}
+.hctl{display:flex;justify-content:space-between;align-items:center;gap:12px}
+.lobby{display:grid;grid-template-columns:minmax(0,1.05fr) minmax(0,1fr);gap:48px;align-items:center}
+.lobby h1{font-size:clamp(34px,4vw,58px);line-height:1.02;margin:0 0 14px;font-weight:800}
+.joinbox{background:var(--s1);border:1px solid var(--line);border-radius:20px;padding:22px 26px;margin-top:22px}
+.joinbox .lbl{font-size:14px;color:var(--mut);font-weight:600;margin-bottom:8px}
+.joinbox .url{font-size:clamp(18px,1.8vw,24px);font-weight:600;word-break:break-all}
+.code{font-family:var(--disp);font-weight:800;font-size:clamp(48px,6vw,88px);letter-spacing:.08em;line-height:1}
+.pl{display:flex;flex-wrap:wrap;gap:10px;align-content:flex-start;max-height:58vh;overflow:auto}
+.plbox{background:var(--s1);border:1px solid var(--line);border-radius:20px;padding:24px 26px;min-height:46vh}
+.chip{background:var(--s2);border:1px solid var(--line);border-radius:999px;padding:12px 20px;font-weight:600;font-size:20px;animation:pop .35s ease both}
+.chip:hover{border-color:var(--bad);text-decoration:line-through}
+.count{font-family:var(--disp);font-size:20px;font-weight:800;margin-bottom:14px}
+.qhead{display:flex;align-items:center;gap:24px}
+.timer{font-family:var(--disp);font-weight:800;font-size:56px;min-width:90px;text-align:center}
+.bar{height:6px;background:var(--s2);border-radius:6px;overflow:hidden;margin:18px 0 26px}
+.bar i{display:block;height:100%;background:var(--tx);width:100%;transform-origin:left}
+.qtext{font-family:var(--disp);font-weight:800;font-size:clamp(30px,3.6vw,52px);line-height:1.12;margin:0;flex:1}
+.hgrid{display:grid;grid-template-columns:minmax(0,1fr) 300px;gap:28px;align-items:stretch}
+.tiles{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.tile{position:relative;overflow:hidden;display:flex;align-items:center;gap:16px;padding:22px 24px;border-radius:14px;font-weight:700;font-size:clamp(18px,1.8vw,26px);min-height:96px;transition:opacity .35s,transform .35s}
+.tile .cnt{margin-left:auto;font-family:var(--disp);font-weight:800;font-size:30px}
+.tile .fill{position:absolute;left:0;bottom:0;height:6px;background:rgba(255,255,255,.55);transition:width .8s ease}
+.t0{background:var(--a0)}.t1{background:var(--a1)}.t2{background:var(--a2);color:#1A1405}.t3{background:var(--a3)}
+.tile.off{opacity:.22}
+.tile.win{box-shadow:0 0 0 4px var(--tx)}
+.side{background:var(--s1);border:1px solid var(--line);border-radius:16px;padding:18px;display:flex;flex-direction:column;gap:14px;min-height:0}
+.big{font-family:var(--disp);font-weight:800;font-size:44px;line-height:1}
+.feed{display:flex;flex-direction:column;gap:8px;overflow:hidden;flex:1}
+.ev{font-size:15px;line-height:1.35;padding:10px 12px;background:var(--s2);border-radius:10px;animation:up .3s ease both}
+.ev b{font-weight:700}
+.ev.fr{border-left:3px solid var(--ice)}.ev.sh{border-left:3px solid var(--a2)}.ev.x2{border-left:3px solid var(--a3)}.ev.ff{border-left:3px solid var(--a1)}
+.board{display:flex;flex-direction:column;gap:12px;max-width:900px;width:100%;margin:0 auto}
+.row{display:grid;grid-template-columns:56px 1fr auto;align-items:center;gap:16px;background:var(--s1);border:1px solid var(--line);border-radius:14px;padding:16px 22px;font-size:24px;font-weight:700;animation:up .4s ease both}
+.row .n{font-family:var(--disp);font-weight:800;color:var(--mut)}
+.row .sc{font-family:var(--disp);font-weight:800}
+.row .d{font-size:15px;color:var(--ok);font-weight:700;margin-left:12px}
+.row.first{background:var(--tx);color:var(--bg)}.row.first .n{color:var(--bg)}
+.h2{font-family:var(--disp);font-weight:800;font-size:clamp(34px,4vw,56px);margin:0 0 28px;text-align:center}
+.podium{display:flex;align-items:flex-end;justify-content:center;gap:18px;margin:10px 0 30px}
+.pod{width:min(240px,28vw);text-align:center}
+.pod .nm{font-size:24px;font-weight:700;margin-bottom:10px;word-break:break-word;animation:up .5s ease both}
+.pod .blk{border-radius:14px 14px 0 0;background:var(--s2);border:1px solid var(--line);border-bottom:0;display:flex;flex-direction:column;align-items:center;padding-top:18px;gap:6px;transform-origin:bottom;animation:grow .9s cubic-bezier(.2,.8,.2,1) both}
+.pod .pl1{background:var(--tx);color:var(--bg)}
+.pod .place{font-family:var(--disp);font-weight:800;font-size:56px;line-height:1}
+.pod .pts{font-size:16px;font-weight:600;opacity:.75}
+@keyframes grow{from{transform:scaleY(0)}to{transform:scaleY(1)}}
+
+/* ---------- PLAYER ---------- */
+.ply{min-height:100vh;min-height:100dvh;display:flex;flex-direction:column;padding:max(16px,env(safe-area-inset-top)) 16px max(16px,env(safe-area-inset-bottom))}
+.pc{flex:1;display:flex;flex-direction:column;justify-content:center;gap:14px;max-width:520px;width:100%;margin:0 auto}
+.pc h1{font-family:var(--disp);font-weight:800;font-size:36px;line-height:1.05;margin:0}
+.field{width:100%;height:58px;border-radius:12px;border:1px solid var(--line);background:var(--s1);color:var(--tx);padding:0 18px;font-size:20px;font-weight:600;outline:none}
+.field:focus{border-color:var(--mut)}
+.field.codef{text-transform:uppercase;letter-spacing:.2em;font-family:var(--disp);font-weight:800;text-align:center;font-size:26px}
+.pbar{display:flex;align-items:center;justify-content:space-between;gap:10px;font-size:14px;font-weight:600;color:var(--mut)}
+.pbar .me{color:var(--tx);max-width:50%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.ptimer{height:5px;background:var(--s2);border-radius:5px;overflow:hidden;margin:10px 0 4px}
+.ptimer i{display:block;height:100%;background:var(--tx);transform-origin:left}
+.pq{font-family:var(--disp);font-weight:800;font-size:clamp(21px,5.6vw,28px);line-height:1.18;margin:14px 0}
+.answers{display:grid;grid-template-columns:1fr;gap:10px}
+.ans{display:flex;align-items:center;gap:14px;text-align:left;padding:16px;border-radius:14px;font-weight:700;font-size:17px;line-height:1.25;min-height:68px;transition:transform .12s,opacity .25s}
+.ans:active{transform:scale(.97)}
+.ans.gone{opacity:.12;pointer-events:none}
+.ans.dim{opacity:.3}
+.ans.pick{box-shadow:0 0 0 3px var(--tx)}
+.pw{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:12px}
+.pwb{position:relative;display:flex;flex-direction:column;align-items:center;gap:4px;padding:10px 4px;border-radius:12px;background:var(--s1);border:1px solid var(--line);font-size:13px;font-weight:600}
+.pwb svg{width:22px;height:22px}
+.pwb .k{position:absolute;top:6px;right:8px;font-size:12px;color:var(--mut);font-weight:700}
+.pwb[disabled]{opacity:.3;pointer-events:none}
+.pwb.on{border-color:var(--a3);color:var(--a3)}
+.shld{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--mut);margin-top:8px;justify-content:center}
+.shld svg{width:16px;height:16px}
+.wait{text-align:center;display:flex;flex-direction:column;align-items:center;gap:14px}
+.ring{width:84px;height:84px;border-radius:50%;border:4px solid var(--s2);border-top-color:var(--tx);animation:spin 1s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.res{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;gap:10px;border-radius:20px;padding:28px}
+.res.good{background:var(--ok)}.res.bad{background:var(--bad);animation:shake .5s ease}.res.none{background:var(--s1)}
+.res .big{font-size:52px}
+.res .pts{font-family:var(--disp);font-weight:800;font-size:30px;background:rgba(0,0,0,.18);padding:8px 18px;border-radius:999px}
+.res .rk{font-size:17px;font-weight:600;opacity:.9}
+.sheet{position:fixed;inset:0;z-index:30;background:rgba(0,0,0,.55);display:flex;align-items:flex-end}
+.sheet .in{width:100%;max-height:75vh;overflow:auto;background:var(--s1);border-radius:20px 20px 0 0;padding:20px 16px max(20px,env(safe-area-inset-bottom));animation:up .25s ease both}
+.sheet h3{margin:0 0 4px;font-family:var(--disp);font-size:22px}
+.tg{display:flex;justify-content:space-between;align-items:center;width:100%;padding:14px 16px;border-radius:12px;background:var(--s2);margin-top:8px;font-weight:600;font-size:17px}
+.toast{position:fixed;left:50%;bottom:max(24px,env(safe-area-inset-bottom));transform:translateX(-50%);z-index:60;background:var(--tx);color:var(--bg);padding:12px 18px;border-radius:12px;font-weight:600;font-size:15px;max-width:90vw;text-align:center;animation:up .25s ease both}
+/* ice */
+#ice{position:fixed;inset:0;z-index:40;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;text-align:center;padding:24px;color:#08263A;
+  background:radial-gradient(120% 80% at 50% 45%,#EAF7FF 0%,#CDEBFD 55%,#A9D9F7 100%);
+  user-select:none;-webkit-user-select:none;touch-action:manipulation;animation:freeze .35s ease both}
+#ice.melt{animation:melt .5s ease forwards}
+#ice.hit{animation:hit .12s ease}
+#ice svg.frost{position:absolute;inset:0;width:100%;height:100%;pointer-events:none}
+#ice .flake{position:absolute;color:#fff;opacity:.55;pointer-events:none}
+#ice .flake svg{width:100%;height:100%}
+#ice .it1{font-family:var(--disp);font-weight:800;font-size:34px;position:relative}
+#ice .it2{font-size:17px;font-weight:600;position:relative}
+#ice .taps{position:relative;font-family:var(--disp);font-weight:800;font-size:64px;line-height:1}
+#ice path.crack{stroke:#5FA9D6;stroke-width:3;fill:none;stroke-linecap:round;opacity:0;transition:opacity .15s}
+@keyframes freeze{from{opacity:0;transform:scale(1.04)}to{opacity:1;transform:none}}
+@keyframes melt{to{opacity:0;transform:scale(1.03)}}
+@keyframes hit{50%{transform:scale(.985) rotate(-.4deg)}}
+canvas#cf{position:fixed;inset:0;width:100%;height:100%;pointer-events:none;z-index:45}
+@media (max-width:900px){.lobby,.hgrid{grid-template-columns:1fr}.host{padding:20px}}
+@media (min-width:600px){.answers{grid-template-columns:1fr 1fr}.ans{min-height:110px}}
+</style>
+</head>
+<body>
+<div id="net" class="net"><i></i><span>Қосылуда…</span></div>
+<div id="app"></div>
+<canvas id="cf" class="hidden"></canvas>
+<script src="mqtt.min.js"></script>
+<script>
+"use strict";
+const QUESTIONS = [{"q": "Handoff дегеніміз не?", "a": ["Макетті басып шығару", "Макетті әзірлеушіге беру процесі", "Клиентпен түсті келісу", "Файлды мұрағатқа салу"], "c": 2, "t": 20}, {"q": "Әзірлеушіге берілетін файлда қабаттар қалай аталуы керек?", "a": ["«Слой 1», «копия 2»", "Атауы маңызды емес", "Мағынасына қарай: header, btn-buy", "Тек нөмірмен: 1, 2, 3"], "c": 3, "t": 20}, {"q": "Иконканы әзірлеушіге қандай форматта берген дұрыс?", "a": ["SVG", "JPG", "GIF", "PSD"], "c": 1, "t": 20}, {"q": "Түсті әзірлеушіге қалай береміз?", "a": ["«Ашық көк сияқты»", "Скриншот жібереміз", "CMYK пайызымен", "HEX кодымен: #1E6FFF"], "c": 4, "t": 20}, {"q": "Файл атауындағы @2x нені білдіреді?", "a": ["Екі көшірме", "Екі есе үлкен (Retina экрандар үшін)", "Екінші нұсқа", "Сапасы екі есе төмен"], "c": 2, "t": 20}, {"q": "Сайттағы фотосуретті қандай форматта береміз?", "a": ["JPG немесе WebP", "SVG", "PSD", "TIFF"], "c": 1, "t": 20}, {"q": "Спецификацияға (spec) не кіреді?", "a": ["Дизайнердің аты-жөні", "Тек файл көлемі", "Өлшемдер, шегіністер, қаріптер, түстер", "Түс психологиясы"], "c": 3, "t": 20}, {"q": "Батырманың hover күйі дегеніміз не?", "a": ["Батырма жасырын тұр", "Тінтуір үстіне келгендегі күйі", "Батырма жүктеліп жатыр", "Батырма өшірулі"], "c": 2, "t": 20}, {"q": "Photoshop-та ассетті қалай экспорттаймыз?", "a": ["Изображение → Размер изображения", "Слои → Стиль слоя", "Фильтр → Галерея фильтров", "Файл → Экспортировать → Экспортировать как"], "c": 4, "t": 30}, {"q": "Бос және жасырын қабаттарды неге жоямыз?", "a": ["Әзірлеуші шатаспауы үшін", "Түс жақсаруы үшін", "Photoshop солай талап етеді", "Жоюдың қажеті жоқ"], "c": 1, "t": 20}, {"q": "Ассет файлының дұрыс атауы қайсы?", "a": ["Безымянный-1.png", "Иконка ЖАҢА (2).svg", "icon-cart.svg", "123.svg"], "c": 3, "t": 20}, {"q": "Қаріп туралы әзірлеушіге не айтамыз?", "a": ["Тек атауын", "Атауы, өлшемі (px), жуандығы, жол аралығы", "Тек түсін", "Ештеңе айтпаймыз"], "c": 2, "t": 20}, {"q": "Қабаттарды блок бойынша жинау үшін не істейміз?", "a": ["Объединить слои (Ctrl+E)", "Растрировать слой", "Удалить слой", "Сгруппировать (Ctrl+G)"], "c": 4, "t": 20}, {"q": "Элементтер арасындағы қашықтықты өлшейтін құрал:", "a": ["Пипетка", "Линейка (I)", "Штамп (S)", "Лассо (L)"], "c": 2, "t": 20}, {"q": "Handoff не үшін керек?", "a": ["Әзірлеуші болжамайды, қате мен сұрақ азаяды", "Файл кішірейеді", "Дизайнер жұмыс істемей демалады", "Клиент дизайнды көрмейді"], "c": 1, "t": 20}];
+const NS = "hfq1";
+const BROKERS = ["wss://broker.emqx.io:8084/mqtt","wss://broker.hivemq.com:8884/mqtt","wss://test.mosquitto.org:8081"];
+const PARAMS = new URLSearchParams(location.search);
+const IS_HOST = PARAMS.has("host");
+const FREEZE_MS = 4500, FREEZE_TAPS = 6;
+
+/* ---------- utils ---------- */
+const $ = s => document.querySelector(s);
+const app = $("#app");
+const esc = s => String(s == null ? "" : s).replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const rid = (n, abc) => { abc = abc || "abcdefghijkmnpqrstuvwxyz23456789"; let s = ""; const a = new Uint32Array(n); (crypto || window.msCrypto).getRandomValues(a); for (const x of a) s += abc[x % abc.length]; return s; };
+const store = {
+  get(k){ try { return JSON.parse(localStorage.getItem(NS + k)); } catch(e) { return null; } },
+  set(k,v){ try { localStorage.setItem(NS + k, JSON.stringify(v)); } catch(e) {} },
+  del(k){ try { localStorage.removeItem(NS + k); } catch(e) {} }
+};
+const SHAPES = [
+  '<svg class="shape" viewBox="0 0 28 28"><path d="M14 4 25 23H3z" fill="currentColor"/></svg>',
+  '<svg class="shape" viewBox="0 0 28 28"><path d="M14 2.5 25.5 14 14 25.5 2.5 14z" fill="currentColor"/></svg>',
+  '<svg class="shape" viewBox="0 0 28 28"><circle cx="14" cy="14" r="11" fill="currentColor"/></svg>',
+  '<svg class="shape" viewBox="0 0 28 28"><rect x="4" y="4" width="20" height="20" rx="2" fill="currentColor"/></svg>'
+];
+const ICON = {
+  fr: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 2v20M3.3 7l17.4 10M20.7 7 3.3 17M9 4l3 2 3-2M9 20l3-2 3 2"/></svg>',
+  x2: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 8l6 8M10 8l-6 8M14 9.5a2.5 2.5 0 0 1 5 0c0 2.5-5 4-5 6.5h5"/></svg>',
+  ff: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3" y="4" width="7" height="7" rx="1.5"/><rect x="14" y="13" width="7" height="7" rx="1.5"/><path d="M14 5l7 5M21 5l-7 5M3 14l7 5M10 14l-7 5" opacity=".5"/></svg>',
+  sh: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M12 3l8 3v6c0 4.5-3.4 8-8 9-4.6-1-8-4.5-8-9V6z"/></svg>'
+};
+function vibrate(p){ try { navigator.vibrate && navigator.vibrate(p); } catch(e) {} }
+function toast(t){ const old = $(".toast"); if (old) old.remove(); const d = document.createElement("div"); d.className = "toast"; d.textContent = t; document.body.appendChild(d); setTimeout(() => d.remove(), 2800); }
+function setNet(on, text){ const n = $("#net"); n.classList.toggle("on", !!on); n.querySelector("span").textContent = on ? "Қосылды" : (text || "Қосылуда…"); }
+function confetti(){
+  const c = $("#cf"); c.classList.remove("hidden"); const ctx = c.getContext("2d");
+  const W = c.width = innerWidth * devicePixelRatio, H = c.height = innerHeight * devicePixelRatio;
+  const cols = ["#E5484D","#3E7BFA","#F5A524","#2FB36D","#F3F4F6"];
+  const ps = Array.from({length: 90}, () => ({x: W/2 + (Math.random()-.5)*W*.3, y: H*.45, vx: (Math.random()-.5)*W*.03, vy: -Math.random()*H*.03 - H*.008, r: Math.random()*Math.PI, s: (6 + Math.random()*8)*devicePixelRatio, c: cols[Math.random()*5|0]}));
+  const t0 = performance.now();
+  (function f(t){ const k = (t - t0)/1400; ctx.clearRect(0,0,W,H);
+    for (const p of ps){ p.x += p.vx; p.y += p.vy; p.vy += H*.0011; p.r += .2; ctx.save(); ctx.translate(p.x,p.y); ctx.rotate(p.r); ctx.globalAlpha = Math.max(0, 1-k); ctx.fillStyle = p.c; ctx.fillRect(-p.s/2,-p.s/4,p.s,p.s/2); ctx.restore(); }
+    if (k < 1) requestAnimationFrame(f); else { ctx.clearRect(0,0,W,H); c.classList.add("hidden"); } })(t0);
+}
+function brokerUrl(i){ return PARAMS.get("broker") || BROKERS[i % BROKERS.length]; }
+function connect(bi, onConnect, onMsg){
+  setNet(false);
+  const c = mqtt.connect(brokerUrl(bi), {clientId: NS + "_" + rid(12), keepalive: 30, reconnectPeriod: 2000, connectTimeout: 8000, clean: true});
+  c.on("connect", () => { setNet(true); onConnect(c); });
+  c.on("reconnect", () => setNet(false, "Қайта қосылуда…"));
+  c.on("offline", () => setNet(false, "Байланыс жоқ"));
+  c.on("error", () => {});
+  c.on("message", (t, buf) => { let m; try { m = JSON.parse(buf.toString()); } catch(e) { return; } try { onMsg(t, m); } catch(e) { console.error(e); } });
+  return c;
+}
+const T = room => NS + "/" + room + "/";
+
+/* =====================================================================
+   HOST
+   ===================================================================== */
+function Host(){
+  let H = store.get("host");
+  const fresh = () => ({room: rid(5, "ABCDEFGHJKLMNPQRSTUVWXYZ23456789"), b: +(PARAMS.get("b") || 0), phase: "lobby", qi: -1, players: {}, ans: {}, counts: [0,0,0,0], qEnd: 0, feed: [], prevRank: {}});
+  if (!H || !H.room) H = fresh();
+  let client = null, tick = null, pubTimer = null, connectedOnce = false;
+  const save = () => store.set("host", H);
+  const total = QUESTIONS.length;
+  const pids = () => Object.keys(H.players);
+  const joinUrl = () => { const u = new URL(location.href); u.search = ""; u.hash = ""; u.searchParams.set("r", H.room); if (H.b) u.searchParams.set("b", H.b); if (PARAMS.get("broker")) u.searchParams.set("broker", PARAMS.get("broker")); return u.toString(); };
+
+  function start(){
+    client && client.end(true);
+    connectedOnce = false;
+    client = connect(H.b, c => {
+      connectedOnce = true;
+      c.subscribe(T(H.room) + "i", {qos: 1});
+      pubState(); pids().forEach(pubPlayer);
+    }, onMsg);
+    setTimeout(() => { if (!connectedOnce) render(); }, 9000);
+    save(); render();
+    clearInterval(tick); tick = setInterval(onTick, 200);
+    clearInterval(pubTimer); pubTimer = setInterval(() => { if (H.phase === "question") pubState(); }, 1000);
+  }
+  function pub(topic, obj, retain){ if (client && client.connected) client.publish(T(H.room) + topic, JSON.stringify(obj), {qos: 1, retain: !!retain}); }
+  function ranked(){ return pids().sort((a,b) => H.players[b].score - H.players[a].score || H.players[a].name.localeCompare(H.players[b].name)); }
+  function addFeed(kind, html){ H.feed.unshift({k: kind, h: html, id: rid(6)}); H.feed = H.feed.slice(0, 7); }
+  function note(pid, text){ const p = H.players[pid]; if (p) p.note = {id: rid(6), t: text}; }
+
+  function pubState(){
+    const q = QUESTIONS[H.qi];
+    const st = {v: 1, phase: H.phase, qi: H.qi, total, n: pids().length, answered: Object.keys(H.ans).length};
+    if (H.phase === "question" || H.phase === "reveal"){ st.q = {text: q.q, answers: q.a, time: q.t}; }
+    if (H.phase === "question"){
+      st.endsIn = Math.max(0, H.qEnd - Date.now());
+      st.roster = ranked().slice(0, 40).map(id => [id, H.players[id].name]);
+    }
+    if (H.phase === "reveal"){ st.correct = q.c - 1; st.counts = H.counts; }
+    if (H.phase === "board" || H.phase === "final"){ st.top = ranked().slice(0, 10).map(id => ({n: H.players[id].name, s: H.players[id].score})); }
+    pub("s", st, true);
+  }
+  function pubPlayer(pid){
+    const p = H.players[pid]; if (!p) return;
+    const r = ranked();
+    pub("p/" + pid, {name: p.name, score: p.score, rank: r.indexOf(pid) + 1, of: r.length, streak: p.streak, pw: p.pw, x2on: p.x2on ? H.qi : -1, hide: p.hide, frozen: p.frozen, last: p.last, locked: H.ans[pid] ? {qi: H.qi, a: H.ans[pid].a} : null, note: p.note, kicked: !!p.kicked}, true);
+  }
+
+  function onMsg(topic, m){
+    if (!m || typeof m.pid !== "string" || m.pid.length > 40) return;
+    const pid = m.pid, p = H.players[pid];
+    if (m.t === "join"){
+      let name = String(m.name || "").replace(/\s+/g, " ").trim().slice(0, 18);
+      if (!name) return;
+      if (p){ if (p.kicked) { pubPlayer(pid); return; } pubPlayer(pid); pubState(); return; }
+      if (H.phase === "final") return;
+      const taken = new Set(Object.values(H.players).map(x => x.name.toLowerCase()));
+      let nm = name, k = 2; while (taken.has(nm.toLowerCase())) nm = name + " " + (k++);
+      H.players[pid] = {name: nm, score: 0, streak: 0, pw: {fr: 1, x2: 1, ff: 1, sh: 1}, x2on: false, hide: null, frozen: null, last: null, note: null};
+      save(); pubPlayer(pid); pubState(); render(); return;
+    }
+    if (!p || p.kicked) return;
+    if (m.t === "ans"){
+      if (H.phase !== "question" || m.qi !== H.qi || H.ans[pid]) { pubPlayer(pid); return; }
+      const a = m.a | 0; if (a < 0 || a > 3) return;
+      if (Date.now() > H.qEnd + 400) { pubPlayer(pid); return; }
+      if (p.hide && p.hide.qi === H.qi && p.hide.idx.includes(a)) return;
+      H.ans[pid] = {a, left: Math.max(0, H.qEnd - Date.now())};
+      H.counts[a]++;
+      save(); pubPlayer(pid); pubState();
+      if (Object.keys(H.ans).length >= pids().filter(id => !H.players[id].kicked).length) reveal();
+      else render();
+      return;
+    }
+    if (m.t === "pw"){
+      if (H.phase !== "question" || m.qi !== H.qi) return;
+      if (H.ans[pid]) { note(pid, "Жауап берген соң қолдануға болмайды"); pubPlayer(pid); return; }
+      const q = QUESTIONS[H.qi];
+      if (m.k === "x2" && p.pw.x2 > 0 && !p.x2on){
+        p.pw.x2--; p.x2on = true; addFeed("x2", `<b>${esc(p.name)}</b> екі есе ұпайға ойнап жатыр`);
+      } else if (m.k === "ff" && p.pw.ff > 0 && !(p.hide && p.hide.qi === H.qi)){
+        const wrong = [0,1,2,3].filter(i => i !== q.c - 1).sort(() => Math.random() - .5).slice(0, 2);
+        p.pw.ff--; p.hide = {qi: H.qi, idx: wrong}; addFeed("ff", `<b>${esc(p.name)}</b> 50/50 қолданды`);
+      } else if (m.k === "fr" && p.pw.fr > 0){
+        const tp = H.players[m.target];
+        if (!tp || m.target === pid || tp.kicked) return;
+        if (H.ans[m.target]) { note(pid, tp.name + " жауап беріп қойды — мұздату сақталды"); pubPlayer(pid); return; }
+        if (tp.frozen && tp.frozen.qi === H.qi) { note(pid, tp.name + " қазір де мұзда тұр"); pubPlayer(pid); return; }
+        p.pw.fr--;
+        if (tp.pw.sh > 0){
+          tp.pw.sh--; note(m.target, p.name + " сізді мұздатқысы келді — қалқан қорғады!"); note(pid, tp.name + " қалқанмен қорғанды");
+          addFeed("sh", `<b>${esc(tp.name)}</b> қалқанмен <b>${esc(p.name)}</b> мұзын тойтарды`);
+        } else {
+          tp.frozen = {id: rid(6), qi: H.qi, by: p.name}; note(pid, tp.name + " мұздатылды!");
+          addFeed("fr", `<b>${esc(p.name)}</b> → <b>${esc(tp.name)}</b> мұздатты`);
+        }
+        pubPlayer(m.target);
+      } else return;
+      save(); pubPlayer(pid); render();
+    }
+  }
+
+  function startQ(){
+    if (H.qi + 1 >= total) return finish();
+    H.qi++; H.phase = "question"; H.ans = {}; H.counts = [0,0,0,0]; H.feed = [];
+    for (const id of pids()){ const p = H.players[id]; p.x2on = false; p.hide = null; p.frozen = null; }
+    H.qEnd = Date.now() + QUESTIONS[H.qi].t * 1000;
+    save(); pubState(); pids().forEach(pubPlayer); render();
+  }
+  function reveal(){
+    if (H.phase !== "question") return;
+    const q = QUESTIONS[H.qi], T0 = q.t * 1000;
+    H.prevRank = {}; ranked().forEach((id, i) => H.prevRank[id] = i);
+    for (const id of pids()){
+      const p = H.players[id], a = H.ans[id];
+      if (a && a.a === q.c - 1){
+        let pts = Math.round(500 + 500 * Math.min(1, a.left / T0)) + Math.min(p.streak, 3) * 100;
+        if (p.x2on) pts *= 2;
+        p.streak++; p.score += pts; p.last = {qi: H.qi, ok: true, pts, a: a.a};
+        if (p.streak % 3 === 0){ p.pw.fr++; note(id, p.streak + " рет қатарынан дұрыс! +1 мұздату"); }
+      } else {
+        p.streak = 0; p.last = {qi: H.qi, ok: false, pts: 0, a: a ? a.a : null};
+      }
+      p.x2on = false;
+    }
+    H.phase = "reveal"; save(); pubState(); pids().forEach(pubPlayer); render();
+  }
+  function board(){ H.phase = "board"; save(); pubState(); render(); }
+  function finish(){ H.phase = "final"; save(); pubState(); pids().forEach(pubPlayer); render(); }
+  function next(){
+    if (H.phase === "lobby") { if (pids().length) startQ(); }
+    else if (H.phase === "question") reveal();
+    else if (H.phase === "reveal") board();
+    else if (H.phase === "board") (H.qi + 1 >= total ? finish() : startQ());
+  }
+  function onTick(){
+    if (H.phase !== "question") return;
+    const left = H.qEnd - Date.now();
+    const t = $("#htime"), b = $("#hbar");
+    if (t) t.textContent = Math.max(0, Math.ceil(left / 1000));
+    if (b) b.style.transform = `scaleX(${Math.max(0, left / (QUESTIONS[H.qi].t * 1000))})`;
+    if (left <= 0) reveal();
+  }
+  document.addEventListener("keydown", e => { if (e.target.tagName === "INPUT" || e.target.tagName === "BUTTON") return; if (e.code === "Space" || e.code === "Enter" || e.code === "ArrowRight") { e.preventDefault(); next(); } });
+
+  function ctlBar(primary){
+    return `<div class="hctl"><div style="display:flex;gap:10px"><button class="btn ghost" id="reset">Жаңа ойын</button></div>
+      ${primary ? `<button class="btn" id="next">${primary}</button>` : ""}</div>`;
+  }
+  function bind(){
+    const n = $("#next"); if (n) n.onclick = next;
+    const r = $("#reset"); if (r) r.onclick = () => {
+      if (r.dataset.c !== "1"){ r.dataset.c = "1"; r.textContent = "Растау: бәрі өшеді"; setTimeout(() => { r.dataset.c = ""; r.textContent = "Жаңа ойын"; }, 3000); return; }
+      pub("s", {v: 1, phase: "closed"}, true); H = fresh(); start();
+    };
+  }
+  function render(){
+    const head = `<div class="htop"><span class="tag">СОӨЖ · Handoff · дизайнер әзірлеушіге не береді</span><span class="tag">${H.phase === "lobby" || H.phase === "final" ? "" : `${H.qi + 1} / ${total}`}</span></div>`;
+    if (H.phase === "lobby"){
+      const ps = pids();
+      app.innerHTML = `<div class="host">${head}<div class="hbody"><div class="lobby">
+        <div class="up">
+          <h1 class="disp">Телефонмен ойынға қосылыңыз</h1>
+          <p class="mut" style="font-size:20px;margin:0;max-width:560px">Discord чаттағы сілтемені ашыңыз немесе сайтқа кіріп, кодты енгізіңіз.</p>
+          <div class="joinbox">
+            <div class="lbl">Ойын коды</div>
+            <div class="code">${H.room}</div>
+            <div class="lbl" style="margin-top:16px">Сілтеме</div>
+            <div class="url">${esc(joinUrl().replace(/^https?:\/\//, ""))}</div>
+            <div style="display:flex;gap:10px;margin-top:18px;flex-wrap:wrap">
+              <button class="btn ghost" id="copy">Сілтемені көшіру</button>
+              ${!connectedOnce ? `<button class="btn ghost" id="srv">Басқа сервер (${H.b + 1}/${BROKERS.length})</button>` : ""}
+            </div>
+          </div>
+        </div>
+        <div class="plbox">
+          <div class="count">${ps.length} ойыншы</div>
+          <div class="pl">${ps.map(id => `<button class="chip" data-k="${id}" title="Ойыннан шығару">${esc(H.players[id].name)}</button>`).join("") || `<span class="mut" style="font-size:18px">Ойыншыларды күтудеміз…</span>`}</div>
+        </div></div></div>${ctlBar(ps.length ? "Бастау" : "")}</div>`;
+      $("#copy").onclick = () => { navigator.clipboard && navigator.clipboard.writeText(joinUrl()).then(() => toast("Көшірілді — Discord чатқа қойыңыз"), () => toast("Көшіру мүмкін болмады")); };
+      const srv = $("#srv"); if (srv) srv.onclick = () => { H.b = (H.b + 1) % BROKERS.length; start(); };
+      document.querySelectorAll(".chip[data-k]").forEach(b => b.onclick = () => {
+        const id = b.dataset.k; if (b.dataset.c !== "1"){ b.dataset.c = "1"; b.textContent = "Шығару?"; setTimeout(render, 2500); return; }
+        H.players[id].kicked = true; pubPlayer(id); delete H.players[id]; save(); pubState(); render(); });
+    } else if (H.phase === "question" || H.phase === "reveal"){
+      const q = QUESTIONS[H.qi], rv = H.phase === "reveal", c = q.c - 1;
+      const n = pids().length, done = Object.keys(H.ans).length, max = Math.max(1, ...H.counts);
+      const left = Math.max(0, H.qEnd - Date.now());
+      app.innerHTML = `<div class="host">${head}<div class="hbody">
+        <div class="qhead"><h2 class="qtext">${esc(q.q)}</h2><div class="timer" id="htime">${rv ? "" : Math.ceil(left / 1000)}</div></div>
+        <div class="bar"><i id="hbar" style="transform:scaleX(${rv ? 0 : left / (q.t * 1000)})"></i></div>
+        <div class="hgrid">
+          <div class="tiles">${q.a.map((a, i) => `<div class="tile t${i} ${rv ? (i === c ? "win" : "off") : ""}">${SHAPES[i]}<span>${esc(a)}</span>${rv ? `<span class="cnt">${H.counts[i]}</span><span class="fill" style="width:${H.counts[i] / max * 100}%"></span>` : ""}</div>`).join("")}</div>
+          <div class="side">
+            <div><div class="big">${done}<span class="mut" style="font-size:24px"> / ${n}</span></div><div class="mut" style="font-size:15px;margin-top:6px">жауап берді</div></div>
+            <div class="feed">${H.feed.map(e => `<div class="ev ${e.k}">${e.h}</div>`).join("") || `<div class="mut" style="font-size:14px">Мұздату, 50/50 және ×2 осында көрінеді</div>`}</div>
+          </div>
+        </div></div>${ctlBar(rv ? "Нәтиже" : "Жауапты көрсету")}</div>`;
+    } else if (H.phase === "board"){
+      const r = ranked().slice(0, 5);
+      app.innerHTML = `<div class="host">${head}<div class="hbody"><h2 class="h2">Көшбасшылар</h2><div class="board">
+        ${r.map((id, i) => { const p = H.players[id]; const up = H.qi > 0 && H.prevRank[id] != null && H.prevRank[id] > i;
+          return `<div class="row ${i === 0 ? "first" : ""}" style="animation-delay:${i * .07}s"><span class="n">${i + 1}</span><span>${esc(p.name)}${p.last && p.last.ok ? `<span class="d">+${p.last.pts}</span>` : ""}${up ? `<span class="d">▲</span>` : ""}</span><span class="sc">${p.score}</span></div>`; }).join("")}
+        </div></div>${ctlBar(H.qi + 1 >= total ? "Қорытынды" : "Келесі сұрақ")}</div>`;
+    } else if (H.phase === "final"){
+      const r = ranked(); const ord = [1, 0, 2], hs = [190, 260, 140];
+      app.innerHTML = `<div class="host">${head}<div class="hbody"><h2 class="h2">Жеңімпаздар</h2>
+        <div class="podium">${ord.map((k, j) => r[k] ? `<div class="pod"><div class="nm" style="animation-delay:${.6 + j * .15}s">${esc(H.players[r[k]].name)}</div><div class="blk ${k === 0 ? "pl1" : ""}" style="height:${hs[j]}px;animation-delay:${j * .15}s"><span class="place">${k + 1}</span><span class="pts">${H.players[r[k]].score} ұпай</span></div></div>` : "").join("")}</div>
+        <div class="board">${r.slice(3, 8).map((id, i) => `<div class="row" style="font-size:20px;padding:12px 20px"><span class="n">${i + 4}</span><span>${esc(H.players[id].name)}</span><span class="sc">${H.players[id].score}</span></div>`).join("")}</div>
+        </div>${ctlBar("")}</div>`;
+    }
+    bind();
+    if (document.activeElement && document.activeElement.blur) document.activeElement.blur();
+  }
+  start();
+}
+
+/* =====================================================================
+   PLAYER
+   ===================================================================== */
+function Player(){
+  let room = (PARAMS.get("r") || store.get("room") || "").toUpperCase().replace(/[^A-Z0-9]/g, "").slice(0, 6);
+  const bi = +(PARAMS.get("b") || 0);
+  let pid = store.get("pid"); if (!pid) { pid = rid(14); store.set("pid", pid); }
+  let name = store.get("name") || "";
+  let joined = !!(name && room && store.get("joinedRoom") === room);
+  let client = null, S = null, P = null, lastScreen = "", myLock = null, raf = 0, deadline = 0;
+  const seen = {note: null, frozen: null, res: null};
+  let iceTimer = null, sheetOpen = false;
+
+  function send(o){ o.pid = pid; if (client && client.connected) client.publish(T(room) + "i", JSON.stringify(o), {qos: 1}); }
+  function go(){
+    client && client.end(true);
+    client = connect(bi, c => {
+      c.subscribe([T(room) + "s", T(room) + "p/" + pid], {qos: 1});
+      if (joined) send({t: "join", name});
+    }, (topic, m) => {
+      if (topic.endsWith("/s")) { S = m; if (S.phase === "question") deadline = performance.now() + (S.endsIn || 0); }
+      else { P = m; onPlayerMsg(); }
+      render();
+    });
+  }
+  function onPlayerMsg(){
+    if (P.kicked){ joined = false; store.del("joinedRoom"); return; }
+    if (P.name && P.name !== name) { name = P.name; store.set("name", name); }
+    if (P.note && P.note.id !== seen.note){ const first = seen.note === null && lastScreen === ""; seen.note = P.note.id; if (!first) toast(P.note.t); }
+    if (P.frozen && P.frozen.id !== seen.frozen){
+      seen.frozen = P.frozen.id;
+      if (S && S.phase === "question" && P.frozen.qi === S.qi && !(myLock && myLock.qi === S.qi)) freeze(P.frozen.by);
+    }
+  }
+
+  /* ---- ice ---- */
+  function freeze(by){
+    unfreeze(true); closeSheet(); vibrate([80, 40, 120]);
+    const d = document.createElement("div"); d.id = "ice";
+    const cracks = ["M50 50 L32 30 L20 34 L6 18","M50 50 L70 26 L84 30 L96 10","M50 50 L28 66 L14 64 L4 84","M50 50 L68 72 L86 70 L96 92","M50 50 L48 20 L54 4","M50 50 L52 82 L44 98"];
+    d.innerHTML = `<svg class="frost" viewBox="0 0 100 100" preserveAspectRatio="none">
+        <defs><radialGradient id="g" cx="50%" cy="50%" r="70%"><stop offset="55%" stop-color="#fff" stop-opacity="0"/><stop offset="100%" stop-color="#fff" stop-opacity=".85"/></radialGradient></defs>
+        <rect width="100" height="100" fill="url(#g)"/>
+        ${cracks.map((p, i) => `<path class="crack" data-i="${i}" d="${p}" vector-effect="non-scaling-stroke"/>`).join("")}
+      </svg>
+      ${[[8,12,54],[78,8,40],[14,72,46],[80,70,60],[44,88,30],[60,28,26]].map(f => `<span class="flake" style="left:${f[0]}%;top:${f[1]}%;width:${f[2]}px;height:${f[2]}px">${ICON.fr}</span>`).join("")}
+      <div class="it1">Мұздатылдыңыз!</div>
+      <div class="it2">${esc(by)} сізді мұздатты</div>
+      <div class="taps" id="taps">${FREEZE_TAPS}</div>
+      <div class="it2">Мұзды сындыру үшін басыңыз</div>`;
+    document.body.appendChild(d);
+    let left = FREEZE_TAPS;
+    const hit = e => { e.preventDefault(); left--; vibrate(25); d.classList.remove("hit"); void d.offsetWidth; d.classList.add("hit");
+      const c = d.querySelector(`.crack[data-i="${FREEZE_TAPS - left - 1}"]`); if (c) c.style.opacity = 1;
+      const t = $("#taps"); if (t) t.textContent = Math.max(0, left);
+      if (left <= 0) unfreeze(); };
+    d.addEventListener("pointerdown", hit);
+    iceTimer = setTimeout(unfreeze, FREEZE_MS);
+  }
+  function unfreeze(instant){
+    clearTimeout(iceTimer); const d = $("#ice"); if (!d) return;
+    if (instant) { d.remove(); return; }
+    d.classList.add("melt"); setTimeout(() => d.remove(), 480);
+  }
+
+  /* ---- sheet ---- */
+  function openSheet(){
+    if (!S || !S.roster) return;
+    const others = S.roster.filter(r => r[0] !== pid);
+    if (!others.length) { toast("Мұздататын адам жоқ"); return; }
+    sheetOpen = true;
+    const d = document.createElement("div"); d.className = "sheet"; d.id = "sheet";
+    d.innerHTML = `<div class="in"><h3>Кімді мұздатамыз?</h3><div class="mut" style="font-size:14px">Ол ${FREEZE_MS / 1000} секунд жауап бере алмайды. Қалқаны болса — қорғанады.</div>
+      ${others.map((r, i) => `<button class="tg" data-t="${esc(r[0])}"><span>${esc(r[1])}</span><span class="mut">${i + 1}-орын</span></button>`).join("")}
+      <button class="btn ghost" id="cancel" style="width:100%;margin-top:14px">Болдырмау</button></div>`;
+    document.body.appendChild(d);
+    d.onclick = e => { if (e.target === d) closeSheet(); };
+    $("#cancel").onclick = closeSheet;
+    d.querySelectorAll(".tg").forEach(b => b.onclick = () => { send({t: "pw", k: "fr", target: b.dataset.t, qi: S.qi}); closeSheet(); });
+  }
+  function closeSheet(){ sheetOpen = false; const s = $("#sheet"); if (s) s.remove(); }
+
+  /* ---- render ---- */
+  function screenKey(){
+    if (!joined) return "join";
+    if (!S || S.phase === "closed") return "wait0";
+    if (P && P.kicked) return "kicked";
+    if (S.phase === "lobby") return "lobby";
+    if (S.phase === "question") return (myLock && myLock.qi === S.qi) || (P && P.locked && P.locked.qi === S.qi) ? "locked" + S.qi : "q" + S.qi;
+    if (S.phase === "reveal") return "rv" + S.qi + (P && P.last ? P.last.qi : "");
+    return S.phase + S.qi;
+  }
+  function top(){ return `<div class="pbar"><span class="me">${esc(name)}</span><span>${P ? P.score + " ұпай" : ""}${S && S.qi >= 0 && S.total ? ` · ${S.qi + 1}/${S.total}` : ""}</span></div>`; }
+  function render(){
+    const key = screenKey();
+    if (key.startsWith("q")) { updatePw(); }
+    if (key === lastScreen) return;
+    const prev = lastScreen; lastScreen = key;
+    if (!key.startsWith("q")) { closeSheet(); }
+    if (!(key.startsWith("q") || key.startsWith("locked"))) unfreeze(true);
+    cancelAnimationFrame(raf);
+
+    if (key === "join"){
+      app.innerHTML = `<div class="ply"><div class="pc up">
+        <h1>Handoff<br>квизіне қосылу</h1>
+        <p class="mut" style="margin:0 0 6px;font-size:16px">Атыңызды жазыңыз — мұғалім экранда көреді.</p>
+        <input class="field codef" id="room" placeholder="КОД" maxlength="6" value="${esc(room)}" autocomplete="off" ${PARAMS.get("r") ? "readonly" : ""}>
+        <input class="field" id="name" placeholder="Атыңыз" maxlength="18" value="${esc(name)}" autocomplete="off">
+        <button class="btn" id="go" style="height:58px;font-size:18px">Қосылу</button></div></div>`;
+      const go2 = () => {
+        const r = $("#room").value.toUpperCase().replace(/[^A-Z0-9]/g, ""), n = $("#name").value.replace(/\s+/g, " ").trim().slice(0, 18);
+        if (r.length < 4) return toast("Ойын кодын енгізіңіз");
+        if (!n) return toast("Атыңызды жазыңыз");
+        const changed = r !== room; room = r; name = n; joined = true;
+        store.set("room", room); store.set("name", name); store.set("joinedRoom", room);
+        lastScreen = ""; if (changed || !client) go(); else send({t: "join", name}); render();
+      };
+      $("#go").onclick = go2; $("#name").onkeydown = e => { if (e.key === "Enter") go2(); };
+      return;
+    }
+    if (key === "wait0" || key === "lobby" || key === "kicked"){
+      const kicked = key === "kicked";
+      app.innerHTML = `<div class="ply">${top()}<div class="pc"><div class="wait up">
+        ${kicked ? "" : `<div class="ring"></div>`}
+        <h1>${kicked ? "Сіз ойыннан шығарылдыңыз" : key === "wait0" ? "Ойынды іздеудеміз…" : "Сіз ойындасыз!"}</h1>
+        <p class="mut" style="margin:0;font-size:17px">${kicked ? "Атыңызды өзгертіп, қайта кіріңіз." : key === "wait0" ? "Код дұрыс па? " + esc(room) : "Мұғалім бастағанша күтіңіз. Сұрақтар осы жерде шығады."}</p>
+        ${kicked || key === "wait0" ? `<button class="btn ghost" id="back">Кодты/атты өзгерту</button>` : ""}
+      </div></div></div>`;
+      const b = $("#back"); if (b) b.onclick = () => { joined = false; store.del("joinedRoom"); if (kicked) { pid = rid(14); store.set("pid", pid); go(); } lastScreen = ""; render(); };
+      return;
+    }
+    if (key.startsWith("q")){
+      const q = S.q;
+      app.innerHTML = `<div class="ply">${top()}<div class="ptimer"><i id="pt"></i></div>
+        <div class="pq up">${esc(q.text)}</div>
+        <div class="answers">${q.answers.map((a, i) => `<button class="ans t${i}" data-a="${i}">${SHAPES[i]}<span>${esc(a)}</span></button>`).join("")}</div>
+        <div class="pw">
+          <button class="pwb" id="pwfr">${ICON.fr}<span>Мұздату</span><span class="k" id="kfr"></span></button>
+          <button class="pwb" id="pwx2">${ICON.x2}<span>Екі есе</span><span class="k" id="kx2"></span></button>
+          <button class="pwb" id="pwff">${ICON.ff}<span>50/50</span><span class="k" id="kff"></span></button>
+        </div>
+        <div class="shld" id="shld">${ICON.sh}<span></span></div></div>`;
+      document.querySelectorAll(".ans").forEach(b => b.onclick = () => {
+        if ($("#ice") || (myLock && myLock.qi === S.qi)) return;
+        if (!client || !client.connected) { toast("Байланыс жоқ — қайта басыңыз"); return; }
+        const a = +b.dataset.a; myLock = {qi: S.qi, a}; vibrate(30);
+        send({t: "ans", qi: S.qi, a}); render();
+      });
+      $("#pwfr").onclick = openSheet;
+      $("#pwx2").onclick = () => send({t: "pw", k: "x2", qi: S.qi});
+      $("#pwff").onclick = () => send({t: "pw", k: "ff", qi: S.qi});
+      updatePw();
+      const loop = () => { const el = $("#pt"); if (!el) return; const tot = S.q.time * 1000; el.style.transform = `scaleX(${Math.max(0, Math.min(1, (deadline - performance.now()) / tot))})`; raf = requestAnimationFrame(loop); };
+      loop();
+      if (P && P.frozen && P.frozen.qi === S.qi && P.frozen.id !== seen.frozen) { seen.frozen = P.frozen.id; freeze(P.frozen.by); }
+      return;
+    }
+    if (key.startsWith("locked")){
+      const a = (myLock && myLock.qi === S.qi) ? myLock.a : P.locked.a;
+      app.innerHTML = `<div class="ply">${top()}<div class="pc"><div class="wait up">
+        <div class="ans t${a}" style="width:96px;height:96px;justify-content:center;border-radius:20px;min-height:0">${SHAPES[a].replace('class="shape"', 'class="shape" style="width:44px;height:44px"')}</div>
+        <h1>Жауап қабылданды</h1><p class="mut" style="margin:0;font-size:17px">Басқаларды күтеміз…</p></div></div></div>`;
+      return;
+    }
+    if (key.startsWith("rv")){
+      const L = P && P.last && P.last.qi === S.qi ? P.last : null;
+      const ok = L && L.ok, none = !L || L.a == null;
+      app.innerHTML = `<div class="ply">${top()}<div class="res ${ok ? "good" : none ? "none" : "bad"} up">
+        <div class="big disp">${ok ? "Дұрыс!" : none ? "Уақыт бітті" : "Қате"}</div>
+        ${ok ? `<div class="pts">+${L.pts}</div>` : ""}
+        ${ok && P.streak > 1 ? `<div class="rk">${P.streak} рет қатарынан</div>` : ""}
+        ${!ok ? `<div class="rk">Дұрыс жауап: ${esc(S.q.answers[S.correct])}</div>` : ""}
+        ${P ? `<div class="rk">${P.rank}-орын · ${P.of} ойыншы</div>` : ""}
+      </div></div>`;
+      if (seen.res !== S.qi) { seen.res = S.qi; if (ok) { confetti(); vibrate(60); } else if (!none) vibrate([60, 60, 60]); }
+      return;
+    }
+    if (S.phase === "board" || S.phase === "final"){
+      const fin = S.phase === "final";
+      app.innerHTML = `<div class="ply">${top()}<div class="pc"><div class="wait up">
+        <div class="big disp" style="font-size:88px">${P ? P.rank : "–"}</div>
+        <div class="mut" style="font-size:17px;margin-top:-6px">${P ? `орын · ${P.of} ойыншы` : ""}</div>
+        <h1 style="font-size:28px">${fin ? "Ойын аяқталды" : "Экранға қараңыз"}</h1>
+        <p class="mut" style="margin:0;font-size:17px">${P ? P.score + " ұпай" : ""}${fin ? " · Рахмет!" : ""}</p></div></div></div>`;
+      if (fin && P && P.rank <= 3 && prev !== key) confetti();
+    }
+  }
+  function updatePw(){
+    if (!P || !S) return;
+    const pw = P.pw || {fr: 0, x2: 0, ff: 0, sh: 0};
+    const hid = P.hide && P.hide.qi === S.qi ? P.hide.idx : [];
+    document.querySelectorAll(".ans").forEach(b => b.classList.toggle("gone", hid.includes(+b.dataset.a)));
+    const set = (id, n, on) => { const b = $("#pw" + id), k = $("#k" + id); if (!b) return; k.textContent = n > 0 ? "×" + n : ""; b.disabled = !(n > 0) && !on; b.classList.toggle("on", !!on); };
+    const x2on = P.x2on === S.qi;
+    set("fr", pw.fr, false); set("x2", pw.x2, x2on); set("ff", pw.ff, hid.length > 0);
+    if (x2on) { const b = $("#pwx2"); b.disabled = true; b.style.opacity = 1; }
+    if (hid.length) { const b = $("#pwff"); b.disabled = true; b.style.opacity = 1; }
+    const sh = $("#shld"); if (sh) sh.querySelector("span").textContent = pw.sh > 0 ? "Қалқан белсенді: бір мұздатудан қорғайды" : "Қалқан жоқ";
+  }
+
+  if (room && joined) go(); else if (room) go();
+  render();
+}
+
+if (typeof mqtt === "undefined") { app.innerHTML = '<div class="ply"><div class="pc"><h1>Жүктелмеді</h1><p class="mut">Бетті жаңартыңыз.</p></div></div>'; }
+else if (IS_HOST) Host(); else Player();
+</script>
+</body>
+</html>
