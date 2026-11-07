@@ -1,0 +1,874 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0F1115">
+<title>Анализ «что если» · Практикум</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@600;800&family=Inter:wght@400;500;600;700&display=swap">
+<style>
+:root{
+  --bg:#0F1115;--s1:#171A21;--s2:#1F232C;--line:#2A2F3A;--tx:#F3F4F6;--mut:#9AA1AE;
+  --a0:#E5484D;--a1:#3E7BFA;--a2:#F5A524;--a3:#2FB36D;--ok:#2FB36D;--bad:#E5484D;--xl:#107C41;
+  --disp:"Inter Tight",Inter,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+  --txt:Inter,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;min-height:100%;background:var(--bg);color:var(--tx);font-family:var(--txt)}
+body{overflow-x:hidden}
+button{font:inherit;color:inherit;border:0;background:none;cursor:pointer;padding:0}
+input{font:inherit}
+.hidden{display:none!important}
+.disp{font-family:var(--disp);letter-spacing:-.02em}
+.mut{color:var(--mut)}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:10px;height:52px;padding:0 24px;border-radius:12px;background:var(--tx);color:var(--bg);font-weight:700;font-size:17px;transition:transform .12s,opacity .2s}
+.btn:active{transform:scale(.97)}
+.btn.ghost{background:var(--s2);color:var(--tx)}
+.btn.green{background:var(--xl);color:#fff}
+.btn[disabled]{opacity:.4;pointer-events:none}
+.net{position:fixed;top:12px;right:12px;z-index:50;display:flex;align-items:center;gap:8px;font-size:13px;color:var(--mut);background:var(--s1);border:1px solid var(--line);padding:6px 12px;border-radius:999px}
+.net i{width:8px;height:8px;border-radius:50%;background:var(--bad)}
+.net.on i{background:var(--ok)}
+.net.on{opacity:0;pointer-events:none;transition:opacity .6s 1.5s}
+.shape{width:28px;height:28px;flex:none}
+@keyframes pop{0%{transform:scale(.6);opacity:0}70%{transform:scale(1.06)}100%{transform:scale(1);opacity:1}}
+@keyframes up{from{transform:translateY(14px);opacity:0}to{transform:none;opacity:1}}
+@keyframes shake{0%,100%{transform:none}20%{transform:translateX(-10px)}40%{transform:translateX(9px)}60%{transform:translateX(-6px)}80%{transform:translateX(4px)}}
+.up{animation:up .35s ease both}
+
+/* ---------- Excel-like sheet ---------- */
+.xl{background:#fff;color:#1F1F1F;border-radius:12px;overflow:hidden;font-family:"Segoe UI",Calibri,Inter,system-ui,sans-serif;border:1px solid #D4D4D4}
+.xl .fb{display:flex;align-items:stretch;border-bottom:1px solid #D4D4D4;min-height:38px;font-size:15px}
+.xl .nb{width:52px;flex:none;display:flex;align-items:center;justify-content:center;border-right:1px solid #D4D4D4;font-weight:600;color:#333}
+.xl .fx{width:30px;flex:none;display:flex;align-items:center;justify-content:center;color:#777;font-style:italic;font-family:Georgia,serif;border-right:1px solid #E6E6E6}
+.xl .fc{flex:1;display:flex;align-items:center;padding:0 10px;font-family:Consolas,"SF Mono",Menlo,monospace;font-size:14px;color:#1F1F1F;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
+.xl .fc input{width:100%;height:30px;border:1px solid var(--xl);border-radius:4px;padding:0 8px;font:inherit;outline:none;color:#1F1F1F;background:#fff}
+.xl table{border-collapse:collapse;width:100%;table-layout:fixed;font-size:15px}
+.xl th{background:#F3F3F3;color:#555;font-weight:600;font-size:12px;height:24px;border:1px solid #E1E1E1}
+.xl th.rh{width:30px}
+.xl td{border:1px solid #E1E1E1;height:40px;padding:0 8px;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
+.xl td.lb{color:#333;font-size:14px}
+.xl td.v{text-align:right;font-variant-numeric:tabular-nums;font-weight:600;cursor:pointer}
+.xl td.v.f{color:#0B5A2E}
+.xl td.v.sel{outline:2px solid var(--xl);outline-offset:-2px;background:#F1F8F3}
+.xl td.v.flash{animation:flash 1s ease}
+@keyframes flash{0%{background:#C7EBD3}100%{background:transparent}}
+.xl .colA{width:58%}
+.xl.ro td.v{cursor:default}
+.note{font-size:14px;line-height:1.45;color:var(--mut);background:var(--s1);border:1px solid var(--line);border-radius:10px;padding:10px 12px}
+/* Goal seek dialog (Excel-like) */
+.gsw{position:fixed;inset:0;z-index:35;background:rgba(0,0,0,.5);display:flex;align-items:flex-end;justify-content:center}
+.gs{width:100%;max-width:480px;background:#fff;color:#1F1F1F;border-radius:16px 16px 0 0;padding:0 0 max(16px,env(safe-area-inset-bottom));animation:up .22s ease both;font-family:"Segoe UI",Inter,system-ui,sans-serif;max-height:88vh;overflow:auto}
+.gs .tb{display:flex;align-items:center;justify-content:space-between;padding:14px 18px;border-bottom:1px solid #E6E6E6;font-weight:600;font-size:16px}
+.gs .tb button{font-size:22px;color:#666;width:32px;height:32px}
+.gs .bd{padding:14px 18px;display:flex;flex-direction:column;gap:14px}
+.gs label{font-size:14px;color:#333;display:block;margin-bottom:6px}
+.gs input{width:100%;height:44px;border:1px solid #BDBDBD;border-radius:6px;padding:0 12px;font-size:17px;color:#1F1F1F;background:#fff;outline:none}
+.gs input:focus{border-color:var(--xl);box-shadow:0 0 0 1px var(--xl)}
+.gs .refs{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
+.gs .refs button{height:32px;padding:0 12px;border-radius:6px;background:#F3F3F3;border:1px solid #DADADA;font-size:14px;font-weight:600;color:#333}
+.gs .refs button.on{background:#E6F2EA;border-color:var(--xl);color:var(--xl)}
+.gs .err{color:#C42B1C;font-size:14px;min-height:0}
+.gs .ft{display:flex;gap:10px;justify-content:flex-end;padding:4px 18px 0}
+.gs .ft button{min-width:110px;height:44px;border-radius:6px;font-weight:600;font-size:16px;border:1px solid #BDBDBD;background:#F7F7F7;color:#1F1F1F}
+.gs .ft button.pri{background:var(--xl);border-color:var(--xl);color:#fff}
+.gs .rs{font-size:15px;line-height:1.6}
+.gs .rs b{font-variant-numeric:tabular-nums}
+
+/* ---------- HOST ---------- */
+.host{min-height:100vh;display:flex;flex-direction:column;padding:28px 40px 24px}
+.htop{display:flex;align-items:center;justify-content:space-between;gap:20px;min-height:44px}
+.tag{font-size:15px;font-weight:600;color:var(--mut);letter-spacing:.02em}
+.hbody{flex:1;display:flex;flex-direction:column;justify-content:center;padding:18px 0}
+.hctl{display:flex;justify-content:space-between;align-items:center;gap:12px}
+.lobby{display:grid;grid-template-columns:minmax(0,1.05fr) minmax(0,1fr);gap:48px;align-items:center}
+.lobby h1{font-size:clamp(34px,4vw,58px);line-height:1.02;margin:0 0 14px;font-weight:800}
+.joinbox{background:var(--s1);border:1px solid var(--line);border-radius:20px;padding:22px 26px;margin-top:22px}
+.joinbox .lbl{font-size:14px;color:var(--mut);font-weight:600;margin-bottom:8px}
+.joinbox .url{font-size:clamp(17px,1.7vw,22px);font-weight:600;word-break:break-all}
+.code{font-family:var(--disp);font-weight:800;font-size:clamp(48px,6vw,88px);letter-spacing:.08em;line-height:1}
+.plbox{background:var(--s1);border:1px solid var(--line);border-radius:20px;padding:24px 26px;min-height:46vh}
+.pl{display:flex;flex-wrap:wrap;gap:10px;align-content:flex-start;max-height:58vh;overflow:auto}
+.chip{background:var(--s2);border:1px solid var(--line);border-radius:999px;padding:12px 20px;font-weight:600;font-size:20px;animation:pop .35s ease both}
+.chip:hover{border-color:var(--bad);text-decoration:line-through}
+.count{font-family:var(--disp);font-size:20px;font-weight:800;margin-bottom:14px}
+.qhead{display:flex;align-items:flex-start;gap:24px}
+.kicker{font-size:15px;font-weight:700;color:var(--a3);letter-spacing:.04em;text-transform:uppercase;margin-bottom:8px}
+.timer{font-family:var(--disp);font-weight:800;font-size:56px;min-width:110px;text-align:right;line-height:1}
+.bar{height:6px;background:var(--s2);border-radius:6px;overflow:hidden;margin:18px 0 22px}
+.bar i{display:block;height:100%;background:var(--tx);width:100%;transform-origin:left}
+.qtext{font-family:var(--disp);font-weight:800;font-size:clamp(28px,3.2vw,46px);line-height:1.12;margin:0}
+.hgrid{display:grid;grid-template-columns:minmax(0,1fr) 300px;gap:28px;align-items:stretch}
+.tiles{display:grid;grid-template-columns:1fr 1fr;gap:14px;align-content:start}
+.tile{position:relative;overflow:hidden;display:flex;align-items:center;gap:16px;padding:20px 22px;border-radius:14px;font-weight:700;font-size:clamp(18px,1.7vw,24px);min-height:84px;transition:opacity .35s}
+.tile .cnt{margin-left:auto;font-family:var(--disp);font-weight:800;font-size:30px}
+.tile .fill{position:absolute;left:0;bottom:0;height:6px;background:rgba(255,255,255,.55);transition:width .8s ease}
+.t0{background:var(--a0)}.t1{background:var(--a1)}.t2{background:var(--a2);color:#1A1405}.t3{background:var(--a3)}
+.tile.off{opacity:.22}
+.tile.win{box-shadow:0 0 0 4px var(--tx)}
+.side{background:var(--s1);border:1px solid var(--line);border-radius:16px;padding:18px;display:flex;flex-direction:column;gap:14px;min-height:0}
+.big{font-family:var(--disp);font-weight:800;font-size:44px;line-height:1}
+.feed{display:flex;flex-direction:column;gap:8px;overflow:hidden;flex:1}
+.ev{font-size:15px;line-height:1.35;padding:10px 12px;background:var(--s2);border-radius:10px;animation:up .3s ease both}
+.ev b{font-weight:700}
+.ev.fr{border-left:3px solid #9BDCFF}.ev.sh{border-left:3px solid var(--a2)}.ev.x2{border-left:3px solid var(--a3)}.ev.ff{border-left:3px solid var(--a1)}.ev.ok{border-left:3px solid var(--ok)}
+.hsheet{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,1fr);gap:24px;align-items:start}
+.hsheet .xl table{font-size:19px}.hsheet .xl td{height:48px}.hsheet .xl td.lb{font-size:18px}
+.answer{background:var(--s1);border:1px solid var(--line);border-radius:16px;padding:24px}
+.answer .val{font-family:var(--disp);font-weight:800;font-size:clamp(40px,4.6vw,64px);line-height:1.05;margin:6px 0 14px}
+.answer .how{font-size:17px;line-height:1.5;color:var(--mut)}
+.answer .how b{color:var(--tx)}
+.stat{display:flex;flex-direction:column;gap:10px;margin-top:18px}
+.stat .r{display:grid;grid-template-columns:130px 1fr 40px;align-items:center;gap:12px;font-size:16px;font-weight:600}
+.stat .tr{height:12px;background:var(--s2);border-radius:6px;overflow:hidden}
+.stat .tr i{display:block;height:100%;border-radius:6px;transition:width .8s ease}
+.board{display:flex;flex-direction:column;gap:12px;max-width:900px;width:100%;margin:0 auto}
+.row{display:grid;grid-template-columns:56px 1fr auto;align-items:center;gap:16px;background:var(--s1);border:1px solid var(--line);border-radius:14px;padding:16px 22px;font-size:24px;font-weight:700;animation:up .4s ease both}
+.row .n{font-family:var(--disp);font-weight:800;color:var(--mut)}
+.row .sc{font-family:var(--disp);font-weight:800}
+.row .d{font-size:15px;color:var(--ok);font-weight:700;margin-left:12px}
+.row.first{background:var(--tx);color:var(--bg)}.row.first .n{color:var(--bg)}
+.h2{font-family:var(--disp);font-weight:800;font-size:clamp(34px,4vw,56px);margin:0 0 28px;text-align:center}
+.podium{display:flex;align-items:flex-end;justify-content:center;gap:18px;margin:10px 0 30px}
+.pod{width:min(240px,28vw);text-align:center}
+.pod .nm{font-size:24px;font-weight:700;margin-bottom:10px;word-break:break-word;animation:up .5s ease both}
+.pod .blk{border-radius:14px 14px 0 0;background:var(--s2);border:1px solid var(--line);border-bottom:0;display:flex;flex-direction:column;align-items:center;padding-top:18px;gap:6px;transform-origin:bottom;animation:grow .9s cubic-bezier(.2,.8,.2,1) both}
+.pod .pl1{background:var(--tx);color:var(--bg)}
+.pod .place{font-family:var(--disp);font-weight:800;font-size:56px;line-height:1}
+.pod .pts{font-size:16px;font-weight:600;opacity:.75}
+@keyframes grow{from{transform:scaleY(0)}to{transform:scaleY(1)}}
+
+/* ---------- PLAYER ---------- */
+.ply{min-height:100vh;min-height:100dvh;display:flex;flex-direction:column;padding:max(14px,env(safe-area-inset-top)) 14px max(16px,env(safe-area-inset-bottom))}
+.pc{flex:1;display:flex;flex-direction:column;justify-content:center;gap:14px;max-width:520px;width:100%;margin:0 auto}
+.pw-wrap{max-width:520px;width:100%;margin:0 auto}
+.pc h1{font-family:var(--disp);font-weight:800;font-size:34px;line-height:1.05;margin:0}
+.field{width:100%;height:58px;border-radius:12px;border:1px solid var(--line);background:var(--s1);color:var(--tx);padding:0 18px;font-size:20px;font-weight:600;outline:none}
+.field:focus{border-color:var(--mut)}
+.field.codef{text-transform:uppercase;letter-spacing:.2em;font-family:var(--disp);font-weight:800;text-align:center;font-size:26px}
+.pbar{display:flex;align-items:center;justify-content:space-between;gap:10px;font-size:14px;font-weight:600;color:var(--mut)}
+.pbar .me{color:var(--tx);max-width:50%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.ptimer{height:5px;background:var(--s2);border-radius:5px;overflow:hidden;margin:10px 0 4px}
+.ptimer i{display:block;height:100%;background:var(--tx);transform-origin:left}
+.pk{font-size:12px;font-weight:700;color:var(--a3);letter-spacing:.05em;text-transform:uppercase;margin-top:12px}
+.pq{font-family:var(--disp);font-weight:800;font-size:clamp(20px,5.4vw,26px);line-height:1.2;margin:6px 0 12px}
+.answers{display:grid;grid-template-columns:1fr;gap:10px}
+.ans{display:flex;align-items:center;gap:14px;text-align:left;padding:15px 16px;border-radius:14px;font-weight:700;font-size:17px;line-height:1.25;min-height:62px;transition:transform .12s,opacity .25s}
+.ans:active{transform:scale(.97)}
+.ans.gone{opacity:.12;pointer-events:none}
+.tools{display:flex;gap:8px;margin:10px 0}
+.tools .btn{height:46px;font-size:15px;padding:0 14px;flex:1}
+.ansrow{display:flex;gap:8px;margin-top:4px}
+.ansrow .field{height:54px;font-size:20px;flex:1;min-width:0}
+.ansrow .btn{height:54px;flex:none}
+.unit{font-size:13px;color:var(--mut);margin-top:6px}
+.pw{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:12px}
+.pwb{position:relative;display:flex;flex-direction:column;align-items:center;gap:4px;padding:10px 4px;border-radius:12px;background:var(--s1);border:1px solid var(--line);font-size:13px;font-weight:600}
+.pwb svg{width:22px;height:22px}
+.pwb .k{position:absolute;top:6px;right:8px;font-size:12px;color:var(--mut);font-weight:700}
+.pwb[disabled]{opacity:.3;pointer-events:none}
+.pwb.on{border-color:var(--a3);color:var(--a3)}
+.shld{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--mut);margin-top:8px;justify-content:center}
+.shld svg{width:16px;height:16px}
+.wait{text-align:center;display:flex;flex-direction:column;align-items:center;gap:14px}
+.ring{width:84px;height:84px;border-radius:50%;border:4px solid var(--s2);border-top-color:var(--tx);animation:spin 1s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.res{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;gap:10px;border-radius:20px;padding:28px}
+.res.good{background:var(--ok)}.res.bad{background:var(--bad);animation:shake .5s ease}.res.none{background:var(--s1)}
+.res .big{font-size:50px}
+.res .pts{font-family:var(--disp);font-weight:800;font-size:30px;background:rgba(0,0,0,.18);padding:8px 18px;border-radius:999px}
+.res .rk{font-size:17px;font-weight:600;opacity:.92}
+.sheet{position:fixed;inset:0;z-index:30;background:rgba(0,0,0,.55);display:flex;align-items:flex-end}
+.sheet .in{width:100%;max-height:75vh;overflow:auto;background:var(--s1);border-radius:20px 20px 0 0;padding:20px 16px max(20px,env(safe-area-inset-bottom));animation:up .25s ease both}
+.sheet h3{margin:0 0 4px;font-family:var(--disp);font-size:22px}
+.tg{display:flex;justify-content:space-between;align-items:center;width:100%;padding:14px 16px;border-radius:12px;background:var(--s2);margin-top:8px;font-weight:600;font-size:17px}
+.toast{position:fixed;left:50%;bottom:max(24px,env(safe-area-inset-bottom));transform:translateX(-50%);z-index:60;background:var(--tx);color:var(--bg);padding:12px 18px;border-radius:12px;font-weight:600;font-size:15px;max-width:90vw;text-align:center;animation:up .25s ease both}
+/* ice */
+#ice{position:fixed;inset:0;z-index:40;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;text-align:center;padding:24px;color:#08263A;
+  background:radial-gradient(120% 80% at 50% 45%,#EAF7FF 0%,#CDEBFD 55%,#A9D9F7 100%);
+  user-select:none;-webkit-user-select:none;touch-action:manipulation;animation:freeze .35s ease both}
+#ice.melt{animation:melt .5s ease forwards}
+#ice.hit{animation:hit .12s ease}
+#ice svg.frost{position:absolute;inset:0;width:100%;height:100%;pointer-events:none}
+#ice .flake{position:absolute;color:#fff;opacity:.55;pointer-events:none}
+#ice .flake svg{width:100%;height:100%}
+#ice .it1{font-family:var(--disp);font-weight:800;font-size:34px;position:relative}
+#ice .it2{font-size:17px;font-weight:600;position:relative}
+#ice .taps{position:relative;font-family:var(--disp);font-weight:800;font-size:64px;line-height:1}
+#ice path.crack{stroke:#5FA9D6;stroke-width:3;fill:none;stroke-linecap:round;opacity:0;transition:opacity .15s}
+@keyframes freeze{from{opacity:0;transform:scale(1.04)}to{opacity:1;transform:none}}
+@keyframes melt{to{opacity:0;transform:scale(1.03)}}
+@keyframes hit{50%{transform:scale(.985) rotate(-.4deg)}}
+canvas#cf{position:fixed;inset:0;width:100%;height:100%;pointer-events:none;z-index:45}
+@media (max-width:900px){.lobby,.hgrid,.hsheet{grid-template-columns:1fr}.host{padding:20px}}
+@media (min-width:600px){.answers{grid-template-columns:1fr 1fr}.ans{min-height:96px}}
+</style>
+</head>
+<body>
+<div id="net" class="net"><i></i><span>Подключение…</span></div>
+<div id="app"></div>
+<canvas id="cf" class="hidden"></canvas>
+<script src="../mqtt.min.js"></script>
+<script>
+"use strict";
+/* ===================== ДАННЫЕ ===================== */
+const MODEL_PROFIT = (price, qty) => ({cells: [
+  {r: "B1", l: "Цена за единицу, тг", v: price},
+  {r: "B2", l: "Переменные затраты на ед., тг", v: 1500},
+  {r: "B3", l: "Постоянные затраты, тг", v: 600000},
+  {r: "B4", l: "Объём продаж, ед.", v: qty},
+  {r: "B5", l: "Прибыль, тг", f: "B4*(B1-B2)-B3", x: "=B4*(B1-B2)-B3"}
+]});
+const ROUNDS = [
+  {type: "mc", t: 20, q: "Где в Excel находится «Подбор параметра»?", a: ["Главная → Условное форматирование", "Данные → Анализ «что если»", "Формулы → Вставить функцию", "Вставка → Сводная таблица"], c: 1},
+  {type: "num", t: 150, k: "Задача 1 · Точка безубыточности", q: "Сколько единиц нужно продать, чтобы прибыль стала равна 0?", sheet: MODEL_PROFIT(2500, 400), gs: {set: "B5", to: 0, by: "B4"}, ans: 600, tol: 1, unit: "ед.", show: "600 ед."},
+  {type: "mc", t: 20, q: "Что указывают в поле «Установить в ячейке»?", a: ["Любое число", "Ячейку с формулой", "Пустую ячейку", "Название листа"], c: 1},
+  {type: "num", t: 150, k: "Задача 2 · Цена", q: "Какой должна быть цена, чтобы при продаже 800 ед. прибыль была 400 000 тг?", sheet: MODEL_PROFIT(2500, 800), gs: {set: "B5", to: 400000, by: "B1"}, ans: 2750, tol: 1, unit: "тг", show: "2 750 тг"},
+  {type: "mc", t: 20, q: "Что указывают в поле «Изменяя значение ячейки»?", a: ["Ячейку с формулой", "Ячейку с текстом", "Ячейку с числом, от которого зависит формула", "Ячейку на другом листе"], c: 2},
+  {type: "sheetmc", t: 90, k: "Задача 3 · Что если: цена и спрос", q: "Меняйте цену в B1 и смотрите на прибыль B5. При какой цене прибыль максимальна?",
+   sheet: {cells: [
+     {r: "B1", l: "Цена за единицу, тг", v: 2500},
+     {r: "B2", l: "Спрос, ед.", f: "2000-0.4*B1", x: "=2000-0,4*B1"},
+     {r: "B3", l: "Переменные затраты на ед., тг", v: 1500},
+     {r: "B4", l: "Постоянные затраты, тг", v: 600000},
+     {r: "B5", l: "Прибыль, тг", f: "B2*(B1-B3)-B4", x: "=B2*(B1-B3)-B4"}]},
+   a: ["2 500 тг", "3 000 тг", "3 250 тг", "4 000 тг"], c: 2, revealVals: {B1: 3250}, show: "3 250 тг → прибыль 625 000 тг"},
+  {type: "num", t: 120, k: "Задача 4 · Зарплата «на руки»", q: "Сколько нужно начислить, чтобы сотрудник получил на руки 300 000 тг?",
+   sheet: {cells: [
+     {r: "B1", l: "Начислено, тг", v: 250000},
+     {r: "B2", l: "Удержания (условно)", v: 0.2, fmt: "pct"},
+     {r: "B3", l: "К выдаче на руки, тг", f: "B1*(1-B2)", x: "=B1*(1-B2)"}]},
+   gs: {set: "B3", to: 300000, by: "B1"}, ans: 375000, tol: 1, unit: "тг", show: "375 000 тг"},
+  {type: "mc", t: 20, q: "Какой инструмент сразу показывает результат формулы для многих значений одной переменной?", a: ["Подбор параметра", "Таблица данных", "Сортировка", "Фильтр"], c: 1},
+  {type: "sheetmc", t: 75, k: "Задача 5 · Сценарии", q: "Подставьте в B1 и B4 значения каждого сценария. В каком сценарии компания получит убыток?",
+   note: "Пессимистичный: цена 2 400, объём 500 · Базовый: цена 2 500, объём 800 · Оптимистичный: цена 2 700, объём 1 000",
+   sheet: MODEL_PROFIT(2500, 800), revealVals: {B1: 2400, B4: 500}, a: ["Пессимистичный", "Базовый", "Оптимистичный", "Ни в одном"], c: 0, show: "Пессимистичный: −150 000 тг"},
+  {type: "mc", t: 20, q: "Какой инструмент хранит наборы значений «пессимистичный / базовый / оптимистичный»?", a: ["Диспетчер сценариев", "Подбор параметра", "Проверка данных", "Автосумма"], c: 0},
+  {type: "num", t: 180, k: "Задача 6 · Кредит", q: "Какую сумму кредита можно взять, если платить не больше 150 000 тг в месяц?",
+   sheet: {cells: [
+     {r: "B1", l: "Ставка, годовых", v: 0.18, fmt: "pct"},
+     {r: "B2", l: "Срок, мес.", v: 24},
+     {r: "B3", l: "Сумма кредита, тг", v: 2000000},
+     {r: "B4", l: "Платёж в месяц, тг", f: "PMT(B1/12,B2,-B3)", x: "=ПЛТ(B1/12;B2;-B3)"}]},
+   gs: {set: "B4", to: 150000, by: "B3"}, ans: 3004560.8, tol: 3000, unit: "тг", show: "≈ 3 004 561 тг"},
+  {type: "mc", t: 20, q: "Нужно изменить несколько ячеек сразу и учесть ограничения. Что использовать?", a: ["Подбор параметра", "Поиск решения", "Таблицу данных", "Мгновенное заполнение"], c: 1},
+  {type: "num", t: 150, k: "Задача 7 · Депозит", q: "Под какой годовой процент нужно положить 1 000 000 тг на 3 года, чтобы получить 1 500 000 тг?",
+   sheet: {cells: [
+     {r: "B1", l: "Сумма вклада, тг", v: 1000000},
+     {r: "B2", l: "Ставка, годовых", v: 0.1, fmt: "pct"},
+     {r: "B3", l: "Срок, лет", v: 3},
+     {r: "B4", l: "Сумма в конце срока, тг", f: "B1*Math.pow(1+B2,B3)", x: "=B1*(1+B2)^B3"}]},
+   gs: {set: "B4", to: 1500000, by: "B2"}, ans: 0.14471, tol: 0.0006, unit: "% (например 12,5)", pct: true, show: "≈ 14,47%"}
+];
+const NS = "xlq1";
+const TITLE = "СРСП · Анализ «что если» в MS Excel";
+const BROKERS = ["wss://broker.emqx.io:8084/mqtt", "wss://broker.hivemq.com:8884/mqtt", "wss://test.mosquitto.org:8081"];
+const PARAMS = new URLSearchParams(location.search);
+const IS_HOST = PARAMS.has("host");
+const freezeMs = r => r && r.type === "mc" ? 4500 : 12000;
+const freezeTaps = r => r && r.type === "mc" ? 6 : 10;
+
+/* ===================== УТИЛИТЫ ===================== */
+const $ = s => document.querySelector(s);
+const app = $("#app");
+const esc = s => String(s == null ? "" : s).replace(/[&<>"']/g, c => ({"&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"}[c]));
+const rid = (n, abc) => { abc = abc || "abcdefghijkmnpqrstuvwxyz23456789"; let s = ""; const a = new Uint32Array(n); crypto.getRandomValues(a); for (const x of a) s += abc[x % abc.length]; return s; };
+const store = {
+  get(k) { try { return JSON.parse(localStorage.getItem(NS + k)); } catch (e) { return null; } },
+  set(k, v) { try { localStorage.setItem(NS + k, JSON.stringify(v)); } catch (e) {} },
+  del(k) { try { localStorage.removeItem(NS + k); } catch (e) {} }
+};
+const SHAPES = [
+  '<svg class="shape" viewBox="0 0 28 28"><path d="M14 4 25 23H3z" fill="currentColor"/></svg>',
+  '<svg class="shape" viewBox="0 0 28 28"><path d="M14 2.5 25.5 14 14 25.5 2.5 14z" fill="currentColor"/></svg>',
+  '<svg class="shape" viewBox="0 0 28 28"><circle cx="14" cy="14" r="11" fill="currentColor"/></svg>',
+  '<svg class="shape" viewBox="0 0 28 28"><rect x="4" y="4" width="20" height="20" rx="2" fill="currentColor"/></svg>'
+];
+const ICON = {
+  fr: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 2v20M3.3 7l17.4 10M20.7 7 3.3 17M9 4l3 2 3-2M9 20l3-2 3 2"/></svg>',
+  x2: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 8l6 8M10 8l-6 8M14 9.5a2.5 2.5 0 0 1 5 0c0 2.5-5 4-5 6.5h5"/></svg>',
+  ff: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3" y="4" width="7" height="7" rx="1.5"/><rect x="14" y="13" width="7" height="7" rx="1.5"/><path d="M14 5l7 5M21 5l-7 5M3 14l7 5M10 14l-7 5" opacity=".5"/></svg>',
+  sh: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M12 3l8 3v6c0 4.5-3.4 8-8 9-4.6-1-8-4.5-8-9V6z"/></svg>'
+};
+function vibrate(p) { try { navigator.vibrate && navigator.vibrate(p); } catch (e) {} }
+function toast(t) { const old = $(".toast"); if (old) old.remove(); const d = document.createElement("div"); d.className = "toast"; d.textContent = t; document.body.appendChild(d); setTimeout(() => d.remove(), 2800); }
+function setNet(on, text) { const n = $("#net"); n.classList.toggle("on", !!on); n.querySelector("span").textContent = on ? "Подключено" : (text || "Подключение…"); }
+function confetti() {
+  const c = $("#cf"); c.classList.remove("hidden"); const ctx = c.getContext("2d");
+  const W = c.width = innerWidth * devicePixelRatio, H = c.height = innerHeight * devicePixelRatio;
+  const cols = ["#E5484D", "#3E7BFA", "#F5A524", "#2FB36D", "#F3F4F6"];
+  const ps = Array.from({length: 90}, () => ({x: W / 2 + (Math.random() - .5) * W * .3, y: H * .45, vx: (Math.random() - .5) * W * .03, vy: -Math.random() * H * .03 - H * .008, r: Math.random() * Math.PI, s: (6 + Math.random() * 8) * devicePixelRatio, c: cols[Math.random() * 5 | 0]}));
+  const t0 = performance.now();
+  (function f(t) { const k = (t - t0) / 1400; ctx.clearRect(0, 0, W, H);
+    for (const p of ps) { p.x += p.vx; p.y += p.vy; p.vy += H * .0011; p.r += .2; ctx.save(); ctx.translate(p.x, p.y); ctx.rotate(p.r); ctx.globalAlpha = Math.max(0, 1 - k); ctx.fillStyle = p.c; ctx.fillRect(-p.s / 2, -p.s / 4, p.s, p.s / 2); ctx.restore(); }
+    if (k < 1) requestAnimationFrame(f); else { ctx.clearRect(0, 0, W, H); c.classList.add("hidden"); } })(t0);
+}
+function brokerUrl(i) { return PARAMS.get("broker") || BROKERS[i % BROKERS.length]; }
+function connect(bi, onConnect, onMsg) {
+  setNet(false);
+  const c = mqtt.connect(brokerUrl(bi), {clientId: NS + "_" + rid(12), keepalive: 30, reconnectPeriod: 2000, connectTimeout: 8000, clean: true});
+  c.on("connect", () => { setNet(true); onConnect(c); });
+  c.on("reconnect", () => setNet(false, "Переподключение…"));
+  c.on("offline", () => setNet(false, "Нет связи"));
+  c.on("error", () => {});
+  c.on("message", (t, buf) => { let m; try { m = JSON.parse(buf.toString()); } catch (e) { return; } try { onMsg(t, m); } catch (e) { console.error(e); } });
+  return c;
+}
+const T = room => NS + "/" + room + "/";
+
+/* ===================== МИНИ-EXCEL ===================== */
+function PMT(r, n, pv) { return r === 0 ? -pv / n : -pv * r / (1 - Math.pow(1 + r, -n)); }
+const compiled = new Map();
+function fn(expr) { if (!compiled.has(expr)) compiled.set(expr, new Function("v", "PMT", "return " + expr.replace(/\b([A-Z]+[0-9]+)\b/g, "v.$1") + ";")); return compiled.get(expr); }
+function calc(sheet, vals) {
+  const v = {};
+  for (const c of sheet.cells) if (!c.f) v[c.r] = (vals && c.r in vals) ? vals[c.r] : c.v;
+  for (let pass = 0; pass < 3; pass++) for (const c of sheet.cells) if (c.f) { try { v[c.r] = fn(c.f)(v, PMT); } catch (e) { v[c.r] = NaN; } }
+  return v;
+}
+const nf = new Intl.NumberFormat("ru-RU", {maximumFractionDigits: 2});
+function fmtVal(c, x) {
+  if (x == null || !isFinite(x)) return "#ЗНАЧ!";
+  if (c.fmt === "pct") return nf.format(Math.round(x * 10000) / 100) + "%";
+  return nf.format(Math.round(x * 100) / 100);
+}
+function parseNum(s) {
+  if (s == null) return NaN;
+  s = String(s).replace(/[\s  ]/g, "").replace(/%/g, "").replace(/,/g, ".");
+  if (!/^[-+]?(\d+\.?\d*|\.\d+)(e[-+]?\d+)?$/i.test(s)) return NaN;
+  return parseFloat(s);
+}
+const normRef = s => String(s || "").toUpperCase().replace(/[\s$]/g, "");
+function goalSeek(sheet, vals, set, to, by) {
+  const g = x => { const v = calc(sheet, Object.assign({}, vals, {[by]: x})); return v[set] - to; };
+  let x0 = vals[by], x1 = x0 !== 0 ? x0 * 1.1 : 1, g0 = g(x0), g1 = g(x1);
+  const eps = 1e-7 * Math.max(1, Math.abs(to));
+  for (let i = 0; i < 200; i++) {
+    if (!isFinite(g1)) break;
+    if (Math.abs(g1) < eps) return x1;
+    if (g1 === g0) break;
+    const x2 = x1 - g1 * (x1 - x0) / (g1 - g0);
+    x0 = x1; g0 = g1; x1 = x2; g1 = g(x1);
+  }
+  if (isFinite(g1) && Math.abs(g1) < eps * 100) return x1;
+  return null;
+}
+
+/* Sheet widget: renders an Excel-like grid into el. opts: {readonly, vals, onChange} */
+function Sheet(el, sheet, opts) {
+  opts = opts || {};
+  let vals = opts.vals || {};
+  let sel = opts.readonly ? null : (sheet.cells.find(c => !c.f) || sheet.cells[0]).r;
+  let editing = false;
+  const byRef = r => sheet.cells.find(c => c.r === r);
+  function draw(flashRef) {
+    const v = calc(sheet, vals), c = sel ? byRef(sel) : null;
+    const content = c ? (c.f ? c.x : (c.fmt === "pct" ? fmtVal(c, v[c.r]) : String(v[c.r]).replace(".", ","))) : "";
+    el.innerHTML = `<div class="xl ${opts.readonly ? "ro" : ""}">
+      ${opts.readonly ? "" : `<div class="fb"><div class="nb">${c ? c.r : ""}</div><div class="fx">fx</div><div class="fc">${editing && c && !c.f ? `<input id="fcin" inputmode="decimal" value="${esc(content)}" enterkeyhint="done">` : esc(content)}</div></div>`}
+      <table><colgroup><col style="width:30px"><col class="colA"><col></colgroup>
+      <tr><th class="rh"></th><th>A</th><th>B</th></tr>
+      ${sheet.cells.map(cc => `<tr><th class="rh">${cc.r.slice(1)}</th><td class="lb">${esc(cc.l)}</td><td class="v ${cc.f ? "f" : ""} ${sel === cc.r ? "sel" : ""} ${flashRef && (flashRef === cc.r || cc.f) ? "flash" : ""}" data-r="${cc.r}">${fmtVal(cc, v[cc.r])}</td></tr>`).join("")}
+      </table></div>`;
+    if (opts.readonly) return;
+    el.querySelectorAll("td.v").forEach(td => td.onclick = () => {
+      const r = td.dataset.r; if (editing && sel === r) return;
+      sel = r; editing = !byRef(r).f;
+      draw(); const i = el.querySelector("#fcin"); if (i) { i.focus(); i.select(); }
+    });
+    const i = el.querySelector("#fcin");
+    if (i) {
+      let done = false;
+      const commit = () => { if (done) return; done = true; const x = parseNum(i.value); const cc = byRef(sel);
+        if (isFinite(x)) { let val = x; if (cc.fmt === "pct" && (/%/.test(i.value) || Math.abs(x) >= 1)) val = x / 100; vals = Object.assign({}, vals, {[sel]: val}); opts.onChange && opts.onChange(vals); editing = false; draw(sel); }
+        else { editing = false; draw(); toast("Введите число"); } };
+      i.onkeydown = e => { if (e.key === "Enter") { e.preventDefault(); commit(); } if (e.key === "Escape") { done = true; editing = false; draw(); } };
+      i.onblur = () => { if (editing && !done && i.isConnected) setTimeout(commit, 0); };
+    }
+  }
+  draw();
+  return {
+    get vals() { return vals; },
+    set(newVals, flash) { vals = newVals; opts.onChange && opts.onChange(vals); draw(flash); },
+    select(r) { sel = r; editing = false; draw(); },
+    redraw: draw
+  };
+}
+
+/* Goal Seek dialog (как в Excel) */
+function GoalSeekDialog(sheet, getVals, onApply) {
+  const refs = sheet.cells.map(c => c.r);
+  const w = document.createElement("div"); w.className = "gsw"; w.id = "gsw";
+  const st = {set: "", to: "", by: ""};
+  function form(err) {
+    w.innerHTML = `<div class="gs" role="dialog" aria-label="Подбор параметра"><div class="tb"><span>Подбор параметра</span><button id="gsx" aria-label="Закрыть">×</button></div>
+      <div class="bd">
+        <div><label for="gs1">Установить в ячейке:</label><input id="gs1" value="${esc(st.set)}" autocomplete="off" autocapitalize="characters"><div class="refs" data-f="set">${refs.map(r => `<button data-r="${r}" class="${normRef(st.set) === r ? "on" : ""}">$B$${r.slice(1)}</button>`).join("")}</div></div>
+        <div><label for="gs2">Значение:</label><input id="gs2" inputmode="decimal" value="${esc(st.to)}" autocomplete="off"></div>
+        <div><label for="gs3">Изменяя значение ячейки:</label><input id="gs3" value="${esc(st.by)}" autocomplete="off" autocapitalize="characters"><div class="refs" data-f="by">${refs.map(r => `<button data-r="${r}" class="${normRef(st.by) === r ? "on" : ""}">$B$${r.slice(1)}</button>`).join("")}</div></div>
+        ${err ? `<div class="err">${esc(err)}</div>` : ""}
+      </div>
+      <div class="ft"><button id="gsc">Отмена</button><button class="pri" id="gso">ОК</button></div></div>`;
+    const sync = () => { st.set = $("#gs1").value; st.to = $("#gs2").value; st.by = $("#gs3").value; };
+    w.querySelectorAll(".refs button").forEach(b => b.onclick = () => { sync(); st[b.parentNode.dataset.f] = "$B$" + b.dataset.r.slice(1); form(); });
+    $("#gsx").onclick = $("#gsc").onclick = close;
+    $("#gso").onclick = () => { sync(); run(); };
+    w.onclick = e => { if (e.target === w) close(); };
+  }
+  function run() {
+    const set = normRef(st.set), by = normRef(st.by), to = parseNum(st.to);
+    const cs = sheet.cells.find(c => c.r === set), cb = sheet.cells.find(c => c.r === by);
+    if (!cs) return form("Укажите ячейку в поле «Установить в ячейке».");
+    if (!cs.f) return form("Ячейка «Установить в ячейке» должна содержать формулу.");
+    if (!isFinite(to)) return form("Введите число в поле «Значение».");
+    if (!cb) return form("Укажите ячейку в поле «Изменяя значение ячейки».");
+    if (cb.f) return form("Ячейка «Изменяя значение ячейки» должна содержать значение, а не формулу.");
+    const vals = calc(sheet, getVals()), base = {};
+    sheet.cells.forEach(c => { if (!c.f) base[c.r] = vals[c.r]; });
+    const x = goalSeek(sheet, base, set, to, by);
+    if (x == null) return result(set, null, base, to, by);
+    result(set, x, base, to, by);
+  }
+  function result(set, x, base, to, by) {
+    const ok = x != null, nv = ok ? Object.assign({}, base, {[by]: x}) : base, cur = calc(sheet, nv)[set];
+    const cs = sheet.cells.find(c => c.r === set);
+    w.innerHTML = `<div class="gs" role="dialog" aria-label="Результат подбора параметра"><div class="tb"><span>Результат подбора параметра</span><button id="gsx" aria-label="Закрыть">×</button></div>
+      <div class="bd"><div class="rs">Подбор параметра для ячейки ${set}.<br>${ok ? "Решение найдено." : "<b>Решение не найдено.</b> Проверьте, зависит ли формула от изменяемой ячейки."}<br>
+      Подбираемое значение: <b>${fmtVal(cs, to)}</b><br>Текущее значение: <b>${fmtVal(cs, cur)}</b></div></div>
+      <div class="ft"><button id="gsc">Отмена</button><button class="pri" id="gso">ОК</button></div></div>`;
+    $("#gsx").onclick = $("#gsc").onclick = close;
+    $("#gso").onclick = () => { if (ok) onApply(nv, by); close(); };
+  }
+  function close() { w.remove(); }
+  document.body.appendChild(w); form();
+  return {close};
+}
+
+/* ===================== ВЕДУЩИЙ ===================== */
+function Host() {
+  let H = store.get("host");
+  const fresh = () => ({room: rid(5, "ABCDEFGHJKLMNPQRSTUVWXYZ23456789"), b: +(PARAMS.get("b") || 0), phase: "lobby", qi: -1, players: {}, ans: {}, counts: [0, 0, 0, 0], qEnd: 0, feed: [], prevRank: {}});
+  if (!H || !H.room) H = fresh();
+  let client = null, tick = null, pubTimer = null, connectedOnce = false;
+  const save = () => store.set("host", H);
+  const total = ROUNDS.length;
+  const pids = () => Object.keys(H.players);
+  const joinUrl = () => { const u = new URL(location.href); u.search = ""; u.hash = ""; u.searchParams.set("r", H.room); if (H.b) u.searchParams.set("b", H.b); if (PARAMS.get("broker")) u.searchParams.set("broker", PARAMS.get("broker")); return u.toString(); };
+  const R = () => ROUNDS[H.qi];
+
+  function start() {
+    client && client.end(true);
+    connectedOnce = false;
+    client = connect(H.b, c => { connectedOnce = true; c.subscribe(T(H.room) + "i", {qos: 1}); pubState(); pids().forEach(pubPlayer); }, onMsg);
+    setTimeout(() => { if (!connectedOnce && H.phase === "lobby") render(); }, 9000);
+    save(); render();
+    clearInterval(tick); tick = setInterval(onTick, 200);
+    clearInterval(pubTimer); pubTimer = setInterval(() => { if (H.phase === "question") pubState(); }, 1000);
+  }
+  function pub(topic, obj, retain) { if (client && client.connected) client.publish(T(H.room) + topic, JSON.stringify(obj), {qos: 1, retain: !!retain}); }
+  function ranked() { return pids().sort((a, b) => H.players[b].score - H.players[a].score || H.players[a].name.localeCompare(H.players[b].name)); }
+  function addFeed(kind, html) { H.feed.unshift({k: kind, h: html}); H.feed = H.feed.slice(0, 7); }
+  function note(pid, text) { const p = H.players[pid]; if (p) p.note = {id: rid(6), t: text}; }
+
+  function pubState() {
+    const st = {v: 1, phase: H.phase, qi: H.qi, total, n: pids().length, answered: Object.keys(H.ans).length};
+    if (H.phase === "question") { st.endsIn = Math.max(0, H.qEnd - Date.now()); st.roster = ranked().slice(0, 40).map(id => [id, H.players[id].name]); }
+    if (H.phase === "board" || H.phase === "final") st.top = ranked().slice(0, 10).map(id => ({n: H.players[id].name, s: H.players[id].score}));
+    pub("s", st, true);
+  }
+  function pubPlayer(pid) {
+    const p = H.players[pid]; if (!p) return;
+    const r = ranked();
+    pub("p/" + pid, {name: p.name, score: p.score, rank: r.indexOf(pid) + 1, of: r.length, streak: p.streak, pw: p.pw, x2on: p.x2on ? H.qi : -1, hide: p.hide, frozen: p.frozen, last: p.last, locked: H.ans[pid] ? {qi: H.qi, a: H.ans[pid].a, v: H.ans[pid].v} : null, note: p.note, kicked: !!p.kicked}, true);
+  }
+  function isCorrect(r, a) {
+    if (r.type === "num") { const x = parseNum(a); if (!isFinite(x)) return false; const tol = Math.max(r.tol, Math.abs(r.ans) * 1e-4); return Math.abs(x - r.ans) <= tol || (r.pct && Math.abs(x / 100 - r.ans) <= tol); }
+    return a === r.c;
+  }
+
+  function onMsg(topic, m) {
+    if (!m || typeof m.pid !== "string" || m.pid.length > 40) return;
+    const pid = m.pid, p = H.players[pid];
+    if (m.t === "join") {
+      const name = String(m.name || "").replace(/\s+/g, " ").trim().slice(0, 18);
+      if (!name) return;
+      if (p) { pubPlayer(pid); pubState(); return; }
+      if (H.phase === "final") return;
+      const taken = new Set(Object.values(H.players).map(x => x.name.toLowerCase()));
+      let nm = name, k = 2; while (taken.has(nm.toLowerCase())) nm = name + " " + (k++);
+      H.players[pid] = {name: nm, score: 0, streak: 0, pw: {fr: 1, x2: 1, ff: 1, sh: 1}, x2on: false, hide: null, frozen: null, last: null, note: null};
+      save(); pubPlayer(pid); pubState(); render(); return;
+    }
+    if (!p) return;
+    const r = R();
+    if (m.t === "ans") {
+      if (H.phase !== "question" || m.qi !== H.qi || H.ans[pid]) { pubPlayer(pid); return; }
+      if (Date.now() > H.qEnd + 400) { pubPlayer(pid); return; }
+      let rec;
+      if (r.type === "num") { const v = String(m.v == null ? "" : m.v).slice(0, 24); if (!isFinite(parseNum(v))) return; rec = {v, ok: isCorrect(r, v)}; H.counts[rec.ok ? 0 : 1]++; }
+      else { const a = m.a | 0; if (a < 0 || a > 3) return; if (p.hide && p.hide.qi === H.qi && p.hide.idx.includes(a)) return; rec = {a, ok: a === r.c}; H.counts[a]++; }
+      rec.left = Math.max(0, H.qEnd - Date.now());
+      H.ans[pid] = rec;
+      if (r.type === "num" && rec.ok && !H.feed.some(e => e.k === "ok")) addFeed("ok", `<b>${esc(p.name)}</b> первым решил задачу`);
+      save(); pubPlayer(pid); pubState();
+      if (Object.keys(H.ans).length >= pids().length) reveal(); else render();
+      return;
+    }
+    if (m.t === "pw") {
+      if (H.phase !== "question" || m.qi !== H.qi) return;
+      if (H.ans[pid]) { note(pid, "После ответа бонусы недоступны"); pubPlayer(pid); return; }
+      if (m.k === "x2" && p.pw.x2 > 0 && !p.x2on) {
+        p.pw.x2--; p.x2on = true; addFeed("x2", `<b>${esc(p.name)}</b> играет на двойные очки`);
+      } else if (m.k === "ff" && r.type !== "num" && p.pw.ff > 0 && !(p.hide && p.hide.qi === H.qi)) {
+        const wrong = [0, 1, 2, 3].filter(i => i !== r.c).sort(() => Math.random() - .5).slice(0, 2);
+        p.pw.ff--; p.hide = {qi: H.qi, idx: wrong}; addFeed("ff", `<b>${esc(p.name)}</b> взял 50/50`);
+      } else if (m.k === "fr" && p.pw.fr > 0) {
+        const tp = H.players[m.target];
+        if (!tp || m.target === pid) return;
+        if (H.ans[m.target]) { note(pid, tp.name + " уже ответил — заморозка сохранена"); pubPlayer(pid); return; }
+        if (tp.frozen && tp.frozen.qi === H.qi) { note(pid, tp.name + " уже во льду"); pubPlayer(pid); return; }
+        p.pw.fr--;
+        if (tp.pw.sh > 0) {
+          tp.pw.sh--; note(m.target, p.name + " пытался вас заморозить — щит защитил!"); note(pid, tp.name + " защитился щитом");
+          addFeed("sh", `<b>${esc(tp.name)}</b> отбил щитом заморозку от <b>${esc(p.name)}</b>`);
+        } else {
+          tp.frozen = {id: rid(6), qi: H.qi, by: p.name}; note(pid, tp.name + " заморожен!");
+          addFeed("fr", `<b>${esc(p.name)}</b> заморозил <b>${esc(tp.name)}</b>`);
+        }
+        pubPlayer(m.target);
+      } else return;
+      save(); pubPlayer(pid); render();
+    }
+  }
+
+  function startQ() {
+    if (H.qi + 1 >= total) return finish();
+    H.qi++; H.phase = "question"; H.ans = {}; H.counts = [0, 0, 0, 0]; H.feed = [];
+    for (const id of pids()) { const p = H.players[id]; p.x2on = false; p.hide = null; p.frozen = null; }
+    H.qEnd = Date.now() + R().t * 1000;
+    save(); pubState(); pids().forEach(pubPlayer); render();
+  }
+  function reveal() {
+    if (H.phase !== "question") return;
+    const r = R(), T0 = r.t * 1000;
+    H.prevRank = {}; ranked().forEach((id, i) => H.prevRank[id] = i);
+    for (const id of pids()) {
+      const p = H.players[id], a = H.ans[id];
+      if (a && a.ok) {
+        let pts = Math.round(500 + 500 * Math.min(1, a.left / T0)) + Math.min(p.streak, 3) * 100;
+        if (p.x2on) pts *= 2;
+        p.streak++; p.score += pts; p.last = {qi: H.qi, ok: true, pts, a: a.a, v: a.v};
+        if (p.streak % 3 === 0) { p.pw.fr++; note(id, p.streak + " верных подряд! +1 заморозка"); }
+      } else { p.streak = 0; p.last = {qi: H.qi, ok: false, pts: 0, a: a ? a.a : null, v: a ? a.v : null}; }
+      p.x2on = false;
+    }
+    H.phase = "reveal"; save(); pubState(); pids().forEach(pubPlayer); render();
+  }
+  function board() { H.phase = "board"; save(); pubState(); render(); }
+  function finish() { H.phase = "final"; save(); pubState(); pids().forEach(pubPlayer); render(); }
+  function next() {
+    if (H.phase === "lobby") { if (pids().length) startQ(); }
+    else if (H.phase === "question") reveal();
+    else if (H.phase === "reveal") board();
+    else if (H.phase === "board") (H.qi + 1 >= total ? finish() : startQ());
+  }
+  function onTick() {
+    if (H.phase !== "question") return;
+    const left = H.qEnd - Date.now();
+    const t = $("#htime"), b = $("#hbar");
+    if (t) { const s = Math.max(0, Math.ceil(left / 1000)); t.textContent = s >= 60 ? Math.floor(s / 60) + ":" + String(s % 60).padStart(2, "0") : s; }
+    if (b) b.style.transform = `scaleX(${Math.max(0, left / (R().t * 1000))})`;
+    if (left <= 0) reveal();
+  }
+  document.addEventListener("keydown", e => { if (e.target.tagName === "INPUT" || e.target.tagName === "BUTTON") return; if (e.code === "Space" || e.code === "Enter" || e.code === "ArrowRight") { e.preventDefault(); next(); } });
+
+  function ctlBar(primary) {
+    return `<div class="hctl"><button class="btn ghost" id="reset">Новая игра</button>${primary ? `<button class="btn" id="next">${primary}</button>` : ""}</div>`;
+  }
+  function bind() {
+    const n = $("#next"); if (n) n.onclick = next;
+    const r = $("#reset"); if (r) r.onclick = () => {
+      if (r.dataset.c !== "1") { r.dataset.c = "1"; r.textContent = "Точно? Всё сотрётся"; setTimeout(() => { r.dataset.c = ""; r.textContent = "Новая игра"; }, 3000); return; }
+      pub("s", {v: 1, phase: "closed"}, true); H = fresh(); start();
+    };
+  }
+  function side(done, n) {
+    return `<div class="side"><div><div class="big">${done}<span class="mut" style="font-size:24px"> / ${n}</span></div><div class="mut" style="font-size:15px;margin-top:6px">ответили</div></div>
+      <div class="feed">${H.feed.map(e => `<div class="ev ${e.k}">${e.h}</div>`).join("") || `<div class="mut" style="font-size:14px">Заморозки, 50/50 и ×2 появятся здесь</div>`}</div></div>`;
+  }
+  function render() {
+    const head = `<div class="htop"><span class="tag">${TITLE}</span><span class="tag">${H.phase === "lobby" || H.phase === "final" ? "" : `${H.qi + 1} / ${total}`}</span></div>`;
+    if (H.phase === "lobby") {
+      const ps = pids();
+      app.innerHTML = `<div class="host">${head}<div class="hbody"><div class="lobby">
+        <div class="up">
+          <h1 class="disp">Подключайтесь с телефона</h1>
+          <p class="mut" style="font-size:20px;margin:0;max-width:560px">Откройте ссылку из чата Discord или введите код на сайте. Excel на телефоне не нужен — таблица будет прямо в игре.</p>
+          <div class="joinbox"><div class="lbl">Код игры</div><div class="code">${H.room}</div>
+            <div class="lbl" style="margin-top:16px">Ссылка</div><div class="url">${esc(joinUrl().replace(/^https?:\/\//, ""))}</div>
+            <div style="display:flex;gap:10px;margin-top:18px;flex-wrap:wrap"><button class="btn ghost" id="copy">Скопировать ссылку</button>
+            ${!connectedOnce ? `<button class="btn ghost" id="srv">Другой сервер (${H.b + 1}/${BROKERS.length})</button>` : ""}</div></div>
+        </div>
+        <div class="plbox"><div class="count">${ps.length} участников</div>
+          <div class="pl">${ps.map(id => `<button class="chip" data-k="${id}" title="Удалить из игры">${esc(H.players[id].name)}</button>`).join("") || `<span class="mut" style="font-size:18px">Ждём участников…</span>`}</div></div>
+        </div></div>${ctlBar(ps.length ? "Начать" : "")}</div>`;
+      $("#copy").onclick = () => { navigator.clipboard && navigator.clipboard.writeText(joinUrl()).then(() => toast("Скопировано — вставьте в чат Discord"), () => toast("Не удалось скопировать")); };
+      const srv = $("#srv"); if (srv) srv.onclick = () => { H.b = (H.b + 1) % BROKERS.length; start(); };
+      document.querySelectorAll(".chip[data-k]").forEach(b => b.onclick = () => {
+        const id = b.dataset.k; if (b.dataset.c !== "1") { b.dataset.c = "1"; b.textContent = "Удалить?"; setTimeout(render, 2500); return; }
+        H.players[id].kicked = true; pubPlayer(id); delete H.players[id]; save(); pubState(); render(); });
+    } else if (H.phase === "question" || H.phase === "reveal") {
+      const r = R(), rv = H.phase === "reveal", n = pids().length, done = Object.keys(H.ans).length;
+      const left = Math.max(0, H.qEnd - Date.now()), s = Math.ceil(left / 1000);
+      const timeTxt = rv ? "" : (s >= 60 ? Math.floor(s / 60) + ":" + String(s % 60).padStart(2, "0") : s);
+      const top = `<div class="qhead"><div style="flex:1">${r.k ? `<div class="kicker">${esc(r.k)}</div>` : ""}<h2 class="qtext">${esc(r.q)}</h2></div><div class="timer" id="htime">${timeTxt}</div></div>
+        <div class="bar"><i id="hbar" style="transform:scaleX(${rv ? 0 : left / (r.t * 1000)})"></i></div>`;
+      let body;
+      if (r.type === "mc") {
+        const max = Math.max(1, ...H.counts);
+        body = `<div class="hgrid"><div class="tiles">${r.a.map((a, i) => `<div class="tile t${i} ${rv ? (i === r.c ? "win" : "off") : ""}">${SHAPES[i]}<span>${esc(a)}</span>${rv ? `<span class="cnt">${H.counts[i]}</span><span class="fill" style="width:${H.counts[i] / max * 100}%"></span>` : ""}</div>`).join("")}</div>${side(done, n)}</div>`;
+      } else {
+        const right = r.type === "num"
+          ? (rv ? `<div class="answer up"><div class="mut" style="font-size:15px;font-weight:600">Правильный ответ</div><div class="val">${esc(r.show)}</div>
+               <div class="how">Данные → Анализ «что если» → Подбор параметра<br>Установить в ячейке <b>$${r.gs.set[0]}$${r.gs.set.slice(1)}</b> · Значение <b>${nf.format(r.gs.to)}</b> · Изменяя <b>$${r.gs.by[0]}$${r.gs.by.slice(1)}</b></div>
+               <div class="stat">${[["Верно", H.counts[0], "var(--ok)"], ["Неверно", H.counts[1], "var(--bad)"], ["Нет ответа", Math.max(0, n - done), "var(--mut)"]].map(x => `<div class="r"><span>${x[0]}</span><span class="tr"><i style="width:${n ? x[1] / n * 100 : 0}%;background:${x[2]}"></i></span><span>${x[1]}</span></div>`).join("")}</div></div>`
+               : side(done, n))
+          : `<div style="display:flex;flex-direction:column;gap:12px">${r.a.map((a, i) => `<div class="tile t${i} ${rv ? (i === r.c ? "win" : "off") : ""}" style="min-height:64px;padding:14px 18px">${SHAPES[i]}<span>${esc(a)}</span>${rv ? `<span class="cnt">${H.counts[i]}</span>` : ""}</div>`).join("")}
+             ${rv ? `<div class="mut" style="font-size:16px;margin-top:4px">${esc(r.show)}</div>` : `<div class="mut" style="font-size:15px">${done} / ${n} ответили</div>`}</div>`;
+        body = `<div class="hsheet"><div><div id="hs"></div>${r.note ? `<div class="note" style="margin-top:12px;font-size:16px">${esc(r.note)}</div>` : ""}</div>${right}</div>`;
+      }
+      app.innerHTML = `<div class="host">${head}<div class="hbody">${top}${body}</div>${ctlBar(rv ? "Результаты" : "Показать ответ")}</div>`;
+      if (r.sheet) {
+        let vals = {};
+        if (rv && r.gs) vals = {[r.gs.by]: r.ans};
+        if (rv && r.revealVals) vals = r.revealVals;
+        Sheet($("#hs"), r.sheet, {readonly: true, vals});
+      }
+    } else if (H.phase === "board") {
+      const rr = ranked().slice(0, 5);
+      app.innerHTML = `<div class="host">${head}<div class="hbody"><h2 class="h2">Лидеры</h2><div class="board">
+        ${rr.map((id, i) => { const p = H.players[id]; const up = H.qi > 0 && H.prevRank[id] != null && H.prevRank[id] > i;
+          return `<div class="row ${i === 0 ? "first" : ""}" style="animation-delay:${i * .07}s"><span class="n">${i + 1}</span><span>${esc(p.name)}${p.last && p.last.ok ? `<span class="d">+${p.last.pts}</span>` : ""}${up ? `<span class="d">▲</span>` : ""}</span><span class="sc">${p.score}</span></div>`; }).join("")}
+        </div></div>${ctlBar(H.qi + 1 >= total ? "Итоги" : "Следующее задание")}</div>`;
+    } else if (H.phase === "final") {
+      const rr = ranked(); const ord = [1, 0, 2], hs = [190, 260, 140];
+      app.innerHTML = `<div class="host">${head}<div class="hbody"><h2 class="h2">Победители</h2>
+        <div class="podium">${ord.map((k, j) => rr[k] ? `<div class="pod"><div class="nm" style="animation-delay:${.6 + j * .15}s">${esc(H.players[rr[k]].name)}</div><div class="blk ${k === 0 ? "pl1" : ""}" style="height:${hs[j]}px;animation-delay:${j * .15}s"><span class="place">${k + 1}</span><span class="pts">${H.players[rr[k]].score} очков</span></div></div>` : "").join("")}</div>
+        <div class="board">${rr.slice(3, 8).map((id, i) => `<div class="row" style="font-size:20px;padding:12px 20px"><span class="n">${i + 4}</span><span>${esc(H.players[id].name)}</span><span class="sc">${H.players[id].score}</span></div>`).join("")}</div>
+        </div>${ctlBar("")}</div>`;
+    }
+    bind();
+    if (document.activeElement && document.activeElement.blur) document.activeElement.blur();
+  }
+  start();
+}
+
+/* ===================== УЧАСТНИК ===================== */
+function Player() {
+  let room = (PARAMS.get("r") || store.get("room") || "").toUpperCase().replace(/[^A-Z0-9]/g, "").slice(0, 6);
+  const bi = +(PARAMS.get("b") || 0);
+  let pid = store.get("pid"); if (!pid) { pid = rid(14); store.set("pid", pid); }
+  let name = store.get("name") || "";
+  let joined = !!(name && room && store.get("joinedRoom") === room);
+  let client = null, S = null, P = null, lastScreen = "", myLock = null, raf = 0, deadline = 0, sheetW = null, sheetVals = {qi: -1, vals: {}};
+  const seen = {note: null, frozen: null, res: null};
+  let iceTimer = null;
+  const RR = () => S && S.qi >= 0 ? ROUNDS[S.qi] : null;
+
+  function send(o) { o.pid = pid; if (client && client.connected) { client.publish(T(room) + "i", JSON.stringify(o), {qos: 1}); return true; } return false; }
+  function go() {
+    client && client.end(true);
+    client = connect(bi, c => { c.subscribe([T(room) + "s", T(room) + "p/" + pid], {qos: 1}); if (joined) send({t: "join", name}); },
+      (topic, m) => { if (topic.endsWith("/s")) { S = m; if (S.phase === "question") deadline = performance.now() + (S.endsIn || 0); } else { P = m; onPlayerMsg(); } render(); });
+  }
+  function onPlayerMsg() {
+    if (P.kicked) { joined = false; store.del("joinedRoom"); return; }
+    if (P.name && P.name !== name) { name = P.name; store.set("name", name); }
+    if (P.note && P.note.id !== seen.note) { const first = seen.note === null && lastScreen === ""; seen.note = P.note.id; if (!first) toast(P.note.t); }
+    if (P.frozen && P.frozen.id !== seen.frozen && S && S.phase === "question" && P.frozen.qi === S.qi && !(myLock && myLock.qi === S.qi)) { seen.frozen = P.frozen.id; freeze(P.frozen.by); }
+  }
+
+  function freeze(by) {
+    unfreeze(true); closeSheet(); const g = $("#gsw"); if (g) g.remove(); vibrate([80, 40, 120]);
+    const ms = freezeMs(RR()), taps = freezeTaps(RR());
+    const d = document.createElement("div"); d.id = "ice";
+    const cracks = ["M50 50 L32 30 L20 34 L6 18", "M50 50 L70 26 L84 30 L96 10", "M50 50 L28 66 L14 64 L4 84", "M50 50 L68 72 L86 70 L96 92", "M50 50 L48 20 L54 4", "M50 50 L52 82 L44 98", "M50 50 L20 50 L2 46", "M50 50 L80 52 L98 56", "M32 30 L36 14", "M68 72 L60 90"];
+    d.innerHTML = `<svg class="frost" viewBox="0 0 100 100" preserveAspectRatio="none"><defs><radialGradient id="g" cx="50%" cy="50%" r="70%"><stop offset="55%" stop-color="#fff" stop-opacity="0"/><stop offset="100%" stop-color="#fff" stop-opacity=".85"/></radialGradient></defs><rect width="100" height="100" fill="url(#g)"/>
+      ${cracks.map((p, i) => `<path class="crack" data-i="${i}" d="${p}" vector-effect="non-scaling-stroke"/>`).join("")}</svg>
+      ${[[8, 12, 54], [78, 8, 40], [14, 72, 46], [80, 70, 60], [44, 88, 30], [60, 28, 26]].map(f => `<span class="flake" style="left:${f[0]}%;top:${f[1]}%;width:${f[2]}px;height:${f[2]}px">${ICON.fr}</span>`).join("")}
+      <div class="it1">Вы заморожены!</div><div class="it2">${esc(by)} заморозил вас</div><div class="taps" id="taps">${taps}</div><div class="it2">Стучите, чтобы разбить лёд</div>`;
+    document.body.appendChild(d);
+    let left = taps;
+    d.addEventListener("pointerdown", e => { e.preventDefault(); left--; vibrate(25); d.classList.remove("hit"); void d.offsetWidth; d.classList.add("hit");
+      const c = d.querySelector(`.crack[data-i="${taps - left - 1}"]`); if (c) c.style.opacity = 1;
+      const t = $("#taps"); if (t) t.textContent = Math.max(0, left); if (left <= 0) unfreeze(); });
+    iceTimer = setTimeout(unfreeze, ms);
+  }
+  function unfreeze(instant) { clearTimeout(iceTimer); const d = $("#ice"); if (!d) return; if (instant) { d.remove(); return; } d.classList.add("melt"); setTimeout(() => d.remove(), 480); }
+
+  function openSheet() {
+    if (!S || !S.roster) return;
+    const others = S.roster.filter(r => r[0] !== pid);
+    if (!others.length) { toast("Некого замораживать"); return; }
+    const d = document.createElement("div"); d.className = "sheet"; d.id = "sheet";
+    d.innerHTML = `<div class="in"><h3>Кого заморозить?</h3><div class="mut" style="font-size:14px">Его экран покроется льдом на ${freezeMs(RR()) / 1000} с. Если у него есть щит — он защитится.</div>
+      ${others.map((r, i) => `<button class="tg" data-t="${esc(r[0])}"><span>${esc(r[1])}</span><span class="mut">${i + 1} место</span></button>`).join("")}
+      <button class="btn ghost" id="cancel" style="width:100%;margin-top:14px">Отмена</button></div>`;
+    document.body.appendChild(d);
+    d.onclick = e => { if (e.target === d) closeSheet(); };
+    $("#cancel").onclick = closeSheet;
+    d.querySelectorAll(".tg").forEach(b => b.onclick = () => { send({t: "pw", k: "fr", target: b.dataset.t, qi: S.qi}); closeSheet(); });
+  }
+  function closeSheet() { const s = $("#sheet"); if (s) s.remove(); }
+
+  function screenKey() {
+    if (!joined) return "join";
+    if (!S || S.phase === "closed") return "wait0";
+    if (P && P.kicked) return "kicked";
+    if (S.phase === "lobby") return "lobby";
+    if (S.phase === "question") return (myLock && myLock.qi === S.qi) || (P && P.locked && P.locked.qi === S.qi) ? "locked" + S.qi : "q" + S.qi;
+    if (S.phase === "reveal") return "rv" + S.qi + (P && P.last ? P.last.qi : "");
+    return S.phase + S.qi;
+  }
+  const top = () => `<div class="pbar"><span class="me">${esc(name)}</span><span>${P ? P.score + " очк." : ""}${S && S.qi >= 0 && S.total ? ` · ${S.qi + 1}/${S.total}` : ""}</span></div>`;
+  function pwBlock(r) {
+    return `<div class="pw" style="${r.type === "num" ? "grid-template-columns:repeat(2,1fr)" : ""}">
+      <button class="pwb" id="pwfr">${ICON.fr}<span>Заморозка</span><span class="k" id="kfr"></span></button>
+      <button class="pwb" id="pwx2">${ICON.x2}<span>×2 очки</span><span class="k" id="kx2"></span></button>
+      ${r.type === "num" ? "" : `<button class="pwb" id="pwff">${ICON.ff}<span>50/50</span><span class="k" id="kff"></span></button>`}
+    </div><div class="shld" id="shld">${ICON.sh}<span></span></div>`;
+  }
+  function sendMc(a) {
+    if ($("#ice") || (myLock && myLock.qi === S.qi)) return;
+    if (!send({t: "ans", qi: S.qi, a})) { toast("Нет связи — нажмите ещё раз"); return; }
+    myLock = {qi: S.qi, a}; vibrate(30); render();
+  }
+  function render() {
+    const key = screenKey();
+    if (key.startsWith("q")) updatePw();
+    if (key === lastScreen) return;
+    const prev = lastScreen; lastScreen = key;
+    if (!key.startsWith("q")) { closeSheet(); const g = $("#gsw"); if (g) g.remove(); }
+    if (!(key.startsWith("q") || key.startsWith("locked"))) unfreeze(true);
+    cancelAnimationFrame(raf);
+
+    if (key === "join") {
+      app.innerHTML = `<div class="ply"><div class="pc up">
+        <h1>Практикум:<br>анализ «что если»</h1>
+        <p class="mut" style="margin:0 0 6px;font-size:16px">Напишите имя и фамилию — преподаватель увидит их на экране.</p>
+        <input class="field codef" id="room" placeholder="КОД" maxlength="6" value="${esc(room)}" autocomplete="off" ${PARAMS.get("r") ? "readonly" : ""}>
+        <input class="field" id="name" placeholder="Имя Фамилия" maxlength="18" value="${esc(name)}" autocomplete="off">
+        <button class="btn" id="go" style="height:58px;font-size:18px">Войти</button></div></div>`;
+      const go2 = () => {
+        const r = $("#room").value.toUpperCase().replace(/[^A-Z0-9]/g, ""), n = $("#name").value.replace(/\s+/g, " ").trim().slice(0, 18);
+        if (r.length < 4) return toast("Введите код игры");
+        if (!n) return toast("Напишите имя");
+        const changed = r !== room; room = r; name = n; joined = true;
+        store.set("room", room); store.set("name", name); store.set("joinedRoom", room);
+        lastScreen = ""; if (changed || !client) go(); else send({t: "join", name}); render();
+      };
+      $("#go").onclick = go2; $("#name").onkeydown = e => { if (e.key === "Enter") go2(); };
+      return;
+    }
+    if (key === "wait0" || key === "lobby" || key === "kicked") {
+      const kicked = key === "kicked";
+      app.innerHTML = `<div class="ply">${top()}<div class="pc"><div class="wait up">${kicked ? "" : `<div class="ring"></div>`}
+        <h1>${kicked ? "Вас удалили из игры" : key === "wait0" ? "Ищем игру…" : "Вы в игре!"}</h1>
+        <p class="mut" style="margin:0;font-size:17px">${kicked ? "Исправьте имя и войдите снова." : key === "wait0" ? "Код верный? " + esc(room) : "Ждём, пока преподаватель начнёт. Задания появятся здесь."}</p>
+        ${kicked || key === "wait0" ? `<button class="btn ghost" id="back">Изменить код или имя</button>` : ""}</div></div></div>`;
+      const b = $("#back"); if (b) b.onclick = () => { joined = false; store.del("joinedRoom"); if (kicked) { pid = rid(14); store.set("pid", pid); go(); } lastScreen = ""; render(); };
+      return;
+    }
+    if (key.startsWith("q")) {
+      const r = RR();
+      if (sheetVals.qi !== S.qi) sheetVals = {qi: S.qi, vals: {}};
+      let html = `<div class="ply"><div class="pw-wrap">${top()}<div class="ptimer"><i id="pt"></i></div>${r.k ? `<div class="pk">${esc(r.k)}</div>` : ""}<div class="pq up">${esc(r.q)}</div>`;
+      if (r.type === "mc") {
+        html += `<div class="answers">${r.a.map((a, i) => `<button class="ans t${i}" data-a="${i}">${SHAPES[i]}<span>${esc(a)}</span></button>`).join("")}</div>`;
+      } else {
+        html += `${r.note ? `<div class="note" style="margin-bottom:10px">${esc(r.note)}</div>` : ""}<div id="sh"></div>`;
+        if (r.type === "num") {
+          html += `<div class="tools"><button class="btn green" id="gsb">Подбор параметра…</button><button class="btn ghost" id="rst" style="flex:none">Сброс</button></div>
+            <div class="ansrow"><input class="field" id="av" inputmode="decimal" placeholder="Ваш ответ" autocomplete="off" enterkeyhint="send"><button class="btn" id="avs">Отправить</button></div>
+            <div class="unit">Единица — ${esc(r.unit)} · ответ можно отправить один раз</div>`;
+        } else {
+          html += `<div class="mut" style="font-size:13px;margin:8px 0 6px">Нажмите на число в столбце B, чтобы изменить его.</div><div class="answers">${r.a.map((a, i) => `<button class="ans t${i}" data-a="${i}" style="min-height:52px;padding:12px 14px">${SHAPES[i]}<span>${esc(a)}</span></button>`).join("")}</div>`;
+        }
+      }
+      html += pwBlock(r) + `</div></div>`;
+      app.innerHTML = html;
+      if (r.sheet) {
+        sheetW = Sheet($("#sh"), r.sheet, {vals: sheetVals.vals, onChange: v => { sheetVals.vals = v; }});
+        const gsb = $("#gsb"); if (gsb) gsb.onclick = () => GoalSeekDialog(r.sheet, () => sheetW.vals, (nv, by) => { sheetW.set(nv, by); sheetW.select(by); toast("Готово: смотрите ячейку " + by); });
+        const rst = $("#rst"); if (rst) rst.onclick = () => { sheetW.set({}); };
+        const avs = $("#avs");
+        if (avs) {
+          const submit = () => {
+            if ($("#ice") || (myLock && myLock.qi === S.qi)) return;
+            const v = $("#av").value.trim(); if (!isFinite(parseNum(v))) { toast("Введите число"); return; }
+            if (!send({t: "ans", qi: S.qi, v})) { toast("Нет связи — нажмите ещё раз"); return; }
+            myLock = {qi: S.qi, v}; vibrate(30); render();
+          };
+          avs.onclick = submit; $("#av").onkeydown = e => { if (e.key === "Enter") { e.preventDefault(); submit(); } };
+        }
+      }
+      document.querySelectorAll(".ans").forEach(b => b.onclick = () => sendMc(+b.dataset.a));
+      $("#pwfr").onclick = openSheet;
+      $("#pwx2").onclick = () => send({t: "pw", k: "x2", qi: S.qi});
+      const ff = $("#pwff"); if (ff) ff.onclick = () => send({t: "pw", k: "ff", qi: S.qi});
+      updatePw();
+      const loop = () => { const el = $("#pt"); if (!el) return; el.style.transform = `scaleX(${Math.max(0, Math.min(1, (deadline - performance.now()) / (r.t * 1000)))})`; raf = requestAnimationFrame(loop); };
+      loop();
+      if (P && P.frozen && P.frozen.qi === S.qi && P.frozen.id !== seen.frozen) { seen.frozen = P.frozen.id; freeze(P.frozen.by); }
+      return;
+    }
+    if (key.startsWith("locked")) {
+      const lk = (myLock && myLock.qi === S.qi) ? myLock : P.locked;
+      const r = RR();
+      const badge = r.type === "num" ? `<div class="big disp" style="font-size:44px">${esc(lk.v)}</div>` : `<div class="ans t${lk.a}" style="width:96px;height:96px;justify-content:center;border-radius:20px;min-height:0">${SHAPES[lk.a].replace('class="shape"', 'class="shape" style="width:44px;height:44px"')}</div>`;
+      app.innerHTML = `<div class="ply">${top()}<div class="pc"><div class="wait up">${badge}<h1>Ответ принят</h1><p class="mut" style="margin:0;font-size:17px">Ждём остальных…</p></div></div></div>`;
+      return;
+    }
+    if (key.startsWith("rv")) {
+      const r = RR(), L = P && P.last && P.last.qi === S.qi ? P.last : null;
+      const ok = L && L.ok, none = !L || (L.a == null && L.v == null);
+      const right = r.type === "mc" ? r.a[r.c] : r.type === "sheetmc" ? r.a[r.c] : r.show;
+      app.innerHTML = `<div class="ply">${top()}<div class="res ${ok ? "good" : none ? "none" : "bad"} up">
+        <div class="big disp">${ok ? "Верно!" : none ? "Время вышло" : "Неверно"}</div>
+        ${ok ? `<div class="pts">+${L.pts}</div>` : ""}
+        ${ok && P.streak > 1 ? `<div class="rk">${P.streak} подряд</div>` : ""}
+        ${!ok && L && L.v != null ? `<div class="rk">Ваш ответ: ${esc(L.v)}</div>` : ""}
+        ${!ok ? `<div class="rk">Правильно: ${esc(right)}</div>` : ""}
+        ${P ? `<div class="rk">${P.rank} место из ${P.of}</div>` : ""}</div></div>`;
+      if (seen.res !== S.qi) { seen.res = S.qi; if (ok) { confetti(); vibrate(60); } else if (!none) vibrate([60, 60, 60]); }
+      return;
+    }
+    if (S.phase === "board" || S.phase === "final") {
+      const fin = S.phase === "final";
+      app.innerHTML = `<div class="ply">${top()}<div class="pc"><div class="wait up">
+        <div class="big disp" style="font-size:88px">${P ? P.rank : "–"}</div><div class="mut" style="font-size:17px;margin-top:-6px">${P ? `место из ${P.of}` : ""}</div>
+        <h1 style="font-size:28px">${fin ? "Игра окончена" : "Смотрите на экран"}</h1>
+        <p class="mut" style="margin:0;font-size:17px">${P ? P.score + " очков" : ""}${fin ? " · Спасибо!" : ""}</p></div></div></div>`;
+      if (fin && P && P.rank <= 3 && prev !== key) confetti();
+    }
+  }
+  function updatePw() {
+    if (!P || !S) return;
+    const pw = P.pw || {fr: 0, x2: 0, ff: 0, sh: 0};
+    const hid = P.hide && P.hide.qi === S.qi ? P.hide.idx : [];
+    document.querySelectorAll(".ans").forEach(b => b.classList.toggle("gone", hid.includes(+b.dataset.a)));
+    const set = (id, n, on) => { const b = $("#pw" + id), k = $("#k" + id); if (!b) return; k.textContent = n > 0 ? "×" + n : ""; b.disabled = !(n > 0) || on; b.classList.toggle("on", !!on); if (on) b.style.opacity = 1; };
+    set("fr", pw.fr, false); set("x2", pw.x2, P.x2on === S.qi); set("ff", pw.ff, hid.length > 0);
+    const sh = $("#shld"); if (sh) sh.querySelector("span").textContent = pw.sh > 0 ? "Щит активен: защитит от одной заморозки" : "Щита нет";
+  }
+  if (room) go();
+  render();
+}
+
+if (typeof mqtt === "undefined") app.innerHTML = '<div class="ply"><div class="pc"><h1>Не загрузилось</h1><p class="mut">Обновите страницу.</p></div></div>';
+else if (IS_HOST) Host(); else Player();
+</script>
+</body>
+</html>

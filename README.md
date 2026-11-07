@@ -4,3 +4,7 @@
 
 - Мұғалім: `https://zharasik.github.io/quiz_1/?host`
 - Студенттер: мұғалім экранындағы сілтеме немесе код арқылы кіреді.
+
+## Анализ «что если» в MS Excel (практикум)
+
+- Преподаватель: `https://zharasik.github.io/quiz_1/excel/?host`
