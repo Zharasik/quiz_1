@@ -204,6 +204,22 @@ input{font:inherit}
 canvas#cf{position:fixed;inset:0;width:100%;height:100%;pointer-events:none;z-index:45}
 @media (max-width:900px){.lobby,.hgrid,.hsheet{grid-template-columns:1fr}.host{padding:20px}}
 @media (min-width:600px){.answers{grid-template-columns:1fr 1fr}.ans{min-height:96px}}
+
+.xl .fb .ok,.xl .fb .no{width:38px;flex:none;display:flex;align-items:center;justify-content:center;font-size:20px;font-weight:700;border-right:1px solid #E6E6E6}
+.xl .fb .ok{color:var(--xl)}.xl .fb .no{color:#C42B1C}
+.xl .fc input{font-size:16px}
+.kb{display:flex;gap:6px;overflow-x:auto;padding:8px;background:#F3F3F3;border-bottom:1px solid #D4D4D4;scrollbar-width:none}
+.kb::-webkit-scrollbar{display:none}
+.kb button{flex:none;min-width:40px;height:38px;padding:0 10px;border-radius:6px;background:#fff;border:1px solid #D0D0D0;font-family:Consolas,"SF Mono",Menlo,monospace;font-size:16px;font-weight:600;color:#1F1F1F}
+.kb button.r{color:var(--xl);border-color:#9FCFB2}
+.xl td.v.ed{background:#FFFDF2}
+.xl td.v.ed:empty::after,.xl td.v.blank::after{content:"…";color:#B8B8B8;font-weight:400}
+.xl td.v.err{color:#C42B1C}
+.xl td.v.ref{background:#E8F4EC}
+.mode{display:flex;gap:10px;margin-top:18px;flex-wrap:wrap}
+.mode button{height:48px;padding:0 20px;border-radius:12px;background:var(--s2);border:1px solid var(--line);font-weight:700;font-size:16px;color:var(--mut)}
+.mode button.on{background:var(--tx);color:var(--bg);border-color:var(--tx)}
+.howf{font-family:Consolas,"SF Mono",Menlo,monospace;color:var(--tx);background:var(--s2);padding:2px 8px;border-radius:6px}
 </style>
 </head>
 <body>
@@ -213,62 +229,189 @@ canvas#cf{position:fixed;inset:0;width:100%;height:100%;pointer-events:none;z-in
 <script src="../mqtt.min.js"></script>
 <script>
 "use strict";
+/* ===================== МИНИ-EXCEL: формулы ===================== */
+const LAT = {"А":"A","В":"B","С":"C","Е":"E","Н":"H","К":"K","М":"M","О":"O","Р":"P","Т":"T","Х":"X","а":"A","в":"B","с":"C","е":"E","н":"H","к":"K","м":"M","о":"O","р":"P","т":"T","х":"X"};
+const FN_ALIAS = {"СУММ":"SUM","SUM":"SUM","ПЛТ":"PMT","PMT":"PMT","ОКРУГЛ":"ROUND","ROUND":"ROUND","МАКС":"MAX","MAX":"MAX","МИН":"MIN","MIN":"MIN","СРЗНАЧ":"AVERAGE","AVERAGE":"AVERAGE","ABS":"ABS"};
+class XErr { constructor(code) { this.code = code; } }
+function tokenize(s) {
+  const out = []; let i = 0;
+  while (i < s.length) {
+    const ch = s[i];
+    if (/\s/.test(ch)) { i++; continue; }
+    if (/[0-9]/.test(ch) || (ch === "." && /[0-9]/.test(s[i + 1] || ""))) {
+      let j = i; while (j < s.length && /[0-9]/.test(s[j])) j++;
+      if ((s[j] === "," || s[j] === ".") && /[0-9]/.test(s[j + 1] || "")) { j++; while (j < s.length && /[0-9]/.test(s[j])) j++; }
+      out.push({t: "num", v: parseFloat(s.slice(i, j).replace(",", "."))}); i = j; continue;
+    }
+    if (/[A-Za-zА-Яа-яЁё_$]/.test(ch)) {
+      let j = i; while (j < s.length && /[A-Za-zА-Яа-яЁё_$]/.test(s[j])) j++;
+      let k = j; while (k < s.length && /[0-9$]/.test(s[k])) k++;
+      const word = s.slice(i, j).replace(/\$/g, ""), digits = s.slice(j, k).replace(/\$/g, "");
+      if (digits && word.length <= 2) {
+        const col = word.split("").map(c => LAT[c] || c.toUpperCase()).join("");
+        if (/^[A-Z]{1,2}$/.test(col)) { out.push({t: "ref", v: col + digits}); i = k; continue; }
+      }
+      if (!digits) { out.push({t: "fn", v: word.toUpperCase()}); i = j; continue; }
+      throw new XErr("#ИМЯ?");
+    }
+    if ("+-*/^%()".includes(ch)) { out.push({t: ch}); i++; continue; }
+    if (ch === "×") { out.push({t: "*"}); i++; continue; }
+    if (ch === "÷") { out.push({t: "/"}); i++; continue; }
+    if (ch === "−") { out.push({t: "-"}); i++; continue; }
+    if (ch === ";" || ch === ",") { out.push({t: ";"}); i++; continue; }
+    throw new XErr("#ИМЯ?");
+  }
+  return out;
+}
+function parseFormula(src) {
+  const toks = tokenize(src); let p = 0;
+  const peek = () => toks[p], eat = t => { if (!toks[p] || toks[p].t !== t) throw new XErr("#ОШИБКА"); return toks[p++]; };
+  function add() { let n = mul(); while (peek() && (peek().t === "+" || peek().t === "-")) { const op = toks[p++].t; n = {op, a: n, b: mul()}; } return n; }
+  function mul() { let n = pow(); while (peek() && (peek().t === "*" || peek().t === "/")) { const op = toks[p++].t; n = {op, a: n, b: pow()}; } return n; }
+  function pow() { let n = unary(); while (peek() && peek().t === "^") { p++; n = {op: "^", a: n, b: unary()}; } return n; }
+  function unary() { if (peek() && (peek().t === "-" || peek().t === "+")) { const op = toks[p++].t; const a = unary(); return op === "-" ? {op: "neg", a} : a; } return postfix(); }
+  function postfix() { let n = primary(); while (peek() && peek().t === "%") { p++; n = {op: "pct", a: n}; } return n; }
+  function primary() {
+    const t = peek(); if (!t) throw new XErr("#ОШИБКА");
+    if (t.t === "num") { p++; return {num: t.v}; }
+    if (t.t === "ref") { p++; return {ref: t.v}; }
+    if (t.t === "(") { p++; const n = add(); eat(")"); return n; }
+    if (t.t === "fn") {
+      p++; const name = FN_ALIAS[t.v]; if (!name) throw new XErr("#ИМЯ?");
+      eat("("); const args = [];
+      if (peek() && peek().t !== ")") { args.push(add()); while (peek() && peek().t === ";") { p++; args.push(add()); } }
+      eat(")"); return {fn: name, args};
+    }
+    throw new XErr("#ОШИБКА");
+  }
+  const n = add(); if (p !== toks.length) throw new XErr("#ОШИБКА");
+  return n;
+}
+function evalNode(n, get) {
+  if ("num" in n) return n.num;
+  if (n.ref) return get(n.ref);
+  if (n.fn) {
+    const a = n.args.map(x => evalNode(x, get));
+    switch (n.fn) {
+      case "SUM": return a.reduce((s, x) => s + x, 0);
+      case "MAX": return a.length ? Math.max(...a) : 0;
+      case "MIN": return a.length ? Math.min(...a) : 0;
+      case "AVERAGE": if (!a.length) throw new XErr("#ДЕЛ/0!"); return a.reduce((s, x) => s + x, 0) / a.length;
+      case "ABS": return Math.abs(a[0]);
+      case "ROUND": { const d = a[1] || 0, m = Math.pow(10, d); return Math.round(a[0] * m) / m; }
+      case "PMT": { const [r, nper, pv, fv = 0] = a; if (!nper) throw new XErr("#ЧИСЛО!"); return r === 0 ? -(pv + fv) / nper : -(pv * Math.pow(1 + r, nper) + fv) * r / (Math.pow(1 + r, nper) - 1); }
+    }
+  }
+  const A = () => evalNode(n.a, get), B = () => evalNode(n.b, get);
+  switch (n.op) {
+    case "+": return A() + B();
+    case "-": return A() - B();
+    case "*": return A() * B();
+    case "/": { const b = B(); if (b === 0) throw new XErr("#ДЕЛ/0!"); return A() / b; }
+    case "^": return Math.pow(A(), B());
+    case "neg": return -A();
+    case "pct": return A() / 100;
+  }
+  throw new XErr("#ОШИБКА");
+}
+const parsedCache = new Map();
+function parsed(src) { if (!parsedCache.has(src)) { try { parsedCache.set(src, parseFormula(src)); } catch (e) { parsedCache.set(src, e instanceof XErr ? e : new XErr("#ОШИБКА")); } } return parsedCache.get(src); }
+/* content: "" | "123.5" | "=формула" ; returns {r: number | "#ERR"} */
+function evalSheet(sheet, over) {
+  const content = {}; sheet.cells.forEach(c => content[c.r] = (over && c.r in over) ? over[c.r] : (c.c || ""));
+  const memo = {}, visiting = new Set();
+  function get(r) {
+    if (!(r in content)) return 0;
+    if (r in memo) { if (typeof memo[r] === "string") throw new XErr(memo[r]); return memo[r]; }
+    if (visiting.has(r)) throw new XErr("#ЦИКЛ!");
+    visiting.add(r);
+    let v; const s = String(content[r]).trim();
+    try {
+      if (s === "") v = 0;
+      else if (s[0] === "=") { const ast = parsed(s.slice(1)); if (ast instanceof XErr) throw ast; v = evalNode(ast, get); if (!isFinite(v)) throw new XErr("#ЧИСЛО!"); }
+      else { v = parseFloat(s.replace(",", ".")); if (!isFinite(v)) throw new XErr("#ЗНАЧ!"); }
+    } catch (e) { visiting.delete(r); memo[r] = e instanceof XErr ? e.code : "#ОШИБКА"; throw new XErr(memo[r]); }
+    visiting.delete(r); memo[r] = v; return v;
+  }
+  const out = {};
+  for (const c of sheet.cells) { try { out[c.r] = get(c.r); } catch (e) { out[c.r] = e instanceof XErr ? e.code : "#ОШИБКА"; } }
+  out.__content = content;
+  return out;
+}
+function isFormula(s) { return typeof s === "string" && s.trim()[0] === "="; }
+function normFormula(s) {
+  /* приводит ссылки к латинице и верхнему регистру, сохраняя остальное */
+  return "=" + s.trim().slice(1).replace(/([A-Za-zА-Яа-яЁё$]{1,3})(\$?\d+)/g, (m, w, d) => {
+    const col = w.replace(/\$/g, "").split("").map(c => LAT[c] || c.toUpperCase()).join("");
+    return /^[A-Z]{1,2}$/.test(col) ? col + d.replace(/\$/g, "") : m;
+  }).replace(/([A-Za-zА-Яа-яЁё]+)\(/g, m => m.toUpperCase());
+}
+
+
 /* ===================== ДАННЫЕ ===================== */
-const MODEL_PROFIT = (price, qty) => ({cells: [
-  {r: "B1", l: "Цена за единицу, тг", v: price},
-  {r: "B2", l: "Переменные затраты на ед., тг", v: 1500},
-  {r: "B3", l: "Постоянные затраты, тг", v: 600000},
-  {r: "B4", l: "Объём продаж, ед.", v: qty},
-  {r: "B5", l: "Прибыль, тг", f: "B4*(B1-B2)-B3", x: "=B4*(B1-B2)-B3"}
-]});
-const ROUNDS = [
-  {type: "mc", t: 20, q: "Где в Excel находится «Подбор параметра»?", a: ["Главная → Условное форматирование", "Данные → Анализ «что если»", "Формулы → Вставить функцию", "Вставка → Сводная таблица"], c: 1},
-  {type: "num", t: 150, k: "Задача 1 · Точка безубыточности", q: "Сколько единиц нужно продать, чтобы прибыль стала равна 0?", sheet: MODEL_PROFIT(2500, 400), gs: {set: "B5", to: 0, by: "B4"}, ans: 600, tol: 1, unit: "ед.", show: "600 ед."},
-  {type: "mc", t: 20, q: "Что указывают в поле «Установить в ячейке»?", a: ["Любое число", "Ячейку с формулой", "Пустую ячейку", "Название листа"], c: 1},
-  {type: "num", t: 150, k: "Задача 2 · Цена", q: "Какой должна быть цена, чтобы при продаже 800 ед. прибыль была 400 000 тг?", sheet: MODEL_PROFIT(2500, 800), gs: {set: "B5", to: 400000, by: "B1"}, ans: 2750, tol: 1, unit: "тг", show: "2 750 тг"},
-  {type: "mc", t: 20, q: "Что указывают в поле «Изменяя значение ячейки»?", a: ["Ячейку с формулой", "Ячейку с текстом", "Ячейку с числом, от которого зависит формула", "Ячейку на другом листе"], c: 2},
-  {type: "sheetmc", t: 90, k: "Задача 3 · Что если: цена и спрос", q: "Меняйте цену в B1 и смотрите на прибыль B5. При какой цене прибыль максимальна?",
-   sheet: {cells: [
-     {r: "B1", l: "Цена за единицу, тг", v: 2500},
-     {r: "B2", l: "Спрос, ед.", f: "2000-0.4*B1", x: "=2000-0,4*B1"},
-     {r: "B3", l: "Переменные затраты на ед., тг", v: 1500},
-     {r: "B4", l: "Постоянные затраты, тг", v: 600000},
-     {r: "B5", l: "Прибыль, тг", f: "B2*(B1-B3)-B4", x: "=B2*(B1-B3)-B4"}]},
-   a: ["2 500 тг", "3 000 тг", "3 250 тг", "4 000 тг"], c: 2, revealVals: {B1: 3250}, show: "3 250 тг → прибыль 625 000 тг"},
-  {type: "num", t: 120, k: "Задача 4 · Зарплата «на руки»", q: "Сколько нужно начислить, чтобы сотрудник получил на руки 300 000 тг?",
-   sheet: {cells: [
-     {r: "B1", l: "Начислено, тг", v: 250000},
-     {r: "B2", l: "Удержания (условно)", v: 0.2, fmt: "pct"},
-     {r: "B3", l: "К выдаче на руки, тг", f: "B1*(1-B2)", x: "=B1*(1-B2)"}]},
-   gs: {set: "B3", to: 300000, by: "B1"}, ans: 375000, tol: 1, unit: "тг", show: "375 000 тг"},
-  {type: "mc", t: 20, q: "Какой инструмент сразу показывает результат формулы для многих значений одной переменной?", a: ["Подбор параметра", "Таблица данных", "Сортировка", "Фильтр"], c: 1},
-  {type: "sheetmc", t: 75, k: "Задача 5 · Сценарии", q: "Подставьте в B1 и B4 значения каждого сценария. В каком сценарии компания получит убыток?",
-   note: "Пессимистичный: цена 2 400, объём 500 · Базовый: цена 2 500, объём 800 · Оптимистичный: цена 2 700, объём 1 000",
-   sheet: MODEL_PROFIT(2500, 800), revealVals: {B1: 2400, B4: 500}, a: ["Пессимистичный", "Базовый", "Оптимистичный", "Ни в одном"], c: 0, show: "Пессимистичный: −150 000 тг"},
-  {type: "mc", t: 20, q: "Какой инструмент хранит наборы значений «пессимистичный / базовый / оптимистичный»?", a: ["Диспетчер сценариев", "Подбор параметра", "Проверка данных", "Автосумма"], c: 0},
-  {type: "num", t: 180, k: "Задача 6 · Кредит", q: "Какую сумму кредита можно взять, если платить не больше 150 000 тг в месяц?",
-   sheet: {cells: [
-     {r: "B1", l: "Ставка, годовых", v: 0.18, fmt: "pct"},
-     {r: "B2", l: "Срок, мес.", v: 24},
-     {r: "B3", l: "Сумма кредита, тг", v: 2000000},
-     {r: "B4", l: "Платёж в месяц, тг", f: "PMT(B1/12,B2,-B3)", x: "=ПЛТ(B1/12;B2;-B3)"}]},
-   gs: {set: "B4", to: 150000, by: "B3"}, ans: 3004560.8, tol: 3000, unit: "тг", show: "≈ 3 004 561 тг"},
-  {type: "mc", t: 20, q: "Нужно изменить несколько ячеек сразу и учесть ограничения. Что использовать?", a: ["Подбор параметра", "Поиск решения", "Таблицу данных", "Мгновенное заполнение"], c: 1},
-  {type: "num", t: 150, k: "Задача 7 · Депозит", q: "Под какой годовой процент нужно положить 1 000 000 тг на 3 года, чтобы получить 1 500 000 тг?",
-   sheet: {cells: [
-     {r: "B1", l: "Сумма вклада, тг", v: 1000000},
-     {r: "B2", l: "Ставка, годовых", v: 0.1, fmt: "pct"},
-     {r: "B3", l: "Срок, лет", v: 3},
-     {r: "B4", l: "Сумма в конце срока, тг", f: "B1*Math.pow(1+B2,B3)", x: "=B1*(1+B2)^B3"}]},
-   gs: {set: "B4", to: 1500000, by: "B2"}, ans: 0.14471, tol: 0.0006, unit: "% (например 12,5)", pct: true, show: "≈ 14,47%"}
+const PROFIT = (price, qty) => [
+  {r: "B1", l: "Цена за единицу, тг", c: String(price)},
+  {r: "B2", l: "Переменные затраты на ед., тг", c: "1500"},
+  {r: "B3", l: "Постоянные затраты, тг", c: "600000"},
+  {r: "B4", l: "Объём продаж, ед.", c: String(qty)},
+  {r: "B5", l: "Прибыль, тг", c: "=B4*(B1-B2)-B3", lock: true}
 ];
-const NS = "xlq1";
+const QUIZ = [
+  {type: "mc", t: 18, q: "Где в Excel находится «Подбор параметра»?", a: ["Главная → Условное форматирование", "Данные → Анализ «что если»", "Формулы → Вставить функцию", "Вставка → Сводная таблица"], c: 1},
+  {type: "mc", t: 15, q: "С какого знака начинается формула в Excel?", a: ["#", "=", "@", "&"], c: 1},
+  {type: "mc", t: 18, q: "Что указывают в поле «Установить в ячейке»?", a: ["Любое число", "Ячейку с формулой", "Пустую ячейку", "Название листа"], c: 1},
+  {type: "mc", t: 18, q: "Что указывают в поле «Изменяя значение ячейки»?", a: ["Ячейку с формулой", "Ячейку с текстом", "Ячейку с числом, от которого зависит формула", "Ячейку на другом листе"], c: 2},
+  {type: "mc", t: 18, q: "В B5 формула =B4*(B1-B2)-B3. Прибыль должна стать 0. Что указать в «Установить в ячейке»?", a: ["B4", "B1", "B5", "B3"], c: 2},
+  {type: "mc", t: 15, q: "Сколько ячеек меняет «Подбор параметра» за один раз?", a: ["Одну", "Две", "Все на листе", "Сколько угодно"], c: 0},
+  {type: "mc", t: 18, q: "Что будет, если в окне результата подбора нажать «Отмена»?", a: ["Excel повторит подбор", "Формула удалится", "Значение вернётся к исходному", "Файл закроется"], c: 2},
+  {type: "mc", t: 18, q: "Какой инструмент сразу показывает результат для многих значений одной переменной?", a: ["Подбор параметра", "Таблица данных", "Сортировка", "Фильтр"], c: 1},
+  {type: "mc", t: 18, q: "Какой инструмент хранит наборы «пессимистичный / базовый / оптимистичный»?", a: ["Диспетчер сценариев", "Подбор параметра", "Проверка данных", "Автосумма"], c: 0},
+  {type: "mc", t: 18, q: "Нужно изменить несколько ячеек сразу с ограничениями. Что использовать?", a: ["Подбор параметра", "Поиск решения", "Таблицу данных", "Мгновенное заполнение"], c: 1}
+];
+const PRACTICE = [
+  {type: "build", t: 120, k: "Задание 1 · Выручка", q: "Продано 1 200 ед. по цене 1 850 тг. Заполните B1 и B2, в B3 напишите формулу выручки. Сколько выручка?",
+   cells: [{r: "B1", l: "Продано, ед."}, {r: "B2", l: "Цена, тг"}, {r: "B3", l: "Выручка, тг"}],
+   sol: {B1: "1200", B2: "1850", B3: "=B1*B2"}, ans: 2220000, tol: 1, unit: "тг", show: "2 220 000 тг", how: ["B3", "=B1*B2"]},
+  {type: "num", t: 150, k: "Задание 2 · Точка безубыточности", q: "Сколько единиц нужно продать, чтобы прибыль стала равна 0?", cells: PROFIT(2500, 400),
+   gs: {set: "B5", to: 0, by: "B4"}, ans: 600, tol: 1, unit: "ед.", show: "600 ед."},
+  {type: "build", t: 120, k: "Задание 3 · Прибыль", q: "Выручка 2 220 000 тг, себестоимость 1 480 000 тг, расходы периода 350 000 тг. Заполните таблицу и посчитайте прибыль формулой.",
+   cells: [{r: "B1", l: "Выручка, тг"}, {r: "B2", l: "Себестоимость, тг"}, {r: "B3", l: "Расходы периода, тг"}, {r: "B4", l: "Прибыль, тг"}],
+   sol: {B1: "2220000", B2: "1480000", B3: "350000", B4: "=B1-B2-B3"}, ans: 390000, tol: 1, unit: "тг", show: "390 000 тг", how: ["B4", "=B1-B2-B3"]},
+  {type: "num", t: 120, k: "Задание 4 · Цена", q: "Какой должна быть цена, чтобы при продаже 800 ед. прибыль была 400 000 тг?", cells: PROFIT(2500, 800),
+   gs: {set: "B5", to: 400000, by: "B1"}, ans: 2750, tol: 1, unit: "тг", show: "2 750 тг"},
+  {type: "build", t: 120, k: "Задание 5 · Амортизация", q: "Станок стоит 1 800 000 тг, ликвидационная стоимость 200 000 тг, срок службы 5 лет. Линейный способ: (стоимость − ликвидационная) / срок. Сколько амортизация в год?",
+   cells: [{r: "B1", l: "Первоначальная стоимость, тг"}, {r: "B2", l: "Ликвидационная стоимость, тг"}, {r: "B3", l: "Срок службы, лет"}, {r: "B4", l: "Амортизация в год, тг"}],
+   sol: {B1: "1800000", B2: "200000", B3: "5", B4: "=(B1-B2)/B3"}, ans: 320000, tol: 1, unit: "тг", show: "320 000 тг", how: ["B4", "=(B1-B2)/B3"]},
+  {type: "sheetmc", t: 90, k: "Задание 6 · Что если: цена и спрос", q: "Меняйте цену в B1 и смотрите на прибыль B5. При какой цене прибыль максимальна?",
+   cells: [{r: "B1", l: "Цена за единицу, тг", c: "2500"}, {r: "B2", l: "Спрос, ед.", c: "=2000-0,4*B1", lock: true}, {r: "B3", l: "Переменные затраты на ед., тг", c: "1500"}, {r: "B4", l: "Постоянные затраты, тг", c: "600000"}, {r: "B5", l: "Прибыль, тг", c: "=B2*(B1-B3)-B4", lock: true}],
+   a: ["2 500 тг", "3 000 тг", "3 250 тг", "4 000 тг"], c: 2, sol: {B1: "3250"}, show: "3 250 тг → прибыль 625 000 тг"},
+  {type: "num", t: 120, k: "Задание 7 · Зарплата «на руки»", q: "Сколько нужно начислить, чтобы сотрудник получил на руки 300 000 тг?",
+   cells: [{r: "B1", l: "Начислено, тг", c: "250000"}, {r: "B2", l: "Удержания (условно)", c: "0.2", fmt: "pct"}, {r: "B3", l: "К выдаче на руки, тг", c: "=B1*(1-B2)", lock: true}],
+   gs: {set: "B3", to: 300000, by: "B1"}, ans: 375000, tol: 1, unit: "тг", show: "375 000 тг"},
+  {type: "build", t: 120, k: "Задание 8 · Счёт со скидкой", q: "Покупатель берёт 25 шт. по 4 400 тг, скидка 5%. Заполните таблицу и посчитайте сумму к оплате формулой.",
+   cells: [{r: "B1", l: "Количество, шт."}, {r: "B2", l: "Цена, тг"}, {r: "B3", l: "Скидка", fmt: "pct"}, {r: "B4", l: "К оплате, тг"}],
+   sol: {B1: "25", B2: "4400", B3: "0.05", B4: "=B1*B2*(1-B3)"}, ans: 104500, tol: 1, unit: "тг", show: "104 500 тг", how: ["B4", "=B1*B2*(1-B3)"]},
+  {type: "num", t: 150, k: "Задание 9 · Кредит", q: "Какую сумму кредита можно взять, если платить не больше 150 000 тг в месяц?",
+   cells: [{r: "B1", l: "Ставка, годовых", c: "0.18", fmt: "pct"}, {r: "B2", l: "Срок, мес.", c: "24"}, {r: "B3", l: "Сумма кредита, тг", c: "2000000"}, {r: "B4", l: "Платёж в месяц, тг", c: "=ПЛТ(B1/12;B2;-B3)", lock: true}],
+   gs: {set: "B4", to: 150000, by: "B3"}, ans: 3004560.8, tol: 3000, unit: "тг", show: "≈ 3 004 561 тг"},
+  {type: "build", t: 180, gsTool: true, k: "Задание 10 · ФОТ + подбор", q: "В отделе 12 сотрудников, средний оклад 280 000 тг. Заполните таблицу, в B3 — формула ФОТ. Затем подбором найдите оклад, при котором ФОТ = 3 600 000 тг.",
+   cells: [{r: "B1", l: "Сотрудников"}, {r: "B2", l: "Средний оклад, тг"}, {r: "B3", l: "Фонд оплаты труда, тг"}],
+   sol: {B1: "12", B2: "300000", B3: "=B1*B2"}, gs: {set: "B3", to: 3600000, by: "B2"}, ans: 300000, tol: 1, unit: "тг", show: "300 000 тг", how: ["B3", "=B1*B2"]}
+];
+const SETS = {
+  quiz: {name: "Квиз · 5 минут", short: "Квиз", rounds: QUIZ, quick: true},
+  practice: {name: "Практикум · 10 заданий", short: "Практикум", rounds: PRACTICE, quick: false}
+};
+const NS = "xlq2";
 const TITLE = "СРСП · Анализ «что если» в MS Excel";
 const BROKERS = ["wss://broker.emqx.io:8084/mqtt", "wss://broker.hivemq.com:8884/mqtt", "wss://test.mosquitto.org:8081"];
 const PARAMS = new URLSearchParams(location.search);
 const IS_HOST = PARAMS.has("host");
 const freezeMs = r => r && r.type === "mc" ? 4500 : 12000;
 const freezeTaps = r => r && r.type === "mc" ? 6 : 10;
+const hasSheet = r => r && r.type !== "mc";
+const gsAllowed = r => r && (r.type === "num" || r.gsTool);
+const isNumeric = r => r && (r.type === "num" || r.type === "build");
 
 /* ===================== УТИЛИТЫ ===================== */
 const $ = s => document.querySelector(s);
@@ -317,20 +460,10 @@ function connect(bi, onConnect, onMsg) {
   return c;
 }
 const T = room => NS + "/" + room + "/";
-
-/* ===================== МИНИ-EXCEL ===================== */
-function PMT(r, n, pv) { return r === 0 ? -pv / n : -pv * r / (1 - Math.pow(1 + r, -n)); }
-const compiled = new Map();
-function fn(expr) { if (!compiled.has(expr)) compiled.set(expr, new Function("v", "PMT", "return " + expr.replace(/\b([A-Z]+[0-9]+)\b/g, "v.$1") + ";")); return compiled.get(expr); }
-function calc(sheet, vals) {
-  const v = {};
-  for (const c of sheet.cells) if (!c.f) v[c.r] = (vals && c.r in vals) ? vals[c.r] : c.v;
-  for (let pass = 0; pass < 3; pass++) for (const c of sheet.cells) if (c.f) { try { v[c.r] = fn(c.f)(v, PMT); } catch (e) { v[c.r] = NaN; } }
-  return v;
-}
 const nf = new Intl.NumberFormat("ru-RU", {maximumFractionDigits: 2});
-function fmtVal(c, x) {
-  if (x == null || !isFinite(x)) return "#ЗНАЧ!";
+function fmtVal(c, x, raw) {
+  if (typeof x === "string") return x;
+  if (raw === "" || raw == null) return "";
   if (c.fmt === "pct") return nf.format(Math.round(x * 10000) / 100) + "%";
   return nf.format(Math.round(x * 100) / 100);
 }
@@ -340,68 +473,114 @@ function parseNum(s) {
   if (!/^[-+]?(\d+\.?\d*|\.\d+)(e[-+]?\d+)?$/i.test(s)) return NaN;
   return parseFloat(s);
 }
-const normRef = s => String(s || "").toUpperCase().replace(/[\s$]/g, "");
-function goalSeek(sheet, vals, set, to, by) {
-  const g = x => { const v = calc(sheet, Object.assign({}, vals, {[by]: x})); return v[set] - to; };
-  let x0 = vals[by], x1 = x0 !== 0 ? x0 * 1.1 : 1, g0 = g(x0), g1 = g(x1);
+const normRef = s => String(s || "").toUpperCase().replace(/[\s$]/g, "").split("").map(c => LAT[c] || c).join("");
+
+/* ===================== ЛИСТ (виджет) ===================== */
+/* sheet = {cells:[{r,l,c,lock,fmt}]}; opts: {readonly, over, onChange} */
+function Sheet(el, sheet, opts) {
+  opts = opts || {};
+  let over = Object.assign({}, opts.over || {});
+  const byRef = r => sheet.cells.find(c => c.r === r);
+  const content = r => (r in over) ? over[r] : (byRef(r).c || "");
+  let sel = opts.readonly ? null : (sheet.cells.find(c => !c.lock) || sheet.cells[0]).r;
+  let editing = false;
+  function draw(flash) {
+    const v = evalSheet(sheet, over), c = sel ? byRef(sel) : null;
+    const cur = c ? content(c.r) : "";
+    const shown = c ? (isFormula(cur) ? cur : (c.fmt === "pct" && cur !== "" ? fmtVal(c, v[c.r], cur) : String(cur).replace(".", ","))) : "";
+    const refs = sheet.cells.map(x => x.r);
+    el.innerHTML = `<div class="xl ${opts.readonly ? "ro" : ""}">
+      ${opts.readonly ? "" : `<div class="fb"><div class="nb">${c ? c.r : ""}</div>
+        ${editing ? `<button class="no" id="fno" aria-label="Отмена">✕</button><button class="ok" id="fok" aria-label="Ввод">✓</button>` : `<div class="fx">fx</div>`}
+        <div class="fc">${editing ? `<input id="fcin" value="${esc(shown)}" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" enterkeyhint="done">` : esc(shown)}</div></div>
+        ${editing ? `<div class="kb"><button data-k="=">=</button>${refs.map(r => `<button class="r" data-k="${r}">${r}</button>`).join("")}${["+", "-", "*", "/", "(", ")", "%"].map(k => `<button data-k="${esc(k)}">${k === "*" ? "×" : k === "/" ? "÷" : k === "-" ? "−" : k}</button>`).join("")}<button data-k="ПЛТ(">ПЛТ</button><button data-k="СУММ(">СУММ</button><button data-k=";">;</button></div>` : ""}`}
+      <table><colgroup><col style="width:30px"><col class="colA"><col></colgroup>
+      <tr><th class="rh"></th><th>A</th><th>B</th></tr>
+      ${sheet.cells.map(cc => { const raw = content(cc.r), val = v[cc.r]; const err = typeof val === "string";
+        return `<tr><th class="rh">${cc.r.slice(1)}</th><td class="lb">${esc(cc.l)}</td><td class="v ${isFormula(raw) ? "f" : ""} ${!cc.lock && !opts.readonly ? "ed" : ""} ${err ? "err" : ""} ${sel === cc.r ? "sel" : ""} ${flash && (flash === cc.r || isFormula(raw)) ? "flash" : ""}" data-r="${cc.r}">${fmtVal(cc, val, raw)}</td></tr>`; }).join("")}
+      </table></div>`;
+    if (opts.readonly) return;
+    const inp = el.querySelector("#fcin");
+    el.querySelectorAll("td.v").forEach(td => {
+      td.addEventListener("pointerdown", e => {
+        if (editing && inp && inp.value.trim()[0] === "=" && td.dataset.r !== sel) { e.preventDefault(); insert(td.dataset.r); }
+      });
+      td.addEventListener("click", () => {
+        const r = td.dataset.r;
+        if (editing && inp && inp.value.trim()[0] === "=" && r !== sel) return;
+        if (editing) { if (!commit(true)) return; }
+        sel = r; editing = !byRef(r).lock; draw();
+        const i2 = el.querySelector("#fcin"); if (i2) { i2.focus(); i2.select(); }
+      });
+    });
+    if (inp) {
+      el.querySelectorAll(".kb button").forEach(b => { b.addEventListener("pointerdown", e => e.preventDefault()); b.onclick = () => insert(b.dataset.k); });
+      const ok = el.querySelector("#fok"), no = el.querySelector("#fno");
+      ok.addEventListener("pointerdown", e => e.preventDefault()); no.addEventListener("pointerdown", e => e.preventDefault());
+      ok.onclick = () => commit(); no.onclick = () => { editing = false; draw(); };
+      inp.onkeydown = e => { if (e.key === "Enter") { e.preventDefault(); commit(); } if (e.key === "Escape") { editing = false; draw(); } };
+    }
+    function insert(t) {
+      const i = el.querySelector("#fcin"); if (!i) return;
+      let a = i.selectionStart == null ? i.value.length : i.selectionStart, b = i.selectionEnd == null ? a : i.selectionEnd;
+      if (/^[A-Z]+\d+$/.test(t) && i.value.trim()[0] !== "=") { if (a === 0 && b === i.value.length) { i.value = ""; a = b = 0; } i.value = "=" + i.value; a++; b++; }
+      i.value = i.value.slice(0, a) + t + i.value.slice(b);
+      const pos = a + t.length; i.focus(); try { i.setSelectionRange(pos, pos); } catch (e) {}
+    }
+  }
+  function commit(silent) {
+    const i = el.querySelector("#fcin"); if (!i) { editing = false; return true; }
+    const raw = i.value.trim(), cc = byRef(sel);
+    let store;
+    if (raw === "") store = "";
+    else if (raw[0] === "=") {
+      const f = normFormula(raw);
+      const ast = parsed(f.slice(1)); if (ast instanceof XErr) { toast("Ошибка в формуле: проверьте скобки и знаки"); i.focus(); return false; }
+      store = f;
+    } else {
+      let x = parseNum(raw); if (!isFinite(x)) { toast("Введите число или формулу, начиная с ="); i.focus(); return false; }
+      if (cc.fmt === "pct" && (/%/.test(raw) || Math.abs(x) >= 1)) x = x / 100;
+      store = String(x);
+    }
+    over = Object.assign({}, over, {[sel]: store}); editing = false;
+    opts.onChange && opts.onChange(over);
+    const v = evalSheet(sheet, over)[sel];
+    if (typeof v === "string" && !silent) toast(v === "#ЦИКЛ!" ? "Формула ссылается сама на себя" : "Ошибка " + v);
+    draw(sel); return true;
+  }
+  draw();
+  return {
+    get over() { return over; },
+    values() { return evalSheet(sheet, over); },
+    content,
+    set(newOver, flash) { over = newOver; editing = false; opts.onChange && opts.onChange(over); draw(flash); },
+    select(r) { sel = r; editing = false; draw(); },
+    commitIfEditing() { if (editing) return commit(true); return true; }
+  };
+}
+
+/* Подбор параметра */
+function goalSeek(sheet, over, set, to, by) {
+  const g = x => { const v = evalSheet(sheet, Object.assign({}, over, {[by]: String(x)}))[set]; return typeof v === "number" ? v - to : NaN; };
+  const start = parseFloat(String((by in over) ? over[by] : sheet.cells.find(c => c.r === by).c || "0").replace(",", ".")) || 0;
+  let x0 = start, x1 = x0 !== 0 ? x0 * 1.1 : 1, g0 = g(x0), g1 = g(x1);
   const eps = 1e-7 * Math.max(1, Math.abs(to));
+  if (!isFinite(g0)) return null;
   for (let i = 0; i < 200; i++) {
-    if (!isFinite(g1)) break;
+    if (!isFinite(g1)) return null;
     if (Math.abs(g1) < eps) return x1;
     if (g1 === g0) break;
     const x2 = x1 - g1 * (x1 - x0) / (g1 - g0);
     x0 = x1; g0 = g1; x1 = x2; g1 = g(x1);
   }
-  if (isFinite(g1) && Math.abs(g1) < eps * 100) return x1;
-  return null;
+  return isFinite(g1) && Math.abs(g1) < eps * 100 ? x1 : null;
 }
-
-/* Sheet widget: renders an Excel-like grid into el. opts: {readonly, vals, onChange} */
-function Sheet(el, sheet, opts) {
-  opts = opts || {};
-  let vals = opts.vals || {};
-  let sel = opts.readonly ? null : (sheet.cells.find(c => !c.f) || sheet.cells[0]).r;
-  let editing = false;
-  const byRef = r => sheet.cells.find(c => c.r === r);
-  function draw(flashRef) {
-    const v = calc(sheet, vals), c = sel ? byRef(sel) : null;
-    const content = c ? (c.f ? c.x : (c.fmt === "pct" ? fmtVal(c, v[c.r]) : String(v[c.r]).replace(".", ","))) : "";
-    el.innerHTML = `<div class="xl ${opts.readonly ? "ro" : ""}">
-      ${opts.readonly ? "" : `<div class="fb"><div class="nb">${c ? c.r : ""}</div><div class="fx">fx</div><div class="fc">${editing && c && !c.f ? `<input id="fcin" inputmode="decimal" value="${esc(content)}" enterkeyhint="done">` : esc(content)}</div></div>`}
-      <table><colgroup><col style="width:30px"><col class="colA"><col></colgroup>
-      <tr><th class="rh"></th><th>A</th><th>B</th></tr>
-      ${sheet.cells.map(cc => `<tr><th class="rh">${cc.r.slice(1)}</th><td class="lb">${esc(cc.l)}</td><td class="v ${cc.f ? "f" : ""} ${sel === cc.r ? "sel" : ""} ${flashRef && (flashRef === cc.r || cc.f) ? "flash" : ""}" data-r="${cc.r}">${fmtVal(cc, v[cc.r])}</td></tr>`).join("")}
-      </table></div>`;
-    if (opts.readonly) return;
-    el.querySelectorAll("td.v").forEach(td => td.onclick = () => {
-      const r = td.dataset.r; if (editing && sel === r) return;
-      sel = r; editing = !byRef(r).f;
-      draw(); const i = el.querySelector("#fcin"); if (i) { i.focus(); i.select(); }
-    });
-    const i = el.querySelector("#fcin");
-    if (i) {
-      let done = false;
-      const commit = () => { if (done) return; done = true; const x = parseNum(i.value); const cc = byRef(sel);
-        if (isFinite(x)) { let val = x; if (cc.fmt === "pct" && (/%/.test(i.value) || Math.abs(x) >= 1)) val = x / 100; vals = Object.assign({}, vals, {[sel]: val}); opts.onChange && opts.onChange(vals); editing = false; draw(sel); }
-        else { editing = false; draw(); toast("Введите число"); } };
-      i.onkeydown = e => { if (e.key === "Enter") { e.preventDefault(); commit(); } if (e.key === "Escape") { done = true; editing = false; draw(); } };
-      i.onblur = () => { if (editing && !done && i.isConnected) setTimeout(commit, 0); };
-    }
-  }
-  draw();
-  return {
-    get vals() { return vals; },
-    set(newVals, flash) { vals = newVals; opts.onChange && opts.onChange(vals); draw(flash); },
-    select(r) { sel = r; editing = false; draw(); },
-    redraw: draw
-  };
-}
-
-/* Goal Seek dialog (как в Excel) */
-function GoalSeekDialog(sheet, getVals, onApply) {
+function GoalSeekDialog(sheet, getOver, onApply) {
   const refs = sheet.cells.map(c => c.r);
   const w = document.createElement("div"); w.className = "gsw"; w.id = "gsw";
   const st = {set: "", to: "", by: ""};
+  document.body.appendChild(w);
+  const content = r => { const o = getOver(); return (r in o) ? o[r] : (sheet.cells.find(c => c.r === r).c || ""); };
   function form(err) {
     w.innerHTML = `<div class="gs" role="dialog" aria-label="Подбор параметра"><div class="tb"><span>Подбор параметра</span><button id="gsx" aria-label="Закрыть">×</button></div>
       <div class="bd">
@@ -419,44 +598,40 @@ function GoalSeekDialog(sheet, getVals, onApply) {
   }
   function run() {
     const set = normRef(st.set), by = normRef(st.by), to = parseNum(st.to);
-    const cs = sheet.cells.find(c => c.r === set), cb = sheet.cells.find(c => c.r === by);
-    if (!cs) return form("Укажите ячейку в поле «Установить в ячейке».");
-    if (!cs.f) return form("Ячейка «Установить в ячейке» должна содержать формулу.");
+    if (!refs.includes(set)) return form("Укажите ячейку в поле «Установить в ячейке».");
+    if (!isFormula(content(set))) return form("Ячейка «Установить в ячейке» должна содержать формулу.");
     if (!isFinite(to)) return form("Введите число в поле «Значение».");
-    if (!cb) return form("Укажите ячейку в поле «Изменяя значение ячейки».");
-    if (cb.f) return form("Ячейка «Изменяя значение ячейки» должна содержать значение, а не формулу.");
-    const vals = calc(sheet, getVals()), base = {};
-    sheet.cells.forEach(c => { if (!c.f) base[c.r] = vals[c.r]; });
-    const x = goalSeek(sheet, base, set, to, by);
-    if (x == null) return result(set, null, base, to, by);
-    result(set, x, base, to, by);
-  }
-  function result(set, x, base, to, by) {
-    const ok = x != null, nv = ok ? Object.assign({}, base, {[by]: x}) : base, cur = calc(sheet, nv)[set];
-    const cs = sheet.cells.find(c => c.r === set);
+    if (!refs.includes(by)) return form("Укажите ячейку в поле «Изменяя значение ячейки».");
+    const cb = content(by);
+    if (isFormula(cb) || cb === "" || !isFinite(parseNum(cb))) return form("Ячейка «Изменяя значение ячейки» должна содержать число.");
+    const over = getOver(), x = goalSeek(sheet, over, set, to, by);
+    const nv = x == null ? over : Object.assign({}, over, {[by]: String(x)});
+    const cur = evalSheet(sheet, nv)[set], cs = sheet.cells.find(c => c.r === set);
     w.innerHTML = `<div class="gs" role="dialog" aria-label="Результат подбора параметра"><div class="tb"><span>Результат подбора параметра</span><button id="gsx" aria-label="Закрыть">×</button></div>
-      <div class="bd"><div class="rs">Подбор параметра для ячейки ${set}.<br>${ok ? "Решение найдено." : "<b>Решение не найдено.</b> Проверьте, зависит ли формула от изменяемой ячейки."}<br>
-      Подбираемое значение: <b>${fmtVal(cs, to)}</b><br>Текущее значение: <b>${fmtVal(cs, cur)}</b></div></div>
+      <div class="bd"><div class="rs">Подбор параметра для ячейки ${set}.<br>${x != null ? "Решение найдено." : "<b>Решение не найдено.</b> Проверьте, зависит ли формула от изменяемой ячейки."}<br>
+      Подбираемое значение: <b>${fmtVal(cs, to, "x")}</b><br>Текущее значение: <b>${fmtVal(cs, cur, "x")}</b></div></div>
       <div class="ft"><button id="gsc">Отмена</button><button class="pri" id="gso">ОК</button></div></div>`;
     $("#gsx").onclick = $("#gsc").onclick = close;
-    $("#gso").onclick = () => { if (ok) onApply(nv, by); close(); };
+    $("#gso").onclick = () => { if (x != null) onApply(nv, by); close(); };
   }
   function close() { w.remove(); }
-  document.body.appendChild(w); form();
+  form();
   return {close};
 }
 
 /* ===================== ВЕДУЩИЙ ===================== */
 function Host() {
   let H = store.get("host");
-  const fresh = () => ({room: rid(5, "ABCDEFGHJKLMNPQRSTUVWXYZ23456789"), b: +(PARAMS.get("b") || 0), phase: "lobby", qi: -1, players: {}, ans: {}, counts: [0, 0, 0, 0], qEnd: 0, feed: [], prevRank: {}});
-  if (!H || !H.room) H = fresh();
+  const fresh = () => ({room: rid(5, "ABCDEFGHJKLMNPQRSTUVWXYZ23456789"), b: +(PARAMS.get("b") || 0), set: "quiz", phase: "lobby", qi: -1, players: {}, ans: {}, counts: [0, 0, 0, 0], qEnd: 0, feed: [], prevRank: {}});
+  if (!H || !H.room || !SETS[H.set]) H = fresh();
   let client = null, tick = null, pubTimer = null, connectedOnce = false;
   const save = () => store.set("host", H);
-  const total = ROUNDS.length;
+  const RS = () => SETS[H.set].rounds;
+  const total = () => RS().length;
+  const R = () => RS()[H.qi];
   const pids = () => Object.keys(H.players);
   const joinUrl = () => { const u = new URL(location.href); u.search = ""; u.hash = ""; u.searchParams.set("r", H.room); if (H.b) u.searchParams.set("b", H.b); if (PARAMS.get("broker")) u.searchParams.set("broker", PARAMS.get("broker")); return u.toString(); };
-  const R = () => ROUNDS[H.qi];
+  const newPlayer = name => ({name, score: 0, streak: 0, pw: {fr: 1, x2: 1, ff: 1, sh: 1}, x2on: false, hide: null, frozen: null, last: null, note: null});
 
   function start() {
     client && client.end(true);
@@ -473,19 +648,19 @@ function Host() {
   function note(pid, text) { const p = H.players[pid]; if (p) p.note = {id: rid(6), t: text}; }
 
   function pubState() {
-    const st = {v: 1, phase: H.phase, qi: H.qi, total, n: pids().length, answered: Object.keys(H.ans).length};
+    const st = {v: 2, set: H.set, phase: H.phase, qi: H.qi, total: total(), n: pids().length, answered: Object.keys(H.ans).length};
     if (H.phase === "question") { st.endsIn = Math.max(0, H.qEnd - Date.now()); st.roster = ranked().slice(0, 40).map(id => [id, H.players[id].name]); }
-    if (H.phase === "board" || H.phase === "final") st.top = ranked().slice(0, 10).map(id => ({n: H.players[id].name, s: H.players[id].score}));
     pub("s", st, true);
   }
   function pubPlayer(pid) {
     const p = H.players[pid]; if (!p) return;
     const r = ranked();
-    pub("p/" + pid, {name: p.name, score: p.score, rank: r.indexOf(pid) + 1, of: r.length, streak: p.streak, pw: p.pw, x2on: p.x2on ? H.qi : -1, hide: p.hide, frozen: p.frozen, last: p.last, locked: H.ans[pid] ? {qi: H.qi, a: H.ans[pid].a, v: H.ans[pid].v} : null, note: p.note, kicked: !!p.kicked}, true);
+    pub("p/" + pid, {name: p.name, score: p.score, rank: r.indexOf(pid) + 1, of: r.length, streak: p.streak, pw: p.pw, x2on: p.x2on ? H.set + H.qi : "", hide: p.hide, frozen: p.frozen, last: p.last, locked: H.ans[pid] ? {set: H.set, qi: H.qi, a: H.ans[pid].a, v: H.ans[pid].v} : null, note: p.note, kicked: !!p.kicked}, true);
   }
-  function isCorrect(r, a) {
-    if (r.type === "num") { const x = parseNum(a); if (!isFinite(x)) return false; const tol = Math.max(r.tol, Math.abs(r.ans) * 1e-4); return Math.abs(x - r.ans) <= tol || (r.pct && Math.abs(x / 100 - r.ans) <= tol); }
-    return a === r.c;
+  function check(r, v) {
+    const x = parseNum(v); if (!isFinite(x)) return false;
+    const tol = Math.max(r.tol, Math.abs(r.ans) * 1e-4);
+    return Math.abs(x - r.ans) <= tol;
   }
 
   function onMsg(topic, m) {
@@ -498,20 +673,21 @@ function Host() {
       if (H.phase === "final") return;
       const taken = new Set(Object.values(H.players).map(x => x.name.toLowerCase()));
       let nm = name, k = 2; while (taken.has(nm.toLowerCase())) nm = name + " " + (k++);
-      H.players[pid] = {name: nm, score: 0, streak: 0, pw: {fr: 1, x2: 1, ff: 1, sh: 1}, x2on: false, hide: null, frozen: null, last: null, note: null};
+      H.players[pid] = newPlayer(nm);
       save(); pubPlayer(pid); pubState(); render(); return;
     }
     if (!p) return;
+    if (m.set !== H.set) return;
     const r = R();
     if (m.t === "ans") {
       if (H.phase !== "question" || m.qi !== H.qi || H.ans[pid]) { pubPlayer(pid); return; }
       if (Date.now() > H.qEnd + 400) { pubPlayer(pid); return; }
       let rec;
-      if (r.type === "num") { const v = String(m.v == null ? "" : m.v).slice(0, 24); if (!isFinite(parseNum(v))) return; rec = {v, ok: isCorrect(r, v)}; H.counts[rec.ok ? 0 : 1]++; }
-      else { const a = m.a | 0; if (a < 0 || a > 3) return; if (p.hide && p.hide.qi === H.qi && p.hide.idx.includes(a)) return; rec = {a, ok: a === r.c}; H.counts[a]++; }
+      if (isNumeric(r)) { const v = String(m.v == null ? "" : m.v).slice(0, 24); if (!isFinite(parseNum(v))) return; rec = {v, ok: check(r, v)}; H.counts[rec.ok ? 0 : 1]++; }
+      else { const a = m.a | 0; if (a < 0 || a > 3) return; if (p.hide && p.hide.qi === H.qi && p.hide.set === H.set && p.hide.idx.includes(a)) return; rec = {a, ok: a === r.c}; H.counts[a]++; }
       rec.left = Math.max(0, H.qEnd - Date.now());
       H.ans[pid] = rec;
-      if (r.type === "num" && rec.ok && !H.feed.some(e => e.k === "ok")) addFeed("ok", `<b>${esc(p.name)}</b> первым решил задачу`);
+      if (isNumeric(r) && rec.ok && !H.feed.some(e => e.k === "ok")) addFeed("ok", `<b>${esc(p.name)}</b> первым решил задание`);
       save(); pubPlayer(pid); pubState();
       if (Object.keys(H.ans).length >= pids().length) reveal(); else render();
       return;
@@ -521,20 +697,20 @@ function Host() {
       if (H.ans[pid]) { note(pid, "После ответа бонусы недоступны"); pubPlayer(pid); return; }
       if (m.k === "x2" && p.pw.x2 > 0 && !p.x2on) {
         p.pw.x2--; p.x2on = true; addFeed("x2", `<b>${esc(p.name)}</b> играет на двойные очки`);
-      } else if (m.k === "ff" && r.type !== "num" && p.pw.ff > 0 && !(p.hide && p.hide.qi === H.qi)) {
+      } else if (m.k === "ff" && !isNumeric(r) && p.pw.ff > 0 && !(p.hide && p.hide.qi === H.qi && p.hide.set === H.set)) {
         const wrong = [0, 1, 2, 3].filter(i => i !== r.c).sort(() => Math.random() - .5).slice(0, 2);
-        p.pw.ff--; p.hide = {qi: H.qi, idx: wrong}; addFeed("ff", `<b>${esc(p.name)}</b> взял 50/50`);
+        p.pw.ff--; p.hide = {set: H.set, qi: H.qi, idx: wrong}; addFeed("ff", `<b>${esc(p.name)}</b> взял 50/50`);
       } else if (m.k === "fr" && p.pw.fr > 0) {
         const tp = H.players[m.target];
         if (!tp || m.target === pid) return;
         if (H.ans[m.target]) { note(pid, tp.name + " уже ответил — заморозка сохранена"); pubPlayer(pid); return; }
-        if (tp.frozen && tp.frozen.qi === H.qi) { note(pid, tp.name + " уже во льду"); pubPlayer(pid); return; }
+        if (tp.frozen && tp.frozen.qi === H.qi && tp.frozen.set === H.set) { note(pid, tp.name + " уже во льду"); pubPlayer(pid); return; }
         p.pw.fr--;
         if (tp.pw.sh > 0) {
           tp.pw.sh--; note(m.target, p.name + " пытался вас заморозить — щит защитил!"); note(pid, tp.name + " защитился щитом");
           addFeed("sh", `<b>${esc(tp.name)}</b> отбил щитом заморозку от <b>${esc(p.name)}</b>`);
         } else {
-          tp.frozen = {id: rid(6), qi: H.qi, by: p.name}; note(pid, tp.name + " заморожен!");
+          tp.frozen = {id: rid(6), set: H.set, qi: H.qi, by: p.name}; note(pid, tp.name + " заморожен!");
           addFeed("fr", `<b>${esc(p.name)}</b> заморозил <b>${esc(tp.name)}</b>`);
         }
         pubPlayer(m.target);
@@ -544,7 +720,7 @@ function Host() {
   }
 
   function startQ() {
-    if (H.qi + 1 >= total) return finish();
+    if (H.qi + 1 >= total()) return finish();
     H.qi++; H.phase = "question"; H.ans = {}; H.counts = [0, 0, 0, 0]; H.feed = [];
     for (const id of pids()) { const p = H.players[id]; p.x2on = false; p.hide = null; p.frozen = null; }
     H.qEnd = Date.now() + R().t * 1000;
@@ -559,53 +735,60 @@ function Host() {
       if (a && a.ok) {
         let pts = Math.round(500 + 500 * Math.min(1, a.left / T0)) + Math.min(p.streak, 3) * 100;
         if (p.x2on) pts *= 2;
-        p.streak++; p.score += pts; p.last = {qi: H.qi, ok: true, pts, a: a.a, v: a.v};
+        p.streak++; p.score += pts; p.solved = (p.solved || 0) + 1; p.last = {set: H.set, qi: H.qi, ok: true, pts, a: a.a, v: a.v};
         if (p.streak % 3 === 0) { p.pw.fr++; note(id, p.streak + " верных подряд! +1 заморозка"); }
-      } else { p.streak = 0; p.last = {qi: H.qi, ok: false, pts: 0, a: a ? a.a : null, v: a ? a.v : null}; }
+      } else { p.streak = 0; p.last = {set: H.set, qi: H.qi, ok: false, pts: 0, a: a ? a.a : null, v: a ? a.v : null}; }
       p.x2on = false;
     }
     H.phase = "reveal"; save(); pubState(); pids().forEach(pubPlayer); render();
   }
   function board() { H.phase = "board"; save(); pubState(); render(); }
   function finish() { H.phase = "final"; save(); pubState(); pids().forEach(pubPlayer); render(); }
+  function toSet(set) {
+    H.set = set; H.phase = "lobby"; H.qi = -1; H.ans = {}; H.counts = [0, 0, 0, 0]; H.feed = []; H.prevRank = {};
+    for (const id of pids()) { const n = H.players[id].name; H.players[id] = newPlayer(n); }
+    save(); pubState(); pids().forEach(pubPlayer); render();
+  }
   function next() {
     if (H.phase === "lobby") { if (pids().length) startQ(); }
     else if (H.phase === "question") reveal();
-    else if (H.phase === "reveal") board();
-    else if (H.phase === "board") (H.qi + 1 >= total ? finish() : startQ());
+    else if (H.phase === "reveal") { if (SETS[H.set].quick) (H.qi + 1 >= total() ? board() : startQ()); else board(); }
+    else if (H.phase === "board") (H.qi + 1 >= total() ? finish() : startQ());
   }
+  function fmtTime(s) { return s >= 60 ? Math.floor(s / 60) + ":" + String(s % 60).padStart(2, "0") : String(s); }
   function onTick() {
     if (H.phase !== "question") return;
     const left = H.qEnd - Date.now();
     const t = $("#htime"), b = $("#hbar");
-    if (t) { const s = Math.max(0, Math.ceil(left / 1000)); t.textContent = s >= 60 ? Math.floor(s / 60) + ":" + String(s % 60).padStart(2, "0") : s; }
+    if (t) t.textContent = fmtTime(Math.max(0, Math.ceil(left / 1000)));
     if (b) b.style.transform = `scaleX(${Math.max(0, left / (R().t * 1000))})`;
     if (left <= 0) reveal();
   }
   document.addEventListener("keydown", e => { if (e.target.tagName === "INPUT" || e.target.tagName === "BUTTON") return; if (e.code === "Space" || e.code === "Enter" || e.code === "ArrowRight") { e.preventDefault(); next(); } });
 
-  function ctlBar(primary) {
-    return `<div class="hctl"><button class="btn ghost" id="reset">Новая игра</button>${primary ? `<button class="btn" id="next">${primary}</button>` : ""}</div>`;
+  function ctlBar(primary, extra, left) {
+    return `<div class="hctl"><div style="display:flex;gap:10px;align-items:center"><button class="btn ghost" id="reset">Новая игра</button>${left || ""}</div><div style="display:flex;gap:10px">${extra || ""}${primary ? `<button class="btn" id="next">${primary}</button>` : ""}</div></div>`;
   }
   function bind() {
     const n = $("#next"); if (n) n.onclick = next;
     const r = $("#reset"); if (r) r.onclick = () => {
-      if (r.dataset.c !== "1") { r.dataset.c = "1"; r.textContent = "Точно? Всё сотрётся"; setTimeout(() => { r.dataset.c = ""; r.textContent = "Новая игра"; }, 3000); return; }
-      pub("s", {v: 1, phase: "closed"}, true); H = fresh(); start();
+      if (r.dataset.c !== "1") { r.dataset.c = "1"; r.textContent = "Точно? Код и участники сбросятся"; setTimeout(() => { r.dataset.c = ""; r.textContent = "Новая игра"; }, 3000); return; }
+      pub("s", {v: 2, phase: "closed"}, true); H = fresh(); start();
     };
+    const tp = $("#topractice"); if (tp) tp.onclick = () => toSet("practice");
   }
   function side(done, n) {
     return `<div class="side"><div><div class="big">${done}<span class="mut" style="font-size:24px"> / ${n}</span></div><div class="mut" style="font-size:15px;margin-top:6px">ответили</div></div>
       <div class="feed">${H.feed.map(e => `<div class="ev ${e.k}">${e.h}</div>`).join("") || `<div class="mut" style="font-size:14px">Заморозки, 50/50 и ×2 появятся здесь</div>`}</div></div>`;
   }
   function render() {
-    const head = `<div class="htop"><span class="tag">${TITLE}</span><span class="tag">${H.phase === "lobby" || H.phase === "final" ? "" : `${H.qi + 1} / ${total}`}</span></div>`;
+    const head = `<div class="htop"><span class="tag">${TITLE} · ${SETS[H.set].short}</span><span class="tag">${H.phase === "lobby" || H.phase === "final" ? "" : `${H.qi + 1} / ${total()}`}</span></div>`;
     if (H.phase === "lobby") {
       const ps = pids();
       app.innerHTML = `<div class="host">${head}<div class="hbody"><div class="lobby">
         <div class="up">
           <h1 class="disp">Подключайтесь с телефона</h1>
-          <p class="mut" style="font-size:20px;margin:0;max-width:560px">Откройте ссылку из чата Discord или введите код на сайте. Excel на телефоне не нужен — таблица будет прямо в игре.</p>
+          <p class="mut" style="font-size:20px;margin:0;max-width:560px">Откройте ссылку из чата Discord или введите код. Excel на телефоне не нужен — таблица будет прямо в игре.</p>
           <div class="joinbox"><div class="lbl">Код игры</div><div class="code">${H.room}</div>
             <div class="lbl" style="margin-top:16px">Ссылка</div><div class="url">${esc(joinUrl().replace(/^https?:\/\//, ""))}</div>
             <div style="display:flex;gap:10px;margin-top:18px;flex-wrap:wrap"><button class="btn ghost" id="copy">Скопировать ссылку</button>
@@ -613,51 +796,59 @@ function Host() {
         </div>
         <div class="plbox"><div class="count">${ps.length} участников</div>
           <div class="pl">${ps.map(id => `<button class="chip" data-k="${id}" title="Удалить из игры">${esc(H.players[id].name)}</button>`).join("") || `<span class="mut" style="font-size:18px">Ждём участников…</span>`}</div></div>
-        </div></div>${ctlBar(ps.length ? "Начать" : "")}</div>`;
+        </div></div>${ctlBar(ps.length ? "Начать: " + SETS[H.set].short : "", "", `<div class="mode" style="margin:0">${Object.keys(SETS).map(k => `<button data-set="${k}" class="${H.set === k ? "on" : ""}">${SETS[k].name}</button>`).join("")}</div>`)}</div>`;
       $("#copy").onclick = () => { navigator.clipboard && navigator.clipboard.writeText(joinUrl()).then(() => toast("Скопировано — вставьте в чат Discord"), () => toast("Не удалось скопировать")); };
       const srv = $("#srv"); if (srv) srv.onclick = () => { H.b = (H.b + 1) % BROKERS.length; start(); };
+      document.querySelectorAll(".mode button").forEach(b => b.onclick = () => { if (H.set !== b.dataset.set) { H.set = b.dataset.set; save(); pubState(); render(); } });
       document.querySelectorAll(".chip[data-k]").forEach(b => b.onclick = () => {
         const id = b.dataset.k; if (b.dataset.c !== "1") { b.dataset.c = "1"; b.textContent = "Удалить?"; setTimeout(render, 2500); return; }
         H.players[id].kicked = true; pubPlayer(id); delete H.players[id]; save(); pubState(); render(); });
     } else if (H.phase === "question" || H.phase === "reveal") {
       const r = R(), rv = H.phase === "reveal", n = pids().length, done = Object.keys(H.ans).length;
-      const left = Math.max(0, H.qEnd - Date.now()), s = Math.ceil(left / 1000);
-      const timeTxt = rv ? "" : (s >= 60 ? Math.floor(s / 60) + ":" + String(s % 60).padStart(2, "0") : s);
-      const top = `<div class="qhead"><div style="flex:1">${r.k ? `<div class="kicker">${esc(r.k)}</div>` : ""}<h2 class="qtext">${esc(r.q)}</h2></div><div class="timer" id="htime">${timeTxt}</div></div>
+      const left = Math.max(0, H.qEnd - Date.now());
+      const top = `<div class="qhead"><div style="flex:1">${r.k ? `<div class="kicker">${esc(r.k)}</div>` : ""}<h2 class="qtext">${esc(r.q)}</h2></div><div class="timer" id="htime">${rv ? "" : fmtTime(Math.ceil(left / 1000))}</div></div>
         <div class="bar"><i id="hbar" style="transform:scaleX(${rv ? 0 : left / (r.t * 1000)})"></i></div>`;
       let body;
+      const nextLbl = rv ? (SETS[H.set].quick ? (H.qi + 1 >= total() ? "Итоги" : "Следующий вопрос") : "Результаты") : "Показать ответ";
       if (r.type === "mc") {
         const max = Math.max(1, ...H.counts);
         body = `<div class="hgrid"><div class="tiles">${r.a.map((a, i) => `<div class="tile t${i} ${rv ? (i === r.c ? "win" : "off") : ""}">${SHAPES[i]}<span>${esc(a)}</span>${rv ? `<span class="cnt">${H.counts[i]}</span><span class="fill" style="width:${H.counts[i] / max * 100}%"></span>` : ""}</div>`).join("")}</div>${side(done, n)}</div>`;
       } else {
-        const right = r.type === "num"
-          ? (rv ? `<div class="answer up"><div class="mut" style="font-size:15px;font-weight:600">Правильный ответ</div><div class="val">${esc(r.show)}</div>
-               <div class="how">Данные → Анализ «что если» → Подбор параметра<br>Установить в ячейке <b>$${r.gs.set[0]}$${r.gs.set.slice(1)}</b> · Значение <b>${nf.format(r.gs.to)}</b> · Изменяя <b>$${r.gs.by[0]}$${r.gs.by.slice(1)}</b></div>
-               <div class="stat">${[["Верно", H.counts[0], "var(--ok)"], ["Неверно", H.counts[1], "var(--bad)"], ["Нет ответа", Math.max(0, n - done), "var(--mut)"]].map(x => `<div class="r"><span>${x[0]}</span><span class="tr"><i style="width:${n ? x[1] / n * 100 : 0}%;background:${x[2]}"></i></span><span>${x[1]}</span></div>`).join("")}</div></div>`
-               : side(done, n))
-          : `<div style="display:flex;flex-direction:column;gap:12px">${r.a.map((a, i) => `<div class="tile t${i} ${rv ? (i === r.c ? "win" : "off") : ""}" style="min-height:64px;padding:14px 18px">${SHAPES[i]}<span>${esc(a)}</span>${rv ? `<span class="cnt">${H.counts[i]}</span>` : ""}</div>`).join("")}
+        let right;
+        if (isNumeric(r)) {
+          const how = [];
+          if (r.how) how.push(`В ${r.how[0]}: <span class="howf">${esc(r.how[1])}</span>`);
+          if (r.gs) how.push(`Подбор параметра: <b>$${r.gs.set[0]}$${r.gs.set.slice(1)}</b> → <b>${nf.format(r.gs.to)}</b>, изменяя <b>$${r.gs.by[0]}$${r.gs.by.slice(1)}</b>`);
+          right = rv ? `<div class="answer up"><div class="mut" style="font-size:15px;font-weight:600">Правильный ответ</div><div class="val">${esc(r.show)}</div>
+               <div class="how">${how.join("<br>")}</div>
+               <div class="stat">${[["Верно", H.counts[0], "var(--ok)"], ["Неверно", H.counts[1], "var(--bad)"], ["Нет ответа", Math.max(0, n - done), "var(--mut)"]].map(x => `<div class="r"><span>${x[0]}</span><span class="tr"><i style="width:${n ? x[1] / n * 100 : 0}%;background:${x[2]}"></i></span><span>${x[1]}</span></div>`).join("")}</div></div>` : side(done, n);
+        } else {
+          right = `<div style="display:flex;flex-direction:column;gap:12px">${r.a.map((a, i) => `<div class="tile t${i} ${rv ? (i === r.c ? "win" : "off") : ""}" style="min-height:64px;padding:14px 18px">${SHAPES[i]}<span>${esc(a)}</span>${rv ? `<span class="cnt">${H.counts[i]}</span>` : ""}</div>`).join("")}
              ${rv ? `<div class="mut" style="font-size:16px;margin-top:4px">${esc(r.show)}</div>` : `<div class="mut" style="font-size:15px">${done} / ${n} ответили</div>`}</div>`;
-        body = `<div class="hsheet"><div><div id="hs"></div>${r.note ? `<div class="note" style="margin-top:12px;font-size:16px">${esc(r.note)}</div>` : ""}</div>${right}</div>`;
+        }
+        body = `<div class="hsheet"><div><div id="hs"></div></div>${right}</div>`;
       }
-      app.innerHTML = `<div class="host">${head}<div class="hbody">${top}${body}</div>${ctlBar(rv ? "Результаты" : "Показать ответ")}</div>`;
-      if (r.sheet) {
-        let vals = {};
-        if (rv && r.gs) vals = {[r.gs.by]: r.ans};
-        if (rv && r.revealVals) vals = r.revealVals;
-        Sheet($("#hs"), r.sheet, {readonly: true, vals});
+      app.innerHTML = `<div class="host">${head}<div class="hbody">${top}${body}</div>${ctlBar(nextLbl)}</div>`;
+      if (hasSheet(r)) {
+        let over = {};
+        if (rv && r.sol) over = Object.assign({}, r.sol);
+        if (rv && r.gs) over[r.gs.by] = String(r.ans);
+        Sheet($("#hs"), {cells: r.cells}, {readonly: true, over});
       }
     } else if (H.phase === "board") {
       const rr = ranked().slice(0, 5);
+      const last = H.qi + 1 >= total();
       app.innerHTML = `<div class="host">${head}<div class="hbody"><h2 class="h2">Лидеры</h2><div class="board">
         ${rr.map((id, i) => { const p = H.players[id]; const up = H.qi > 0 && H.prevRank[id] != null && H.prevRank[id] > i;
           return `<div class="row ${i === 0 ? "first" : ""}" style="animation-delay:${i * .07}s"><span class="n">${i + 1}</span><span>${esc(p.name)}${p.last && p.last.ok ? `<span class="d">+${p.last.pts}</span>` : ""}${up ? `<span class="d">▲</span>` : ""}</span><span class="sc">${p.score}</span></div>`; }).join("")}
-        </div></div>${ctlBar(H.qi + 1 >= total ? "Итоги" : "Следующее задание")}</div>`;
+        </div></div>${ctlBar(last ? "Итоги" : "Следующее задание")}</div>`;
     } else if (H.phase === "final") {
       const rr = ranked(); const ord = [1, 0, 2], hs = [190, 260, 140];
-      app.innerHTML = `<div class="host">${head}<div class="hbody"><h2 class="h2">Победители</h2>
+      const isQuiz = H.set === "quiz";
+      app.innerHTML = `<div class="host">${head}<div class="hbody"><h2 class="h2">${isQuiz ? "Квиз окончен" : "Победители практикума"}</h2>
         <div class="podium">${ord.map((k, j) => rr[k] ? `<div class="pod"><div class="nm" style="animation-delay:${.6 + j * .15}s">${esc(H.players[rr[k]].name)}</div><div class="blk ${k === 0 ? "pl1" : ""}" style="height:${hs[j]}px;animation-delay:${j * .15}s"><span class="place">${k + 1}</span><span class="pts">${H.players[rr[k]].score} очков</span></div></div>` : "").join("")}</div>
-        <div class="board">${rr.slice(3, 8).map((id, i) => `<div class="row" style="font-size:20px;padding:12px 20px"><span class="n">${i + 4}</span><span>${esc(H.players[id].name)}</span><span class="sc">${H.players[id].score}</span></div>`).join("")}</div>
-        </div>${ctlBar("")}</div>`;
+        ${isQuiz ? "" : `<div class="board">${rr.map((id, i) => `<div class="row" style="font-size:20px;padding:10px 20px;animation-delay:${i * .03}s"><span class="n">${i + 1}</span><span>${esc(H.players[id].name)}</span><span class="sc">${H.players[id].solved || 0} / ${total()} · ${H.players[id].score}</span></div>`).join("")}</div>`}
+        </div>${ctlBar("", isQuiz ? `<button class="btn" id="topractice">Перейти к практикуму</button>` : "")}</div>`;
     }
     bind();
     if (document.activeElement && document.activeElement.blur) document.activeElement.blur();
@@ -672,26 +863,29 @@ function Player() {
   let pid = store.get("pid"); if (!pid) { pid = rid(14); store.set("pid", pid); }
   let name = store.get("name") || "";
   let joined = !!(name && room && store.get("joinedRoom") === room);
-  let client = null, S = null, P = null, lastScreen = "", myLock = null, raf = 0, deadline = 0, sheetW = null, sheetVals = {qi: -1, vals: {}};
+  let client = null, S = null, P = null, lastScreen = "", myLock = null, raf = 0, deadline = 0, sheetW = null, sheetMem = {key: "", over: {}};
   const seen = {note: null, frozen: null, res: null};
   let iceTimer = null;
-  const RR = () => S && S.qi >= 0 ? ROUNDS[S.qi] : null;
+  const RR = () => S && S.qi >= 0 && SETS[S.set] ? SETS[S.set].rounds[S.qi] : null;
+  const qkey = () => S ? S.set + ":" + S.qi : "";
 
-  function send(o) { o.pid = pid; if (client && client.connected) { client.publish(T(room) + "i", JSON.stringify(o), {qos: 1}); return true; } return false; }
+  function send(o) { o.pid = pid; if (S) o.set = S.set; if (client && client.connected) { client.publish(T(room) + "i", JSON.stringify(o), {qos: 1}); return true; } return false; }
   function go() {
     client && client.end(true);
     client = connect(bi, c => { c.subscribe([T(room) + "s", T(room) + "p/" + pid], {qos: 1}); if (joined) send({t: "join", name}); },
       (topic, m) => { if (topic.endsWith("/s")) { S = m; if (S.phase === "question") deadline = performance.now() + (S.endsIn || 0); } else { P = m; onPlayerMsg(); } render(); });
   }
+  const locked = () => S && ((myLock && myLock.k === qkey()) || (P && P.locked && P.locked.set === S.set && P.locked.qi === S.qi));
   function onPlayerMsg() {
     if (P.kicked) { joined = false; store.del("joinedRoom"); return; }
     if (P.name && P.name !== name) { name = P.name; store.set("name", name); }
     if (P.note && P.note.id !== seen.note) { const first = seen.note === null && lastScreen === ""; seen.note = P.note.id; if (!first) toast(P.note.t); }
-    if (P.frozen && P.frozen.id !== seen.frozen && S && S.phase === "question" && P.frozen.qi === S.qi && !(myLock && myLock.qi === S.qi)) { seen.frozen = P.frozen.id; freeze(P.frozen.by); }
+    if (P.frozen && P.frozen.id !== seen.frozen && S && S.phase === "question" && P.frozen.qi === S.qi && P.frozen.set === S.set && !locked()) { seen.frozen = P.frozen.id; freeze(P.frozen.by); }
   }
 
   function freeze(by) {
     unfreeze(true); closeSheet(); const g = $("#gsw"); if (g) g.remove(); vibrate([80, 40, 120]);
+    if (sheetW) sheetW.commitIfEditing();
     const ms = freezeMs(RR()), taps = freezeTaps(RR());
     const d = document.createElement("div"); d.id = "ice";
     const cracks = ["M50 50 L32 30 L20 34 L6 18", "M50 50 L70 26 L84 30 L96 10", "M50 50 L28 66 L14 64 L4 84", "M50 50 L68 72 L86 70 L96 92", "M50 50 L48 20 L54 4", "M50 50 L52 82 L44 98", "M50 50 L20 50 L2 46", "M50 50 L80 52 L98 56", "M32 30 L36 14", "M68 72 L60 90"];
@@ -700,6 +894,7 @@ function Player() {
       ${[[8, 12, 54], [78, 8, 40], [14, 72, 46], [80, 70, 60], [44, 88, 30], [60, 28, 26]].map(f => `<span class="flake" style="left:${f[0]}%;top:${f[1]}%;width:${f[2]}px;height:${f[2]}px">${ICON.fr}</span>`).join("")}
       <div class="it1">Вы заморожены!</div><div class="it2">${esc(by)} заморозил вас</div><div class="taps" id="taps">${taps}</div><div class="it2">Стучите, чтобы разбить лёд</div>`;
     document.body.appendChild(d);
+    if (document.activeElement && document.activeElement.blur) document.activeElement.blur();
     let left = taps;
     d.addEventListener("pointerdown", e => { e.preventDefault(); left--; vibrate(25); d.classList.remove("hit"); void d.offsetWidth; d.classList.add("hit");
       const c = d.querySelector(`.crack[data-i="${taps - left - 1}"]`); if (c) c.style.opacity = 1;
@@ -725,25 +920,26 @@ function Player() {
 
   function screenKey() {
     if (!joined) return "join";
-    if (!S || S.phase === "closed") return "wait0";
+    if (!S || S.phase === "closed" || !SETS[S.set]) return "wait0";
     if (P && P.kicked) return "kicked";
-    if (S.phase === "lobby") return "lobby";
-    if (S.phase === "question") return (myLock && myLock.qi === S.qi) || (P && P.locked && P.locked.qi === S.qi) ? "locked" + S.qi : "q" + S.qi;
-    if (S.phase === "reveal") return "rv" + S.qi + (P && P.last ? P.last.qi : "");
-    return S.phase + S.qi;
+    if (S.phase === "lobby") return "lobby" + S.set;
+    if (S.phase === "question") return (locked() ? "locked" : "q") + qkey();
+    if (S.phase === "reveal") return "rv" + qkey() + (P && P.last ? P.last.set + P.last.qi : "");
+    return S.phase + qkey();
   }
   const top = () => `<div class="pbar"><span class="me">${esc(name)}</span><span>${P ? P.score + " очк." : ""}${S && S.qi >= 0 && S.total ? ` · ${S.qi + 1}/${S.total}` : ""}</span></div>`;
   function pwBlock(r) {
-    return `<div class="pw" style="${r.type === "num" ? "grid-template-columns:repeat(2,1fr)" : ""}">
+    const num = isNumeric(r);
+    return `<div class="pw" style="${num ? "grid-template-columns:repeat(2,1fr)" : ""}">
       <button class="pwb" id="pwfr">${ICON.fr}<span>Заморозка</span><span class="k" id="kfr"></span></button>
       <button class="pwb" id="pwx2">${ICON.x2}<span>×2 очки</span><span class="k" id="kx2"></span></button>
-      ${r.type === "num" ? "" : `<button class="pwb" id="pwff">${ICON.ff}<span>50/50</span><span class="k" id="kff"></span></button>`}
+      ${num ? "" : `<button class="pwb" id="pwff">${ICON.ff}<span>50/50</span><span class="k" id="kff"></span></button>`}
     </div><div class="shld" id="shld">${ICON.sh}<span></span></div>`;
   }
   function sendMc(a) {
-    if ($("#ice") || (myLock && myLock.qi === S.qi)) return;
+    if ($("#ice") || locked()) return;
     if (!send({t: "ans", qi: S.qi, a})) { toast("Нет связи — нажмите ещё раз"); return; }
-    myLock = {qi: S.qi, a}; vibrate(30); render();
+    myLock = {k: qkey(), a}; vibrate(30); render();
   }
   function render() {
     const key = screenKey();
@@ -756,7 +952,7 @@ function Player() {
 
     if (key === "join") {
       app.innerHTML = `<div class="ply"><div class="pc up">
-        <h1>Практикум:<br>анализ «что если»</h1>
+        <h1>Анализ «что если»<br>в Excel</h1>
         <p class="mut" style="margin:0 0 6px;font-size:16px">Напишите имя и фамилию — преподаватель увидит их на экране.</p>
         <input class="field codef" id="room" placeholder="КОД" maxlength="6" value="${esc(room)}" autocomplete="off" ${PARAMS.get("r") ? "readonly" : ""}>
         <input class="field" id="name" placeholder="Имя Фамилия" maxlength="18" value="${esc(name)}" autocomplete="off">
@@ -772,44 +968,49 @@ function Player() {
       $("#go").onclick = go2; $("#name").onkeydown = e => { if (e.key === "Enter") go2(); };
       return;
     }
-    if (key === "wait0" || key === "lobby" || key === "kicked") {
-      const kicked = key === "kicked";
+    if (key === "wait0" || key.startsWith("lobby") || key === "kicked") {
+      const kicked = key === "kicked", lobby = key.startsWith("lobby");
       app.innerHTML = `<div class="ply">${top()}<div class="pc"><div class="wait up">${kicked ? "" : `<div class="ring"></div>`}
-        <h1>${kicked ? "Вас удалили из игры" : key === "wait0" ? "Ищем игру…" : "Вы в игре!"}</h1>
-        <p class="mut" style="margin:0;font-size:17px">${kicked ? "Исправьте имя и войдите снова." : key === "wait0" ? "Код верный? " + esc(room) : "Ждём, пока преподаватель начнёт. Задания появятся здесь."}</p>
-        ${kicked || key === "wait0" ? `<button class="btn ghost" id="back">Изменить код или имя</button>` : ""}</div></div></div>`;
+        <h1>${kicked ? "Вас удалили из игры" : !lobby ? "Ищем игру…" : "Вы в игре!"}</h1>
+        <p class="mut" style="margin:0;font-size:17px">${kicked ? "Исправьте имя и войдите снова." : !lobby ? "Код верный? " + esc(room) : "Следующее: " + esc(SETS[S.set].name) + ". Ждём, пока преподаватель начнёт."}</p>
+        ${kicked || !lobby ? `<button class="btn ghost" id="back">Изменить код или имя</button>` : ""}</div></div></div>`;
       const b = $("#back"); if (b) b.onclick = () => { joined = false; store.del("joinedRoom"); if (kicked) { pid = rid(14); store.set("pid", pid); go(); } lastScreen = ""; render(); };
       return;
     }
     if (key.startsWith("q")) {
       const r = RR();
-      if (sheetVals.qi !== S.qi) sheetVals = {qi: S.qi, vals: {}};
+      if (sheetMem.key !== qkey()) sheetMem = {key: qkey(), over: {}};
       let html = `<div class="ply"><div class="pw-wrap">${top()}<div class="ptimer"><i id="pt"></i></div>${r.k ? `<div class="pk">${esc(r.k)}</div>` : ""}<div class="pq up">${esc(r.q)}</div>`;
       if (r.type === "mc") {
         html += `<div class="answers">${r.a.map((a, i) => `<button class="ans t${i}" data-a="${i}">${SHAPES[i]}<span>${esc(a)}</span></button>`).join("")}</div>`;
       } else {
-        html += `${r.note ? `<div class="note" style="margin-bottom:10px">${esc(r.note)}</div>` : ""}<div id="sh"></div>`;
-        if (r.type === "num") {
-          html += `<div class="tools"><button class="btn green" id="gsb">Подбор параметра…</button><button class="btn ghost" id="rst" style="flex:none">Сброс</button></div>
+        html += `<div id="sh"></div>`;
+        if (r.type === "build") html += `<div class="mut" style="font-size:13px;margin:8px 0 0">Нажмите на пустую ячейку в столбце B и введите число или формулу. В формуле можно нажимать на ячейки — ссылка вставится сама.</div>`;
+        if (r.type === "sheetmc") html += `<div class="mut" style="font-size:13px;margin:8px 0 6px">Нажмите на число в столбце B, чтобы изменить его.</div>`;
+        if (isNumeric(r)) {
+          html += `<div class="tools">${gsAllowed(r) ? `<button class="btn green" id="gsb">Подбор параметра…</button>` : ""}<button class="btn ghost" id="rst" style="${gsAllowed(r) ? "flex:none" : ""}">Очистить</button></div>
             <div class="ansrow"><input class="field" id="av" inputmode="decimal" placeholder="Ваш ответ" autocomplete="off" enterkeyhint="send"><button class="btn" id="avs">Отправить</button></div>
             <div class="unit">Единица — ${esc(r.unit)} · ответ можно отправить один раз</div>`;
         } else {
-          html += `<div class="mut" style="font-size:13px;margin:8px 0 6px">Нажмите на число в столбце B, чтобы изменить его.</div><div class="answers">${r.a.map((a, i) => `<button class="ans t${i}" data-a="${i}" style="min-height:52px;padding:12px 14px">${SHAPES[i]}<span>${esc(a)}</span></button>`).join("")}</div>`;
+          html += `<div class="answers">${r.a.map((a, i) => `<button class="ans t${i}" data-a="${i}" style="min-height:52px;padding:12px 14px">${SHAPES[i]}<span>${esc(a)}</span></button>`).join("")}</div>`;
         }
       }
       html += pwBlock(r) + `</div></div>`;
       app.innerHTML = html;
-      if (r.sheet) {
-        sheetW = Sheet($("#sh"), r.sheet, {vals: sheetVals.vals, onChange: v => { sheetVals.vals = v; }});
-        const gsb = $("#gsb"); if (gsb) gsb.onclick = () => GoalSeekDialog(r.sheet, () => sheetW.vals, (nv, by) => { sheetW.set(nv, by); sheetW.select(by); toast("Готово: смотрите ячейку " + by); });
-        const rst = $("#rst"); if (rst) rst.onclick = () => { sheetW.set({}); };
+      sheetW = null;
+      if (hasSheet(r)) {
+        const sheet = {cells: r.cells};
+        sheetW = Sheet($("#sh"), sheet, {over: sheetMem.over, onChange: o => { sheetMem.over = o; }});
+        const gsb = $("#gsb"); if (gsb) gsb.onclick = () => { if (!sheetW.commitIfEditing()) return; GoalSeekDialog(sheet, () => sheetW.over, (nv, by) => { sheetW.set(nv, by); sheetW.select(by); toast("Готово: смотрите ячейку " + by); }); };
+        const rst = $("#rst"); if (rst) rst.onclick = () => { if (rst.dataset.c !== "1") { rst.dataset.c = "1"; rst.textContent = "Точно?"; setTimeout(() => { rst.dataset.c = ""; rst.textContent = "Очистить"; }, 2500); return; } rst.dataset.c = ""; rst.textContent = "Очистить"; sheetW.set({}); };
         const avs = $("#avs");
         if (avs) {
           const submit = () => {
-            if ($("#ice") || (myLock && myLock.qi === S.qi)) return;
-            const v = $("#av").value.trim(); if (!isFinite(parseNum(v))) { toast("Введите число"); return; }
+            if ($("#ice") || locked()) return;
+            if (sheetW && !sheetW.commitIfEditing()) return;
+            const v = $("#av").value.trim(); if (!isFinite(parseNum(v))) { toast("Введите число — ответ на вопрос"); return; }
             if (!send({t: "ans", qi: S.qi, v})) { toast("Нет связи — нажмите ещё раз"); return; }
-            myLock = {qi: S.qi, v}; vibrate(30); render();
+            myLock = {k: qkey(), v}; vibrate(30); render();
           };
           avs.onclick = submit; $("#av").onkeydown = e => { if (e.key === "Enter") { e.preventDefault(); submit(); } };
         }
@@ -821,46 +1022,47 @@ function Player() {
       updatePw();
       const loop = () => { const el = $("#pt"); if (!el) return; el.style.transform = `scaleX(${Math.max(0, Math.min(1, (deadline - performance.now()) / (r.t * 1000)))})`; raf = requestAnimationFrame(loop); };
       loop();
-      if (P && P.frozen && P.frozen.qi === S.qi && P.frozen.id !== seen.frozen) { seen.frozen = P.frozen.id; freeze(P.frozen.by); }
+      if (P && P.frozen && P.frozen.qi === S.qi && P.frozen.set === S.set && P.frozen.id !== seen.frozen) { seen.frozen = P.frozen.id; freeze(P.frozen.by); }
       return;
     }
     if (key.startsWith("locked")) {
-      const lk = (myLock && myLock.qi === S.qi) ? myLock : P.locked;
+      const lk = (myLock && myLock.k === qkey()) ? myLock : P.locked;
       const r = RR();
-      const badge = r.type === "num" ? `<div class="big disp" style="font-size:44px">${esc(lk.v)}</div>` : `<div class="ans t${lk.a}" style="width:96px;height:96px;justify-content:center;border-radius:20px;min-height:0">${SHAPES[lk.a].replace('class="shape"', 'class="shape" style="width:44px;height:44px"')}</div>`;
+      const badge = isNumeric(r) ? `<div class="big disp" style="font-size:44px">${esc(lk.v)}</div>` : `<div class="ans t${lk.a}" style="width:96px;height:96px;justify-content:center;border-radius:20px;min-height:0">${SHAPES[lk.a].replace('class="shape"', 'class="shape" style="width:44px;height:44px"')}</div>`;
       app.innerHTML = `<div class="ply">${top()}<div class="pc"><div class="wait up">${badge}<h1>Ответ принят</h1><p class="mut" style="margin:0;font-size:17px">Ждём остальных…</p></div></div></div>`;
       return;
     }
     if (key.startsWith("rv")) {
-      const r = RR(), L = P && P.last && P.last.qi === S.qi ? P.last : null;
+      const r = RR(), L = P && P.last && P.last.qi === S.qi && P.last.set === S.set ? P.last : null;
       const ok = L && L.ok, none = !L || (L.a == null && L.v == null);
-      const right = r.type === "mc" ? r.a[r.c] : r.type === "sheetmc" ? r.a[r.c] : r.show;
+      const right = isNumeric(r) ? r.show : r.a[r.c];
       app.innerHTML = `<div class="ply">${top()}<div class="res ${ok ? "good" : none ? "none" : "bad"} up">
         <div class="big disp">${ok ? "Верно!" : none ? "Время вышло" : "Неверно"}</div>
         ${ok ? `<div class="pts">+${L.pts}</div>` : ""}
         ${ok && P.streak > 1 ? `<div class="rk">${P.streak} подряд</div>` : ""}
         ${!ok && L && L.v != null ? `<div class="rk">Ваш ответ: ${esc(L.v)}</div>` : ""}
         ${!ok ? `<div class="rk">Правильно: ${esc(right)}</div>` : ""}
+        ${r.how ? `<div class="rk">Формула в ${r.how[0]}: ${esc(r.how[1])}</div>` : ""}
         ${P ? `<div class="rk">${P.rank} место из ${P.of}</div>` : ""}</div></div>`;
-      if (seen.res !== S.qi) { seen.res = S.qi; if (ok) { confetti(); vibrate(60); } else if (!none) vibrate([60, 60, 60]); }
+      if (seen.res !== qkey()) { seen.res = qkey(); if (ok) { confetti(); vibrate(60); } else if (!none) vibrate([60, 60, 60]); }
       return;
     }
     if (S.phase === "board" || S.phase === "final") {
       const fin = S.phase === "final";
       app.innerHTML = `<div class="ply">${top()}<div class="pc"><div class="wait up">
         <div class="big disp" style="font-size:88px">${P ? P.rank : "–"}</div><div class="mut" style="font-size:17px;margin-top:-6px">${P ? `место из ${P.of}` : ""}</div>
-        <h1 style="font-size:28px">${fin ? "Игра окончена" : "Смотрите на экран"}</h1>
-        <p class="mut" style="margin:0;font-size:17px">${P ? P.score + " очков" : ""}${fin ? " · Спасибо!" : ""}</p></div></div></div>`;
+        <h1 style="font-size:28px">${fin ? (S.set === "quiz" ? "Квиз окончен" : "Практикум окончен") : "Смотрите на экран"}</h1>
+        <p class="mut" style="margin:0;font-size:17px">${P ? P.score + " очков" : ""}${fin && S.set === "quiz" ? " · дальше — практикум" : fin ? " · Спасибо!" : ""}</p></div></div></div>`;
       if (fin && P && P.rank <= 3 && prev !== key) confetti();
     }
   }
   function updatePw() {
     if (!P || !S) return;
     const pw = P.pw || {fr: 0, x2: 0, ff: 0, sh: 0};
-    const hid = P.hide && P.hide.qi === S.qi ? P.hide.idx : [];
+    const hid = P.hide && P.hide.qi === S.qi && P.hide.set === S.set ? P.hide.idx : [];
     document.querySelectorAll(".ans").forEach(b => b.classList.toggle("gone", hid.includes(+b.dataset.a)));
     const set = (id, n, on) => { const b = $("#pw" + id), k = $("#k" + id); if (!b) return; k.textContent = n > 0 ? "×" + n : ""; b.disabled = !(n > 0) || on; b.classList.toggle("on", !!on); if (on) b.style.opacity = 1; };
-    set("fr", pw.fr, false); set("x2", pw.x2, P.x2on === S.qi); set("ff", pw.ff, hid.length > 0);
+    set("fr", pw.fr, false); set("x2", pw.x2, P.x2on === S.set + S.qi); set("ff", pw.ff, hid.length > 0);
     const sh = $("#shld"); if (sh) sh.querySelector("span").textContent = pw.sh > 0 ? "Щит активен: защитит от одной заморозки" : "Щита нет";
   }
   if (room) go();
@@ -869,6 +1071,7 @@ function Player() {
 
 if (typeof mqtt === "undefined") app.innerHTML = '<div class="ply"><div class="pc"><h1>Не загрузилось</h1><p class="mut">Обновите страницу.</p></div></div>';
 else if (IS_HOST) Host(); else Player();
+
 </script>
 </body>
 </html>
