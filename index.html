@@ -222,6 +222,13 @@ function Host(){
   const save = () => store.set("host", H);
   const total = QUESTIONS.length;
   const pids = () => Object.keys(H.players);
+  const leftMs = () => H.paused ? (H.pauseLeft || 0) : Math.max(0, H.qEnd - Date.now());
+  function togglePause() {
+    if (H.phase !== "question") return;
+    if (H.paused) { H.qEnd = Date.now() + (H.pauseLeft || 0); H.paused = false; }
+    else { H.pauseLeft = leftMs(); H.paused = true; }
+    save(); pubState(); render();
+  }
   const joinUrl = () => { const u = new URL(location.href); u.search = ""; u.hash = ""; u.searchParams.set("r", H.room); if (H.b) u.searchParams.set("b", H.b); if (PARAMS.get("broker")) u.searchParams.set("broker", PARAMS.get("broker")); return u.toString(); };
 
   function start(){
@@ -247,7 +254,7 @@ function Host(){
     const st = {v: 1, phase: H.phase, qi: H.qi, total, n: pids().length, answered: Object.keys(H.ans).length};
     if (H.phase === "question" || H.phase === "reveal"){ st.q = {text: q.q, answers: q.a, time: q.t}; }
     if (H.phase === "question"){
-      st.endsIn = Math.max(0, H.qEnd - Date.now());
+      st.endsIn = leftMs(); st.paused = !!H.paused;
       st.roster = ranked().slice(0, 40).map(id => [id, H.players[id].name]);
     }
     if (H.phase === "reveal"){ st.correct = q.c - 1; st.counts = H.counts; }
@@ -277,9 +284,9 @@ function Host(){
     if (m.t === "ans"){
       if (H.phase !== "question" || m.qi !== H.qi || H.ans[pid]) { pubPlayer(pid); return; }
       const a = m.a | 0; if (a < 0 || a > 3) return;
-      if (Date.now() > H.qEnd + 400) { pubPlayer(pid); return; }
+      if (!H.paused && Date.now() > H.qEnd + 400) { pubPlayer(pid); return; }
       if (p.hide && p.hide.qi === H.qi && p.hide.idx.includes(a)) return;
-      H.ans[pid] = {a, left: Math.max(0, H.qEnd - Date.now())};
+      H.ans[pid] = {a, left: leftMs()};
       H.counts[a]++;
       save(); pubPlayer(pid); pubState();
       if (Object.keys(H.ans).length >= pids().filter(id => !H.players[id].kicked).length) reveal();
@@ -318,11 +325,12 @@ function Host(){
     if (H.qi + 1 >= total) return finish();
     H.qi++; H.phase = "question"; H.ans = {}; H.counts = [0,0,0,0]; H.feed = [];
     for (const id of pids()){ const p = H.players[id]; p.x2on = false; p.hide = null; p.frozen = null; }
-    H.qEnd = Date.now() + QUESTIONS[H.qi].t * 1000;
+    H.qEnd = Date.now() + QUESTIONS[H.qi].t * 1000; H.paused = false;
     save(); pubState(); pids().forEach(pubPlayer); render();
   }
   function reveal(){
     if (H.phase !== "question") return;
+    H.paused = false;
     const q = QUESTIONS[H.qi], T0 = q.t * 1000;
     H.prevRank = {}; ranked().forEach((id, i) => H.prevRank[id] = i);
     for (const id of pids()){
@@ -349,20 +357,21 @@ function Host(){
   }
   function onTick(){
     if (H.phase !== "question") return;
-    const left = H.qEnd - Date.now();
+    const left = H.paused ? H.pauseLeft : H.qEnd - Date.now();
     const t = $("#htime"), b = $("#hbar");
     if (t) t.textContent = Math.max(0, Math.ceil(left / 1000));
     if (b) b.style.transform = `scaleX(${Math.max(0, left / (QUESTIONS[H.qi].t * 1000))})`;
-    if (left <= 0) reveal();
+    if (!H.paused && left <= 0) reveal();
   }
-  document.addEventListener("keydown", e => { if (e.target.tagName === "INPUT" || e.target.tagName === "BUTTON") return; if (e.code === "Space" || e.code === "Enter" || e.code === "ArrowRight") { e.preventDefault(); next(); } });
+  document.addEventListener("keydown", e => { if (e.target.tagName === "INPUT" || e.target.tagName === "BUTTON") return; if (e.code === "Space" || e.code === "Enter" || e.code === "ArrowRight") { e.preventDefault(); next(); } if (e.code === "KeyP") { e.preventDefault(); togglePause(); } });
 
   function ctlBar(primary){
     return `<div class="hctl"><div style="display:flex;gap:10px"><button class="btn ghost" id="reset">Жаңа ойын</button></div>
-      ${primary ? `<button class="btn" id="next">${primary}</button>` : ""}</div>`;
+      <div style="display:flex;gap:10px">${H.phase === "question" ? `<button class="btn ghost" id="pause">${H.paused ? "▶ Жалғастыру" : "❚❚ Кідірту"}</button>` : ""}${primary ? `<button class="btn" id="next">${primary}</button>` : ""}</div></div>`;
   }
   function bind(){
     const n = $("#next"); if (n) n.onclick = next;
+    const pz = $("#pause"); if (pz) pz.onclick = togglePause;
     const r = $("#reset"); if (r) r.onclick = () => {
       if (r.dataset.c !== "1"){ r.dataset.c = "1"; r.textContent = "Растау: бәрі өшеді"; setTimeout(() => { r.dataset.c = ""; r.textContent = "Жаңа ойын"; }, 3000); return; }
       pub("s", {v: 1, phase: "closed"}, true); H = fresh(); start();
@@ -399,9 +408,9 @@ function Host(){
     } else if (H.phase === "question" || H.phase === "reveal"){
       const q = QUESTIONS[H.qi], rv = H.phase === "reveal", c = q.c - 1;
       const n = pids().length, done = Object.keys(H.ans).length, max = Math.max(1, ...H.counts);
-      const left = Math.max(0, H.qEnd - Date.now());
+      const left = leftMs();
       app.innerHTML = `<div class="host">${head}<div class="hbody">
-        <div class="qhead"><h2 class="qtext">${esc(q.q)}</h2><div class="timer" id="htime">${rv ? "" : Math.ceil(left / 1000)}</div></div>
+        <div class="qhead"><h2 class="qtext">${esc(q.q)}</h2><div class="timer" id="htime" style="${!rv && H.paused ? "color:var(--a2)" : ""}">${rv ? "" : Math.ceil(left / 1000)}</div></div>
         <div class="bar"><i id="hbar" style="transform:scaleX(${rv ? 0 : left / (q.t * 1000)})"></i></div>
         <div class="hgrid">
           <div class="tiles">${q.a.map((a, i) => `<div class="tile t${i} ${rv ? (i === c ? "win" : "off") : ""}">${SHAPES[i]}<span>${esc(a)}</span>${rv ? `<span class="cnt">${H.counts[i]}</span><span class="fill" style="width:${H.counts[i] / max * 100}%"></span>` : ""}</div>`).join("")}</div>
@@ -562,7 +571,7 @@ function Player(){
     }
     if (key.startsWith("q")){
       const q = S.q;
-      app.innerHTML = `<div class="ply">${top()}<div class="ptimer"><i id="pt"></i></div>
+      app.innerHTML = `<div class="ply">${top()}<div class="ptimer"><i id="pt"></i></div><div id="pzl" class="hidden" style="font-size:12px;font-weight:700;color:var(--a2);letter-spacing:.05em;text-transform:uppercase">Кідірту — уақыт тоқтатылды</div>
         <div class="pq up">${esc(q.text)}</div>
         <div class="answers">${q.answers.map((a, i) => `<button class="ans t${i}" data-a="${i}">${SHAPES[i]}<span>${esc(a)}</span></button>`).join("")}</div>
         <div class="pw">
@@ -581,7 +590,7 @@ function Player(){
       $("#pwx2").onclick = () => send({t: "pw", k: "x2", qi: S.qi});
       $("#pwff").onclick = () => send({t: "pw", k: "ff", qi: S.qi});
       updatePw();
-      const loop = () => { const el = $("#pt"); if (!el) return; const tot = S.q.time * 1000; el.style.transform = `scaleX(${Math.max(0, Math.min(1, (deadline - performance.now()) / tot))})`; raf = requestAnimationFrame(loop); };
+      const loop = () => { const el = $("#pt"); if (!el) return; const tot = S.q.time * 1000; const ms = S.paused ? (S.endsIn || 0) : deadline - performance.now(); el.style.transform = `scaleX(${Math.max(0, Math.min(1, ms / tot))})`; el.style.background = S.paused ? "var(--a2)" : ""; const pl = $("#pzl"); if (pl) pl.classList.toggle("hidden", !S.paused); raf = requestAnimationFrame(loop); };
       loop();
       if (P && P.frozen && P.frozen.qi === S.qi && P.frozen.id !== seen.frozen) { seen.frozen = P.frozen.id; freeze(P.frozen.by); }
       return;

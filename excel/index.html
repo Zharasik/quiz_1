@@ -631,6 +631,13 @@ function Host() {
   const R = () => RS()[H.qi];
   const pids = () => Object.keys(H.players);
   const joinUrl = () => { const u = new URL(location.href); u.search = ""; u.hash = ""; u.searchParams.set("r", H.room); if (H.b) u.searchParams.set("b", H.b); if (PARAMS.get("broker")) u.searchParams.set("broker", PARAMS.get("broker")); return u.toString(); };
+  const leftMs = () => H.paused ? (H.pauseLeft || 0) : Math.max(0, H.qEnd - Date.now());
+  function togglePause() {
+    if (H.phase !== "question") return;
+    if (H.paused) { H.qEnd = Date.now() + (H.pauseLeft || 0); H.paused = false; }
+    else { H.pauseLeft = leftMs(); H.paused = true; }
+    save(); pubState(); render();
+  }
   const newPlayer = name => ({name, score: 0, streak: 0, pw: {fr: 1, x2: 1, ff: 1, sh: 1}, x2on: false, hide: null, frozen: null, last: null, note: null});
 
   function start() {
@@ -649,7 +656,7 @@ function Host() {
 
   function pubState() {
     const st = {v: 2, set: H.set, phase: H.phase, qi: H.qi, total: total(), n: pids().length, answered: Object.keys(H.ans).length};
-    if (H.phase === "question") { st.endsIn = Math.max(0, H.qEnd - Date.now()); st.roster = ranked().slice(0, 40).map(id => [id, H.players[id].name]); }
+    if (H.phase === "question") { st.endsIn = leftMs(); st.paused = !!H.paused; st.roster = ranked().slice(0, 40).map(id => [id, H.players[id].name]); }
     pub("s", st, true);
   }
   function pubPlayer(pid) {
@@ -681,11 +688,11 @@ function Host() {
     const r = R();
     if (m.t === "ans") {
       if (H.phase !== "question" || m.qi !== H.qi || H.ans[pid]) { pubPlayer(pid); return; }
-      if (Date.now() > H.qEnd + 400) { pubPlayer(pid); return; }
+      if (!H.paused && Date.now() > H.qEnd + 400) { pubPlayer(pid); return; }
       let rec;
       if (isNumeric(r)) { const v = String(m.v == null ? "" : m.v).slice(0, 24); if (!isFinite(parseNum(v))) return; rec = {v, ok: check(r, v)}; H.counts[rec.ok ? 0 : 1]++; }
       else { const a = m.a | 0; if (a < 0 || a > 3) return; if (p.hide && p.hide.qi === H.qi && p.hide.set === H.set && p.hide.idx.includes(a)) return; rec = {a, ok: a === r.c}; H.counts[a]++; }
-      rec.left = Math.max(0, H.qEnd - Date.now());
+      rec.left = leftMs();
       H.ans[pid] = rec;
       if (isNumeric(r) && rec.ok && !H.feed.some(e => e.k === "ok")) addFeed("ok", `<b>${esc(p.name)}</b> первым решил задание`);
       save(); pubPlayer(pid); pubState();
@@ -723,11 +730,12 @@ function Host() {
     if (H.qi + 1 >= total()) return finish();
     H.qi++; H.phase = "question"; H.ans = {}; H.counts = [0, 0, 0, 0]; H.feed = [];
     for (const id of pids()) { const p = H.players[id]; p.x2on = false; p.hide = null; p.frozen = null; }
-    H.qEnd = Date.now() + R().t * 1000;
+    H.qEnd = Date.now() + R().t * 1000; H.paused = false;
     save(); pubState(); pids().forEach(pubPlayer); render();
   }
   function reveal() {
     if (H.phase !== "question") return;
+    H.paused = false;
     const r = R(), T0 = r.t * 1000;
     H.prevRank = {}; ranked().forEach((id, i) => H.prevRank[id] = i);
     for (const id of pids()) {
@@ -758,13 +766,13 @@ function Host() {
   function fmtTime(s) { return s >= 60 ? Math.floor(s / 60) + ":" + String(s % 60).padStart(2, "0") : String(s); }
   function onTick() {
     if (H.phase !== "question") return;
-    const left = H.qEnd - Date.now();
+    const left = H.paused ? H.pauseLeft : H.qEnd - Date.now();
     const t = $("#htime"), b = $("#hbar");
     if (t) t.textContent = fmtTime(Math.max(0, Math.ceil(left / 1000)));
     if (b) b.style.transform = `scaleX(${Math.max(0, left / (R().t * 1000))})`;
-    if (left <= 0) reveal();
+    if (!H.paused && left <= 0) reveal();
   }
-  document.addEventListener("keydown", e => { if (e.target.tagName === "INPUT" || e.target.tagName === "BUTTON") return; if (e.code === "Space" || e.code === "Enter" || e.code === "ArrowRight") { e.preventDefault(); next(); } });
+  document.addEventListener("keydown", e => { if (e.target.tagName === "INPUT" || e.target.tagName === "BUTTON") return; if (e.code === "Space" || e.code === "Enter" || e.code === "ArrowRight") { e.preventDefault(); next(); } if (e.code === "KeyP") { e.preventDefault(); togglePause(); } });
 
   function ctlBar(primary, extra, left) {
     return `<div class="hctl"><div style="display:flex;gap:10px;align-items:center"><button class="btn ghost" id="reset">Новая игра</button>${left || ""}</div><div style="display:flex;gap:10px">${extra || ""}${primary ? `<button class="btn" id="next">${primary}</button>` : ""}</div></div>`;
@@ -776,6 +784,7 @@ function Host() {
       pub("s", {v: 2, phase: "closed"}, true); H = fresh(); start();
     };
     const tp = $("#topractice"); if (tp) tp.onclick = () => toSet("practice");
+    const pz = $("#pause"); if (pz) pz.onclick = togglePause;
   }
   function side(done, n) {
     return `<div class="side"><div><div class="big">${done}<span class="mut" style="font-size:24px"> / ${n}</span></div><div class="mut" style="font-size:15px;margin-top:6px">ответили</div></div>
@@ -805,8 +814,8 @@ function Host() {
         H.players[id].kicked = true; pubPlayer(id); delete H.players[id]; save(); pubState(); render(); });
     } else if (H.phase === "question" || H.phase === "reveal") {
       const r = R(), rv = H.phase === "reveal", n = pids().length, done = Object.keys(H.ans).length;
-      const left = Math.max(0, H.qEnd - Date.now());
-      const top = `<div class="qhead"><div style="flex:1">${r.k ? `<div class="kicker">${esc(r.k)}</div>` : ""}<h2 class="qtext">${esc(r.q)}</h2></div><div class="timer" id="htime">${rv ? "" : fmtTime(Math.ceil(left / 1000))}</div></div>
+      const left = leftMs();
+      const top = `<div class="qhead"><div style="flex:1">${r.k ? `<div class="kicker">${esc(r.k)}</div>` : ""}<h2 class="qtext">${esc(r.q)}</h2></div><div style="text-align:right">${!rv && H.paused ? `<div class="kicker" style="color:var(--a2)">Пауза</div>` : ""}<div class="timer" id="htime" style="${!rv && H.paused ? "color:var(--a2)" : ""}">${rv ? "" : fmtTime(Math.ceil(left / 1000))}</div></div></div>
         <div class="bar"><i id="hbar" style="transform:scaleX(${rv ? 0 : left / (r.t * 1000)})"></i></div>`;
       let body;
       const nextLbl = rv ? (SETS[H.set].quick ? (H.qi + 1 >= total() ? "Итоги" : "Следующий вопрос") : "Результаты") : "Показать ответ";
@@ -828,7 +837,7 @@ function Host() {
         }
         body = `<div class="hsheet"><div><div id="hs"></div></div>${right}</div>`;
       }
-      app.innerHTML = `<div class="host">${head}<div class="hbody">${top}${body}</div>${ctlBar(nextLbl)}</div>`;
+      app.innerHTML = `<div class="host">${head}<div class="hbody">${top}${body}</div>${ctlBar(nextLbl, rv ? "" : `<button class="btn ghost" id="pause">${H.paused ? "▶ Продолжить" : "❚❚ Пауза"}</button>`)}</div>`;
       if (hasSheet(r)) {
         let over = {};
         if (rv && r.sol) over = Object.assign({}, r.sol);
@@ -980,7 +989,7 @@ function Player() {
     if (key.startsWith("q")) {
       const r = RR();
       if (sheetMem.key !== qkey()) sheetMem = {key: qkey(), over: {}};
-      let html = `<div class="ply"><div class="pw-wrap">${top()}<div class="ptimer"><i id="pt"></i></div>${r.k ? `<div class="pk">${esc(r.k)}</div>` : ""}<div class="pq up">${esc(r.q)}</div>`;
+      let html = `<div class="ply"><div class="pw-wrap">${top()}<div class="ptimer"><i id="pt"></i></div><div id="pzl" class="hidden" style="font-size:12px;font-weight:700;color:var(--a2);letter-spacing:.05em;text-transform:uppercase">Пауза — время остановлено</div>${r.k ? `<div class="pk">${esc(r.k)}</div>` : ""}<div class="pq up">${esc(r.q)}</div>`;
       if (r.type === "mc") {
         html += `<div class="answers">${r.a.map((a, i) => `<button class="ans t${i}" data-a="${i}">${SHAPES[i]}<span>${esc(a)}</span></button>`).join("")}</div>`;
       } else {
@@ -1020,7 +1029,7 @@ function Player() {
       $("#pwx2").onclick = () => send({t: "pw", k: "x2", qi: S.qi});
       const ff = $("#pwff"); if (ff) ff.onclick = () => send({t: "pw", k: "ff", qi: S.qi});
       updatePw();
-      const loop = () => { const el = $("#pt"); if (!el) return; el.style.transform = `scaleX(${Math.max(0, Math.min(1, (deadline - performance.now()) / (r.t * 1000)))})`; raf = requestAnimationFrame(loop); };
+      const loop = () => { const el = $("#pt"); if (!el) return; const ms = S.paused ? (S.endsIn || 0) : deadline - performance.now(); el.style.transform = `scaleX(${Math.max(0, Math.min(1, ms / (r.t * 1000)))})`; el.style.background = S.paused ? "var(--a2)" : ""; const pl = $("#pzl"); if (pl) pl.classList.toggle("hidden", !S.paused); raf = requestAnimationFrame(loop); };
       loop();
       if (P && P.frozen && P.frozen.qi === S.qi && P.frozen.set === S.set && P.frozen.id !== seen.frozen) { seen.frozen = P.frozen.id; freeze(P.frozen.by); }
       return;
