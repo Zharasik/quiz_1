@@ -305,6 +305,25 @@ a.btn svg{width:18px;height:18px}
 .pvh .mode button{height:34px;font-size:13px;padding:0 12px}
 .pv{margin:0;padding:12px 12px 12px 32px;background:var(--bg);border-radius:10px;display:flex;flex-direction:column;gap:6px;font-size:15px;line-height:1.4}
 @media (max-width:900px){.edcols,.edform{grid-template-columns:1fr}}
+.vgrid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.vcard{background:var(--s1);border:1px solid var(--line);border-radius:12px;overflow:hidden;display:flex;flex-direction:column}
+.vcard.own{opacity:.7}
+.vimg{display:flex;align-items:center;justify-content:center;width:100%;aspect-ratio:4/3;background:#fff;font-size:12px}
+.vimg img{width:100%;height:100%;object-fit:contain}
+.vname{font-size:13px;font-weight:700;padding:8px 10px 2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.stars{display:flex;justify-content:space-between;padding:2px 6px 8px}
+.stars button{font-size:22px;line-height:1;color:#3A3F4B;padding:4px 2px;flex:1}
+.stars button.on{color:#F5A524}
+.stars.big{gap:2px;padding:0;flex:1;min-width:0}
+.stars.big button{font-size:32px;padding:4px 0}
+.pview{position:fixed;inset:0;z-index:65;background:#0A0B0E;display:flex;flex-direction:column;padding:max(12px,env(safe-area-inset-top)) 12px max(14px,env(safe-area-inset-bottom));gap:10px}
+.pvtop{display:flex;align-items:center;gap:10px}
+.pvtop b{flex:1;font-size:18px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.pvtop .btn{height:42px;font-size:15px}
+.pvimg{flex:1;min-height:0;display:flex;align-items:center;justify-content:center}
+.pvimg img{max-width:100%;max-height:100%;object-fit:contain;border-radius:8px;background:#fff}
+.pvbar{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.pvbar .btn{height:48px;width:48px;padding:0;flex:none}
 </style>
 </head>
 <body>
@@ -487,7 +506,7 @@ function PlanEditor(plan0, onDone) {
 /* ===================== ЖҮРГІЗУШІ (мұғалім) ===================== */
 function Host() {
   let H = store.get("host");
-  const fresh = () => ({room: rid(5, "ABCDEFGHJKLMNPQRSTUVWXYZ23456789"), b: +(PARAMS.get("b") || 0), lang: store.get("lang") || "ru", plan: store.get("plan") || defaultPlan(), set: "quiz", phase: "lobby", qi: -1, players: {}, ans: {}, counts: [0, 0, 0, 0], qEnd: 0, feed: [], prevRank: {}, subs: {}, grades: {}, votes: {}});
+  const fresh = () => ({room: rid(5, "ABCDEFGHJKLMNPQRSTUVWXYZ23456789"), b: +(PARAMS.get("b") || 0), lang: store.get("lang") || "ru", plan: store.get("plan") || defaultPlan(), set: "quiz", phase: "lobby", qi: -1, players: {}, ans: {}, counts: [0, 0, 0, 0], qEnd: 0, feed: [], prevRank: {}, subs: {}, grades: {}, rates: {}});
   if (!H || !H.room || !SETS[H.set]) H = fresh();
   if (!Array.isArray(H.plan) || !H.plan.length) H.plan = store.get("plan") || defaultPlan();
   if (!H.lang) H.lang = "ru";
@@ -534,7 +553,7 @@ function Host() {
     const r = ranked();
     pub("p/" + pid, {name: p.name, score: p.score, rank: r.indexOf(pid) + 1, of: r.length, streak: p.streak, pw: p.pw, x2on: p.x2on ? rk() : "", hide: p.hide, frozen: p.frozen, last: p.last,
       locked: H.ans[pid] ? {set: H.set, qi: H.qi, a: H.ans[pid].a} : null,
-      sub: H.subs[pid] ? {k: rk(), left: H.subs[pid].left} : null, grade: H.grades[pid] ? {k: rk(), g: H.grades[pid]} : null, voted: H.votes[pid] ? {k: rk(), to: H.votes[pid]} : null,
+      sub: H.subs[pid] ? {k: rk(), left: H.subs[pid].left} : null, grade: H.grades[pid] ? {k: rk(), g: H.grades[pid]} : null, rates: {k: rk(), m: (H.rates || {})[pid] || {}},
       note: p.note, kicked: !!p.kicked}, true);
   }
 
@@ -554,9 +573,11 @@ function Host() {
     }
     if (!p || m.set !== H.set) return;
     const r = R();
-    if (m.t === "vote") {
-      if (H.phase !== "vote" || m.qi !== H.qi || !H.subs[m.to] || m.to === pid) return;
-      H.votes[pid] = m.to; save(); pubPlayer(pid); pubState(); render(); return;
+    if (m.t === "rate") {
+      const v = m.v | 0;
+      if (H.phase !== "vote" || m.qi !== H.qi || !H.subs[m.to] || m.to === pid || v < 1 || v > 5) return;
+      H.rates = H.rates || {}; (H.rates[pid] = H.rates[pid] || {})[m.to] = v;
+      save(); pubPlayer(pid); pubState(); render(); return;
     }
     if (m.t === "ans" && r && r.type === "mc") {
       if (H.phase !== "question" || m.qi !== H.qi || H.ans[pid]) { pubPlayer(pid); return; }
@@ -603,7 +624,7 @@ function Host() {
 
   function startQ() {
     if (H.qi + 1 >= total()) return finish();
-    H.qi++; H.phase = "question"; H.ans = {}; H.counts = [0, 0, 0, 0]; H.feed = []; H.subs = {}; H.grades = {}; H.votes = {}; H.paused = false;
+    H.qi++; H.phase = "question"; H.ans = {}; H.counts = [0, 0, 0, 0]; H.feed = []; H.subs = {}; H.grades = {}; H.rates = {}; H.paused = false;
     for (const k in IMG) delete IMG[k];
     for (const id of pids()) { const p = H.players[id]; p.x2on = false; p.hide = null; p.frozen = null; }
     H.qEnd = Date.now() + R().t * 1000;
@@ -628,9 +649,18 @@ function Host() {
     }
     H.phase = "reveal"; save(); pubState(); pids().forEach(pubPlayer); render();
   }
-  function voteCounts() { const c = {}; Object.values(H.votes).forEach(to => c[to] = (c[to] || 0) + 1); return c; }
+  function stats() { const st = {}; Object.values(H.rates || {}).forEach(m => Object.keys(m).forEach(to => { const x = st[to] = st[to] || {n: 0, sum: 0}; x.n++; x.sum += m[to]; })); Object.values(st).forEach(x => x.avg = Math.round(x.sum / x.n * 10) / 10); return st; }
+  const avgTxt = x => x ? `★ ${String(x.avg).replace(".", ",")} · ${x.n}` : "";
+  function makeThumb(data) {
+    return new Promise(res => { const im = new Image(); im.onload = () => { const k = Math.min(1, 560 / Math.max(im.width, im.height)); const c = document.createElement("canvas"); c.width = Math.round(im.width * k); c.height = Math.round(im.height * k); const x = c.getContext("2d"); x.fillStyle = "#fff"; x.fillRect(0, 0, c.width, c.height); x.drawImage(im, 0, 0, c.width, c.height); res(c.toDataURL("image/jpeg", .72)); }; im.onerror = () => res(null); im.src = data; });
+  }
+  async function startVote() {
+    H.phase = "vote"; H.rates = {}; save(); pubState(); pids().forEach(pubPlayer); render();
+    const k = rk();
+    for (const id of subPids()) { if (!IMG[id]) continue; const t = await makeThumb(IMG[id]); if (t && H.phase === "vote" && rk() === k) pub("th/" + id, {k, name: H.players[id] ? H.players[id].name : "", data: t}, true); }
+  }
   function finalizeTask() {
-    const r = R(), T0 = r.t * 1000, vc = voteCounts(), max = Math.max(0, ...Object.values(vc));
+    const r = R(), T0 = r.t * 1000, st = stats(), max = Math.max(0, ...Object.values(st).map(x => x.avg));
     H.prevRank = {}; ranked().forEach((id, i) => H.prevRank[id] = i);
     for (const id of pids()) {
       const p = H.players[id], s = H.subs[id];
@@ -639,16 +669,16 @@ function Host() {
       let pts = 0;
       if (g !== "redo") { pts = Math.round(500 + 500 * Math.min(1, s.left / T0)); if (g === "best") pts += 500; p.done = (p.done || 0) + 1; }
       else pts = 200;
-      const fav = max > 0 && vc[id] === max;
+      const fav = max > 0 && st[id] && st[id].avg === max;
       if (fav) pts += 300;
-      p.score += pts; p.last = {k: rk(), ok: g !== "redo", pts, g, votes: vc[id] || 0, fav};
+      p.score += pts; p.last = {k: rk(), ok: g !== "redo", pts, g, avg: st[id] ? st[id].avg : 0, fav};
     }
     H.phase = "board"; save(); pubState(); pids().forEach(pubPlayer); render();
   }
   function board() { H.phase = "board"; save(); pubState(); render(); }
   function finish() { H.phase = "final"; save(); pubState(); pids().forEach(pubPlayer); render(); }
   function toSet(set) {
-    H.set = set; H.phase = "lobby"; H.qi = -1; H.ans = {}; H.counts = [0, 0, 0, 0]; H.feed = []; H.prevRank = {}; H.subs = {}; H.grades = {}; H.votes = {};
+    H.set = set; H.phase = "lobby"; H.qi = -1; H.ans = {}; H.counts = [0, 0, 0, 0]; H.feed = []; H.prevRank = {}; H.subs = {}; H.grades = {}; H.rates = {};
     for (const id of pids()) { const n = H.players[id].name; H.players[id] = newPlayer(n); }
     save(); pubState(); pids().forEach(pubPlayer); render();
   }
@@ -690,8 +720,8 @@ function Host() {
   function grade(g) { if (!lb) return; H.grades[lb] = g; save(); pubPlayer(lb); drawLb(); }
   function drawLb() {
     let d = $("#lb"); if (!d) { d = document.createElement("div"); d.id = "lb"; d.className = "lb"; document.body.appendChild(d); }
-    const p = H.players[lb], L = subPids(), i = L.indexOf(lb), g = H.grades[lb], vc = voteCounts();
-    d.innerHTML = `<div class="lbtop"><span class="lbn">${esc(p ? p.name : "")}</span><span class="mut">${i + 1} / ${L.length}${vc[lb] ? ` · ${vc[lb]} дауыс` : ""}</span><button class="btn ghost" id="lbx">Жабу · Esc</button></div>
+    const p = H.players[lb], L = subPids(), i = L.indexOf(lb), g = H.grades[lb], st = stats();
+    d.innerHTML = `<div class="lbtop"><span class="lbn">${esc(p ? p.name : "")}</span><span class="mut">${i + 1} / ${L.length}${st[lb] ? ` · ${avgTxt(st[lb])} баға` : ""}</span><button class="btn ghost" id="lbx">Жабу · Esc</button></div>
       <div class="lbimg">${IMG[lb] ? `<img src="${IMG[lb]}" alt="${esc(p ? p.name : "")} жұмысы">` : `<div class="mut">Сурет жүктелуде…</div>`}</div>
       <div class="lbbar"><button class="btn ghost" id="lbp">←</button>
         <div style="display:flex;gap:10px">${Object.keys(GRADE).map((k, j) => `<button class="btn grade ${g === k || (!g && k === "ok") ? "on" : ""}" data-g="${k}" style="--gc:${GRADE[k].c}">${j + 1} · ${k === "ok" ? "✓ " : k === "best" ? "★ " : "↺ "}${GRADE[k].t}</button>`).join("")}</div>
@@ -711,7 +741,7 @@ function Host() {
     };
     const tp = $("#topractice"); if (tp) tp.onclick = () => toSet("practice");
     const pz = $("#pause"); if (pz) pz.onclick = togglePause;
-    const vt = $("#vote"); if (vt) vt.onclick = () => { H.phase = "vote"; H.votes = {}; save(); pubState(); pids().forEach(pubPlayer); render(); };
+    const vt = $("#vote"); if (vt) vt.onclick = startVote;
     const en = $("#endnow"); if (en) en.onclick = () => { if (en.dataset.c !== "1") { en.dataset.c = "1"; en.textContent = "Растау"; setTimeout(() => { en.dataset.c = ""; en.textContent = "Аяқтау"; }, 3000); return; } finish(); };
     document.querySelectorAll(".thumb[data-p]").forEach(t => t.onclick = () => openLb(t.dataset.p));
   }
@@ -720,11 +750,11 @@ function Host() {
       <div class="feed">${H.feed.map(e => `<div class="ev ${e.k}">${e.h}</div>`).join("") || `<div class="mut" style="font-size:14px">Мұздату, 50/50 және ×2 осында көрінеді</div>`}</div></div>`;
   }
   function gallery(big) {
-    const L = subPids(), vc = voteCounts();
+    const L = subPids(), st = stats();
     if (!L.length) return `<div class="mut" style="font-size:18px;padding:30px 0">Әзірге жұмыс жоқ…</div>`;
     return `<div class="gal ${big ? "big" : ""}">${L.map(id => { const g = H.grades[id];
       return `<button class="thumb" data-p="${id}">${IMG[id] ? `<img src="${IMG[id]}" alt="${esc(H.players[id].name)}">` : `<span class="ph">…</span>`}
-        <span class="cap"><span>${esc(H.players[id].name)}</span>${vc[id] ? `<b>${vc[id]}♥</b>` : ""}${g && g !== "ok" ? `<i style="background:${GRADE[g].c}">${g === "best" ? "★" : "↺"}</i>` : ""}</span></button>`; }).join("")}</div>`;
+        <span class="cap"><span>${esc(H.players[id].name)}</span>${st[id] ? `<b>${avgTxt(st[id])}</b>` : ""}${g && g !== "ok" ? `<i style="background:${GRADE[g].c}">${g === "best" ? "★" : "↺"}</i>` : ""}</span></button>`; }).join("")}</div>`;
   }
   function render() {
     if (lb) { drawLb(); return; }
@@ -772,17 +802,17 @@ function Host() {
           <div><div class="count">${done} / ${n} жіберді</div>${gallery(false)}</div>
         </div></div>${ctlBar("Уақытты аяқтау", `<button class="btn ghost" id="pause">${H.paused ? "▶ Жалғастыру" : "❚❚ Кідірту"}</button>`)}</div>`;
     } else if (H.phase === "review" || H.phase === "vote") {
-      const r = R(), n = pids().length, L = subPids(), vote = H.phase === "vote", nv = Object.keys(H.votes).length;
+      const r = R(), n = pids().length, L = subPids(), vote = H.phase === "vote", nv = Object.keys(H.rates || {}).length;
       app.innerHTML = `<div class="host">${head}<div class="hbody" style="justify-content:flex-start">
-        <div class="qhead"><div style="flex:1"><div class="kicker">${esc(r.k)} · ${vote ? "дауыс беру" : "жұмыстарды қарау"}</div><h2 class="qtext" style="font-size:clamp(26px,2.6vw,38px)">${vote ? "Ең ұнаған жұмысқа телефоннан дауыс беріңіз" : `${L.length} / ${n} жұмыс. Ашу үшін басыңыз`}</h2></div>${vote ? `<div class="timer" style="font-size:44px">${nv}<span class="mut" style="font-size:20px"> дауыс</span></div>` : ""}</div>
+        <div class="qhead"><div style="flex:1"><div class="kicker">${esc(r.k)} · ${vote ? "өзара бағалау" : "жұмыстарды қарау"}</div><h2 class="qtext" style="font-size:clamp(26px,2.6vw,38px)">${vote ? "Телефоннан әр жұмысты 1–5 жұлдызбен бағалаңыз" : `${L.length} / ${n} жұмыс. Ашу үшін басыңыз`}</h2></div>${vote ? `<div class="timer" style="font-size:44px">${nv}<span class="mut" style="font-size:20px"> бағалады</span></div>` : ""}</div>
         <div style="margin-top:18px">${gallery(true)}</div>
         <p class="mut" style="font-size:14px;margin:14px 0 0">Бағалау: жұмысты ашып 1 — қабылданды, 2 — үздік, 3 — пысықтау. Белгіленбегендер «қабылданды» болып есептеледі.</p>
-        </div>${ctlBar(vote ? "Дауысты жабу" : "Ұпай беру", vote || !L.length ? "" : `<button class="btn ghost" id="vote">♥ Дауыс беру</button>`)}</div>`;
+        </div>${ctlBar(vote ? "Бағалауды жабу" : "Ұпай беру", vote || !L.length ? "" : `<button class="btn ghost" id="vote">★ Өзара бағалау</button>`)}</div>`;
     } else if (H.phase === "board") {
       const rr = ranked().slice(0, 5), last = H.qi + 1 >= total(), task = isTask(R());
       app.innerHTML = `<div class="host">${head}<div class="hbody"><h2 class="h2">Көшбасшылар</h2><div class="board">
         ${rr.map((id, i) => { const p = H.players[id]; const up = H.qi > 0 && H.prevRank[id] != null && H.prevRank[id] > i;
-          return `<div class="row ${i === 0 ? "first" : ""}" style="animation-delay:${i * .07}s"><span class="n">${i + 1}</span><span>${esc(p.name)}${p.last && p.last.pts ? `<span class="d">+${p.last.pts}</span>` : ""}${p.last && p.last.fav ? `<span class="d">♥ көрермен таңдауы</span>` : ""}${up ? `<span class="d">▲</span>` : ""}</span><span class="sc">${p.score}</span></div>`; }).join("")}
+          return `<div class="row ${i === 0 ? "first" : ""}" style="animation-delay:${i * .07}s"><span class="n">${i + 1}</span><span>${esc(p.name)}${p.last && p.last.pts ? `<span class="d">+${p.last.pts}</span>` : ""}${p.last && p.last.fav ? `<span class="d">★ сыныптастар таңдауы</span>` : ""}${up ? `<span class="d">▲</span>` : ""}</span><span class="sc">${p.score}</span></div>`; }).join("")}
         </div></div>${ctlBar(last ? "Нәтиже" : (task ? "Келесі тапсырма" : "Келесі"), last ? "" : `<button class="btn ghost" id="endnow">Аяқтау</button>`)}</div>`;
     } else if (H.phase === "final") {
       const rr = ranked(); const ord = [1, 0, 2], hs = [190, 260, 140];
@@ -808,7 +838,8 @@ function Player() {
   let client = null, S = null, P = null, lastScreen = "", myLock = null, raf = 0, deadline = 0;
   let draft = {k: "", data: null}, sending = false, sentLocal = {k: "", data: null};
   const seen = {note: null, frozen: null, res: null};
-  let iceTimer = null;
+  let iceTimer = null, thSub = false, viewer = null;
+  const THUMBS = {}, myRates = {};
   const RR = () => !S || S.qi < 0 || !SETS[S.set] ? null : S.set === "quiz" ? COURSE.quiz[S.qi] : S.task || null;
   const lang = () => store.get("lang") || (S && S.lang) || "ru";
   const qkey = () => S ? S.set + ":" + S.qi : "";
@@ -816,8 +847,14 @@ function Player() {
   function send(o) { o.pid = pid; if (S) o.set = S.set; if (client && client.connected) { client.publish(T(room) + "i", JSON.stringify(o), {qos: 1}); return true; } return false; }
   function go() {
     client && client.end(true);
-    client = connect(bi, c => { c.subscribe([T(room) + "s", T(room) + "p/" + pid], {qos: 1}); if (joined) send({t: "join", name}); },
-      (topic, m) => { if (topic.endsWith("/s")) { S = m; if (S.phase === "question") deadline = performance.now() + (S.endsIn || 0); } else { P = m; onPlayerMsg(); } render(); });
+    thSub = false;
+    client = connect(bi, c => { thSub = false; c.subscribe([T(room) + "s", T(room) + "p/" + pid], {qos: 1}); if (joined) send({t: "join", name}); },
+      (topic, m) => {
+        if (topic.indexOf("/th/") > 0) { onThumb(topic.split("/").pop(), m); return; }
+        if (topic.endsWith("/s")) { S = m; if (S.phase === "question") deadline = performance.now() + (S.endsIn || 0); if (S.phase === "vote" && !thSub && client.connected) { thSub = true; client.subscribe(T(room) + "th/+", {qos: 1}); } }
+        else { P = m; onPlayerMsg(); }
+        render();
+      });
   }
   const locked = () => S && ((myLock && myLock.k === qkey()) || (P && P.locked && P.locked.set === S.set && P.locked.qi === S.qi));
   const mySub = () => P && P.sub && P.sub.k === qkey();
@@ -827,6 +864,35 @@ function Player() {
     if (P.note && P.note.id !== seen.note) { const first = seen.note === null && lastScreen === ""; seen.note = P.note.id; if (!first) toast(P.note.t); }
     if (P.frozen && P.frozen.id !== seen.frozen && S && S.phase === "question" && P.frozen.k === qkey() && !locked()) { seen.frozen = P.frozen.id; freeze(P.frozen.by); }
   }
+  function onThumb(id, m) {
+    if (!m || typeof m.data !== "string" || m.data.slice(0, 11) !== "data:image/") return;
+    THUMBS[id] = m;
+    const img = document.querySelector(`.vcard[data-p="${CSS.escape(id)}"] .vimg`);
+    if (img && m.k === qkey()) img.innerHTML = `<img src="${m.data}" alt="${esc(m.name)} жұмысы">`;
+    if (viewer === id) drawViewer();
+  }
+  const rated = to => (myRates[qkey()] || {})[to] || (P && P.rates && P.rates.k === qkey() && P.rates.m[to]) || 0;
+  const starRow = (to, big) => `<div class="stars ${big ? "big" : ""}" data-to="${esc(to)}">${[1, 2, 3, 4, 5].map(v => `<button data-v="${v}" class="${rated(to) >= v ? "on" : ""}" aria-label="${v} жұлдыз">★</button>`).join("")}</div>`;
+  function rate(to, v) {
+    if (!send({t: "rate", qi: S.qi, to, v})) { toast("Байланыс жоқ — қайта басыңыз"); return; }
+    (myRates[qkey()] = myRates[qkey()] || {})[to] = v; vibrate(15);
+    document.querySelectorAll(`.stars[data-to="${CSS.escape(to)}"] button`).forEach(b => b.classList.toggle("on", +b.dataset.v <= v));
+  }
+  function bindStars(root) { root.querySelectorAll(".stars button").forEach(b => b.onclick = e => { e.stopPropagation(); rate(b.parentNode.dataset.to, +b.dataset.v); }); }
+  function drawViewer() {
+    const cands = (S && S.cands) || [], i = cands.findIndex(c => c[0] === viewer);
+    if (i < 0) { closeViewer(); return; }
+    let d = $("#pv"); if (!d) { d = document.createElement("div"); d.id = "pv"; d.className = "pview"; document.body.appendChild(d); }
+    const c = cands[i], th = THUMBS[c[0]], own = c[0] === pid;
+    d.innerHTML = `<div class="pvtop"><b>${esc(c[1])}</b><span class="mut">${i + 1} / ${cands.length}</span><button class="btn ghost" id="pvx">Жабу</button></div>
+      <div class="pvimg">${th && th.k === qkey() ? `<img src="${th.data}" alt="${esc(c[1])} жұмысы">` : `<div class="mut">Жүктелуде…</div>`}</div>
+      <div class="pvbar"><button class="btn ghost" id="pvp">←</button>${own ? `<span class="mut">Сіздің жұмысыңыз</span>` : starRow(c[0], true)}<button class="btn ghost" id="pvn">→</button></div>`;
+    $("#pvx").onclick = closeViewer;
+    $("#pvp").onclick = () => { viewer = cands[(i - 1 + cands.length) % cands.length][0]; drawViewer(); };
+    $("#pvn").onclick = () => { viewer = cands[(i + 1) % cands.length][0]; drawViewer(); };
+    bindStars(d);
+  }
+  function closeViewer() { viewer = null; const d = $("#pv"); if (d) d.remove(); }
   function freeze(by) {
     unfreeze(true); closeSheet(); vibrate([80, 40, 120]);
     const d = document.createElement("div"); d.id = "ice";
@@ -870,7 +936,7 @@ function Player() {
     }
     if (S.phase === "reveal") return "rv" + qkey() + (P && P.last ? P.last.k : "");
     if (S.phase === "review") return "review" + qkey() + (P && P.grade ? P.grade.k + P.grade.g : "") + (mySub() ? "s" : "");
-    if (S.phase === "vote") return "vote" + qkey() + (P && P.voted && P.voted.k === qkey() ? P.voted.to : "") + (S.cands ? S.cands.length : 0);
+    if (S.phase === "vote") return "vote" + qkey() + (S.cands ? S.cands.length : 0);
     if (S.phase === "board") return "board" + qkey() + (P && P.last ? P.last.k + P.last.pts : "");
     return S.phase + qkey();
   }
@@ -910,6 +976,7 @@ function Player() {
     if (key === lastScreen) { if (key.startsWith("task")) taskUpload(); return; }
     const prev = lastScreen; lastScreen = key;
     if (!key.startsWith("q")) closeSheet();
+    if (!key.startsWith("vote")) closeViewer();
     if (!(key.startsWith("q") || key.startsWith("locked"))) unfreeze(true);
     cancelAnimationFrame(raf);
     const r = RR();
@@ -1007,18 +1074,20 @@ function Player() {
       return;
     }
     if (key.startsWith("vote")) {
-      const my = P && P.voted && P.voted.k === qkey() ? P.voted.to : null;
-      const cands = (S.cands || []).filter(c => c[0] !== pid);
-      app.innerHTML = `<div class="ply">${top()}<div class="pw-wrap"><div class="pq up" style="margin-top:18px">Қай жұмыс ең ұнады?</div>
-        <p class="mut" style="margin:0 0 10px;font-size:15px">Жұмыстар мұғалімнің экранында. Өзіңізге дауыс бере алмайсыз.</p>
-        ${cands.map(c => `<button class="tg ${my === c[0] ? "on" : ""}" data-t="${esc(c[0])}"><span>${esc(c[1])}</span><span>${my === c[0] ? "♥" : ""}</span></button>`).join("") || `<p class="mut">Дауыс беретін жұмыс жоқ</p>`}
+      const cands = S.cands || [];
+      app.innerHTML = `<div class="ply">${top()}<div class="pw-wrap"><div class="pq up" style="margin-top:14px">Сыныптастардың жұмыстарын бағалаңыз</div>
+        <p class="mut" style="margin:0 0 12px;font-size:14px">Әр жұмысқа 1–5 жұлдыз қойыңыз. Суретті үлкейту үшін басыңыз. Өзіңізді бағалай алмайсыз.</p>
+        <div class="vgrid">${cands.map(c => { const th = THUMBS[c[0]], own = c[0] === pid;
+          return `<div class="vcard ${own ? "own" : ""}" data-p="${esc(c[0])}"><button class="vimg" aria-label="${esc(c[1])} жұмысын ашу">${th && th.k === qkey() ? `<img src="${th.data}" alt="${esc(c[1])} жұмысы">` : `<span class="mut">Жүктелуде…</span>`}</button>
+            <div class="vname">${esc(c[1])}${own ? " · сіз" : ""}</div>${own ? "" : starRow(c[0])}</div>`; }).join("") || `<p class="mut">Бағалайтын жұмыс жоқ</p>`}</div>
       </div></div>`;
-      document.querySelectorAll(".tg[data-t]").forEach(b => b.onclick = () => { if (!send({t: "vote", qi: S.qi, to: b.dataset.t})) toast("Байланыс жоқ"); else { vibrate(20); document.querySelectorAll(".tg").forEach(x => { x.classList.toggle("on", x === b); x.lastElementChild.textContent = x === b ? "♥" : ""; }); } });
+      document.querySelectorAll(".vcard .vimg").forEach(b => b.onclick = () => { viewer = b.parentNode.dataset.p; drawViewer(); });
+      bindStars(app);
       return;
     }
     if (S.phase === "board" || S.phase === "final") {
       const fin = S.phase === "final", L = P && P.last && P.last.k === qkey() ? P.last : null;
-      const taskLine = L && isTask(r) ? (L.none ? "Жұмыс жіберілмеді" : `+${L.pts} ұпай${L.g === "best" ? " · үздік жұмыс" : L.g === "redo" ? " · пысықтау керек" : ""}${L.fav ? " · көрермен таңдауы ♥" : ""}`) : "";
+      const taskLine = L && isTask(r) ? (L.none ? "Жұмыс жіберілмеді" : `+${L.pts} ұпай${L.g === "best" ? " · үздік жұмыс" : L.g === "redo" ? " · пысықтау керек" : ""}${L.avg ? " · бағаңыз ★ " + String(L.avg).replace(".", ",") : ""}${L.fav ? " · сыныптастар таңдауы" : ""}`) : "";
       app.innerHTML = `<div class="ply">${top()}<div class="pc"><div class="wait up">
         <div class="big disp" style="font-size:88px">${P ? P.rank : "–"}</div><div class="mut" style="font-size:17px;margin-top:-6px">${P ? `орын · ${P.of} ойыншы` : ""}</div>
         ${taskLine ? `<div class="gbadge" style="background:var(--s2);color:var(--tx)">${esc(taskLine)}</div>` : ""}
