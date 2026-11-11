@@ -378,7 +378,7 @@ a.btn svg{width:18px;height:18px}
 .fm td.t small{display:block;color:var(--mut);font-size:12px;font-variant-numeric:tabular-nums}
 .fm td.t b{display:inline-block;min-width:26px;padding:1px 6px;border-radius:6px;color:#111;font-size:15px;font-weight:800}
 .fm td.t b.g5{background:var(--g5)}.fm td.t b.g4{background:var(--g4);color:#fff}.fm td.t b.g3{background:var(--g3)}.fm td.t b.g2{background:var(--g2);color:#fff}
-.fm td.t.tg b{outline:2px solid var(--tx)}
+.fm td.t.tgr b{outline:2px solid var(--tx)}
 .fm td.t.run{background:rgba(245,165,36,.08)}
 .fm td.t.done{background:rgba(47,179,109,.08)}
 .fm td.t em{position:absolute;top:2px;right:4px;font-style:normal;font-size:10px;color:var(--ok)}
@@ -397,6 +397,10 @@ a.btn svg{width:18px;height:18px}
 .mine .mt{display:flex;justify-content:space-between;gap:10px;font-size:15px}
 .mine img{width:100%;border-radius:8px;background:#fff}
 .mine .btn{height:42px;font-size:14px}
+.fm td.sum{cursor:pointer;min-width:120px}.fm td.sum:hover{background:var(--s2)}
+.fm td.sum b{font-size:20px}.fm td.sum b.ovr{text-decoration:underline dotted}.fm td.sum span{font-size:12px;margin-left:4px}
+.p100{display:flex;align-items:baseline;gap:8px;margin:0 0 10px}.p100 b{font-family:var(--disp);font-size:48px;font-weight:800}.p100 span{color:var(--mut);font-weight:700}
+.fm th.sum,.fm td.sum{position:sticky;right:0;background:var(--s1);z-index:1;border-left:1px solid var(--line)}.fm thead th.sum{z-index:3}
 </style>
 </head>
 <body>
@@ -669,7 +673,7 @@ function Host() {
     pub("p/" + pid, {name: p.name, score: p.score, rank: r.indexOf(pid) + 1, of: r.length, streak: p.streak, pw: p.pw, x2on: p.x2on ? rk() : "", hide: p.hide, frozen: p.frozen, last: p.last,
       locked: H.ans[pid] ? {set: H.set, qi: H.qi, a: H.ans[pid].a} : null,
       sub: H.subs[pid] ? {k: rk(), left: H.subs[pid].left} : null, chk: H.chk && H.chk[pid] ? Object.assign({k: rk(), place: place(pid)}, H.chk[pid]) : null, grade: H.grades[pid] ? {k: rk(), g: H.grades[pid]} : null, rates: {k: rk(), m: (H.rates || {})[pid] || {}},
-      fs: FREE() ? {fid: H.fid, s: H.fs[pid] || [], hide: !!H.hideMarks, now: Date.now()} : null,
+      fs: FREE() ? {fid: H.fid, s: H.fs[pid] || [], hide: !!H.hideMarks, now: Date.now(), p100: H.items ? fScore(pid).final : null} : null,
       note: p.note, kicked: !!p.kicked}, true);
   }
 
@@ -956,6 +960,21 @@ function Host() {
   /* ---------- Еркін режим: мониторинг ---------- */
   let flb = null;
   const fGrade = s => s && s.d ? (s.tg || s.ag || null) : (s && s.tg) || null;
+  const P100 = () => H.p100 = Object.assign({map: {5: 100, 4: 85, 3: 70, 2: 50}, zero: true, hkW: 0}, H.p100 || {});
+  const LET = x => x >= 95 ? "A" : x >= 90 ? "A-" : x >= 85 ? "B+" : x >= 80 ? "B" : x >= 75 ? "B-" : x >= 70 ? "C+" : x >= 65 ? "C" : x >= 60 ? "C-" : x >= 55 ? "D+" : x >= 50 ? "D" : "F";
+  const TRAD = x => x >= 90 ? t_("үздік", "отлично") : x >= 75 ? t_("жақсы", "хорошо") : x >= 50 ? t_("қанағат.", "удовл.") : t_("қанағат. емес", "неудовл.");
+  function fScore(pid) {
+    const c = P100(), items = H.items || [], st = H.fs[pid] || [];
+    const used = i => pids().some(id => fGrade((H.fs[id] || [])[i]));
+    const pts = items.map((it, i) => { if (it.type !== "task" || !used(i)) return undefined; const g = fGrade(st[i]); return g ? (+c.map[g] || 0) : (c.zero ? 0 : null); }).filter(x => x !== undefined && x !== null);
+    const mcs = items.map((it, i) => it.type === "mc" && pids().some(id => ((H.fs[id] || [])[i] || {}).a != null) ? st[i] || {} : null).filter(Boolean);
+    const tScore = pts.length ? pts.reduce((a, b) => a + b, 0) / pts.length : 0;
+    const w = mcs.length ? Math.max(0, Math.min(100, +c.hkW || 0)) / 100 : 0;
+    const hkPct = mcs.length ? mcs.filter(x => x.c).length / mcs.length * 100 : 0;
+    const auto = Math.round(tScore * (1 - w) + hkPct * w);
+    const ovr = H.ovr && H.ovr[pid] != null ? H.ovr[pid] : null;
+    return {auto, final: ovr != null ? ovr : auto, ovr};
+  }
   function fRow(pid) {
     const items = H.items || [], st = H.fs[pid] || [];
     const g = items.map((it, i) => it.type === "task" ? fGrade(st[i]) : null).filter(Boolean);
@@ -971,11 +990,11 @@ function Host() {
       const cells = items.map((it, i) => { const x = st[i] || {};
         if (it.type === "mc") return `<td class="q ${x.a == null ? "" : x.c ? "ok" : "no"}">${x.a == null ? (x.o ? "…" : "") : x.c ? "✓" : "✗"}</td>`;
         const g = fGrade(x), dots = it.checks.length && x.ok ? `<span class="fd">${x.ok.map(o => `<i class="${o ? "g" : "b"}"></i>`).join("")}</span>` : "";
-        if (x.d) return `<td class="t done ${x.tg ? "tg" : ""}" data-c="${id}:${i}">${hide ? "✓" : `<b class="g${g}">${g}</b>`}<small>${mmss(x.sec || 0)}</small>${x.sub ? "<em>▣</em>" : ""}</td>`;
+        if (x.d) return `<td class="t done ${x.tg ? "tgr" : ""}" data-c="${id}:${i}">${hide ? "✓" : `<b class="g${g}">${g}</b>`}<small>${mmss(x.sec || 0)}</small>${x.sub ? "<em>▣</em>" : ""}</td>`;
         if (x.o) return `<td class="t run" data-c="${id}:${i}"><small data-run="${x.o}">${mmss((Date.now() - x.o) / 1000)}</small>${dots}${x.sub ? "<em>▣</em>" : ""}${x.tg && !hide ? `<b class="g${x.tg}">${x.tg}</b>` : ""}</td>`;
         return `<td class="t"></td>`; }).join("");
-      return `<tr><th class="nm">${esc(p.name)}${p.cur != null && items[p.cur] ? `<small>→ ${items[p.cur].type === "task" ? items.slice(0, p.cur + 1).filter(x => x.type === "task").length : "⌨"}</small>` : ""}</th>${cells}<td class="sum">${hide ? rr.done + "/" + items.length : `<b>${rr.avg == null ? "—" : String(rr.avg).replace(".", ",")}</b>`}${rr.hkN ? `<small>⌨ ${rr.hk}/${rr.hkN}</small>` : ""}</td></tr>`; }).join("");
-    return `<div class="fwrap"><table class="fm"><thead><tr><th class="nm">${t_("Студент", "Студент")}</th>${heads}<th class="sum">${t_("Орташа", "Итог")}</th></tr></thead><tbody>${rows || `<tr><td class="mut" colspan="${items.length + 2}" style="padding:20px">${t_("Ойыншылар жоқ", "Нет участников")}</td></tr>`}</tbody></table></div>`;
+      return `<tr><th class="nm">${esc(p.name)}${p.cur != null && items[p.cur] ? `<small>→ ${items[p.cur].type === "task" ? items.slice(0, p.cur + 1).filter(x => x.type === "task").length : "⌨"}</small>` : ""}</th>${cells}<td class="sum" data-s="${id}">${hide ? rr.done + "/" + items.length : (sc => `<b class="${sc.ovr != null ? "ovr" : ""}">${sc.final}</b><span class="mut">/100 ${LET(sc.final)}</span>`)(fScore(id))}<small>${hide ? "" : (rr.avg == null ? "—" : t_("орт. ", "ср. ") + String(rr.avg).replace(".", ","))}${rr.hkN ? ` · ⌨ ${rr.hk}/${rr.hkN}` : ""}</small></td></tr>`; }).join("");
+    return `<div class="fwrap"><table class="fm"><thead><tr><th class="nm">${t_("Студент", "Студент")}</th>${heads}<th class="sum">${t_("Қорытынды /100", "Итог /100")}</th></tr></thead><tbody>${rows || `<tr><td class="mut" colspan="${items.length + 2}" style="padding:20px">${t_("Ойыншылар жоқ", "Нет участников")}</td></tr>`}</tbody></table></div>`;
   }
   function renderFree() {
     const fin = H.phase === "final";
@@ -984,10 +1003,12 @@ function Host() {
       <div class="ftop"><div><div class="kicker">${fin ? t_("Аяқталды", "Завершено") : t_("Еркін практика жүріп жатыр", "Идёт свободная практика")}</div>
         <h2 class="qtext" style="font-size:34px">${t_("Уақыт", "Прошло")}: <span id="ftime">${mmss(((fin ? H.fend : Date.now()) - H.fstart) / 1000)}</span></h2>
         <div class="mut" style="font-size:14px;margin-top:4px">${t_("Бағалау уақыт бойынша", "Оценка по времени")}: 5 ≤ ${H.thr[0]}% · 4 ≤ ${H.thr[1]}% · 3 ≤ ${H.thr[2]}% ${t_("нормадан", "от нормы")} · ${t_("ұяшықты басып — өз бағаңыз", "клик по ячейке — ваша оценка")}</div></div>
-        <div class="fbtns"><button class="btn ghost" id="fhide">${H.hideMarks ? t_("👁 Бағаларды көрсету", "👁 Показать оценки") : t_("👁 Бағаларды жасыру", "👁 Скрыть оценки")}</button>
+        <div class="fbtns"><button class="btn ghost" id="f100">⚙ ${t_("100 балл", "100 баллов")}</button><button class="btn ghost" id="fhide">${H.hideMarks ? t_("👁 Бағаларды көрсету", "👁 Показать оценки") : t_("👁 Бағаларды жасыру", "👁 Скрыть оценки")}</button>
           <button class="btn ghost" id="fzip">⬇ ${t_("Барлық жұмыстар (ZIP)", "Все работы (ZIP)")}</button><button class="btn ghost" id="fcsv">⬇ ${t_("Журнал (CSV)", "Журнал (CSV)")}</button></div></div>
       ${freeTable()}
       ${ctlBar("", fin ? `<button class="btn ghost" id="freopen">${t_("Қайта ашу", "Открыть снова")}</button>` : `<button class="btn" id="fend">${t_("Практиканы аяқтау", "Завершить практику")}</button>`)}</div>`;
+    $("#f100").onclick = P100Settings;
+    document.querySelectorAll("td.sum[data-s]").forEach(td => td.onclick = () => OvrEditor(td.dataset.s));
     $("#fhide").onclick = () => { H.hideMarks = !H.hideMarks; save(); pids().forEach(pubPlayer); render(); };
     $("#fzip").onclick = zipAll; $("#fcsv").onclick = () => downloadBlob(new Blob(["﻿" + journalCsv()], {type: "text/csv;charset=utf-8"}), safeName(TITLE) + " — журнал.csv");
     const fe = $("#fend"); if (fe) fe.onclick = () => { if (fe.dataset.c !== "1") { fe.dataset.c = "1"; fe.textContent = t_("Растау: аяқтау", "Точно завершить?"); setTimeout(() => { fe.dataset.c = ""; fe.textContent = t_("Практиканы аяқтау", "Завершить практику"); }, 3000); return; }
@@ -1013,12 +1034,39 @@ function Host() {
     d._step = step;
   }
   function fSetGrade(g) { if (!flb) return; const x = fSt(flb.pid, flb.i); x.tg = g || null; save(); pubPlayer(flb.pid); drawFlb(); }
+  function P100Settings() {
+    const c = P100(), w = document.createElement("div"); w.className = "edm fset"; document.body.appendChild(w);
+    w.innerHTML = `<div class="edbox" style="max-width:620px"><h3 class="disp" style="margin:0;font-size:26px">${t_("100 баллдық бағалау", "Перевод в 100 баллов")}</h3>
+      <p class="mut" style="margin:0;font-size:15px">${t_("Әр тапсырманың бағасы (сіздікі немесе уақыт бойынша) баллға айналады, қорытынды — орташасы. Студенттің жиынын басып, қолмен де қоюға болады.", "Оценка за каждое задание (ваша или по времени) переводится в баллы, итог — среднее по заданиям. Итог любого студента можно поправить вручную: нажмите на его ячейку «Итог».")}</p>
+      <div class="ff"><label>${t_("Баға → балл", "Оценка → баллы")}</label><div style="display:flex;gap:12px;flex-wrap:wrap;align-items:center">${[5, 4, 3, 2].map(g => `«${g}» = <input id="p-${g}" type="number" min="0" max="100" value="${c.map[g]}" style="width:80px">`).join("")}</div></div>
+      <label style="display:flex;gap:10px;align-items:center;font-size:15px"><input type="checkbox" id="p-zero" ${c.zero ? "checked" : ""} style="width:20px;height:20px"> ${t_("Тапсырылмаған тапсырма = 0 балл (белгісіз болса — есептелмейді)", "Несданное задание = 0 баллов (если снять галочку — не учитывается в среднем)")}</label>
+      <div class="hint">${t_("Ешкім тапсырмаған тапсырмалар (сабақта жетпеген) есептелмейді.", "Задания, которые никто не сдал (не успели на паре), в итог не входят.")}</div>
+      <div class="ff"><label>${t_("Пернелер сұрақтарының үлесі, %", "Доля вопросов по горячим клавишам в итоге, %")}</label><input id="p-hk" type="number" min="0" max="100" value="${c.hkW}" style="width:120px"><div class="hint">${t_("0 — тек тапсырмалар. 20 — қорытындының 20%-ы сұрақтардан.", "0 — только задания. 20 — пятая часть итога из вопросов.")}</div></div>
+      <div class="hint">${t_("Әріптік баға: A 95–100, A- 90–94, B+ 85–89, B 80–84, B- 75–79, C+ 70–74, C 65–69, C- 60–64, D+ 55–59, D 50–54, F 0–49.", "Буквенная оценка: A 95–100, A- 90–94, B+ 85–89, B 80–84, B- 75–79, C+ 70–74, C 65–69, C- 60–64, D+ 55–59, D 50–54, F 0–49.")}</div>
+      <div class="edtop" style="margin:0;justify-content:flex-end"><button class="btn ghost" id="p-x">${t_("Болдырмау", "Отмена")}</button><button class="btn" id="p-ok">${t_("Сақтау", "Сохранить")}</button></div></div>`;
+    $("#p-x").onclick = () => w.remove();
+    $("#p-ok").onclick = () => { const m = {}; [5, 4, 3, 2].forEach(g => m[g] = Math.max(0, Math.min(100, +$("#p-" + g).value || 0)));
+      H.p100 = {map: m, zero: $("#p-zero").checked, hkW: Math.max(0, Math.min(100, +$("#p-hk").value || 0))}; save(); pids().forEach(pubPlayer); w.remove(); render(); };
+  }
+  function OvrEditor(pid) {
+    const sc = fScore(pid), w = document.createElement("div"); w.className = "edm fset"; document.body.appendChild(w);
+    w.innerHTML = `<div class="edbox" style="max-width:440px"><h3 class="disp" style="margin:0;font-size:24px">${esc(H.players[pid].name)}</h3>
+      <div class="ff"><label>${t_("Қорытынды балл (0–100)", "Итог в баллах (0–100)")}</label><input id="o-v" type="number" min="0" max="100" value="${sc.final}" style="font-size:28px;font-weight:800;width:160px"></div>
+      <div class="hint">${t_("Автоматты есептеу", "Автоматически")}: ${sc.auto}</div>
+      <div class="edtop" style="margin:0;justify-content:flex-end"><button class="btn ghost" id="o-auto">${t_("Авто", "Авто")} (${sc.auto})</button><button class="btn ghost" id="o-x">${t_("Болдырмау", "Отмена")}</button><button class="btn" id="o-ok">${t_("Сақтау", "Сохранить")}</button></div></div>`;
+    const inp = $("#o-v"); inp.focus(); inp.select();
+    const done = v => { H.ovr = H.ovr || {}; if (v == null) delete H.ovr[pid]; else H.ovr[pid] = v; save(); pubPlayer(pid); w.remove(); render(); };
+    $("#o-x").onclick = () => w.remove(); $("#o-auto").onclick = () => done(null);
+    $("#o-ok").onclick = () => { const v = Math.round(+inp.value); if (!isFinite(v) || v < 0 || v > 100) { toast("0–100"); return; } done(v); };
+    inp.onkeydown = e => { if (e.key === "Enter") $("#o-ok").click(); if (e.key === "Escape") w.remove(); };
+  }
   function journalCsv() {
     const items = H.items || [], tasks = items.map((it, i) => [it, i]).filter(([it]) => it.type === "task");
     const q = v => `"${String(v == null ? "" : v).replace(/"/g, '""')}"`;
-    const head = [t_("Студент", "Студент"), ...tasks.flatMap(([it], n) => [`${n + 1}. ${it.title} — ${t_("уақыт", "время")}`, `${n + 1}. ${t_("баға", "оценка")}`]), t_("Орташа баға", "Средняя оценка"), t_("Пернелер (дұрыс)", "Горячие клавиши (верно)")];
-    const rows = pids().sort((a, b) => H.players[a].name.localeCompare(H.players[b].name)).map(id => { const st = H.fs[id] || [], rr = fRow(id);
-      return [H.players[id].name, ...tasks.flatMap(([it, i]) => { const x = st[i] || {}; return [x.d ? mmss(x.sec) : "", fGrade(x) || ""]; }), rr.avg == null ? "" : String(rr.avg).replace(".", ","), rr.hkN ? rr.hk + "/" + rr.hkN : ""]; });
+    const c = P100();
+    const head = [t_("Студент", "Студент"), ...tasks.flatMap(([it], n) => [`${n + 1}. ${it.title} — ${t_("уақыт", "время")}`, `${n + 1}. ${t_("баға", "оценка")}`, `${n + 1}. ${t_("балл", "баллы")}`]), t_("Орташа баға", "Средняя оценка"), t_("Пернелер (дұрыс)", "Горячие клавиши (верно)"), t_("Қорытынды (100)", "Итог (100)"), t_("Әріптік", "Буквенная"), t_("Дәстүрлі", "Традиционная")];
+    const rows = pids().sort((a, b) => H.players[a].name.localeCompare(H.players[b].name)).map(id => { const st = H.fs[id] || [], rr = fRow(id), sc = fScore(id);
+      return [H.players[id].name, ...tasks.flatMap(([it, i]) => { const x = st[i] || {}, g = fGrade(x); const used = pids().some(z => fGrade((H.fs[z] || [])[i])); return [x.d ? mmss(x.sec) : "", g || "", g ? c.map[g] : (c.zero && used ? 0 : "")]; }), rr.avg == null ? "" : String(rr.avg).replace(".", ","), rr.hkN ? rr.hk + "/" + rr.hkN : "", sc.final, LET(sc.final), TRAD(sc.final)]; });
     return [head, ...rows].map(r => r.map(q).join(";")).join("\r\n");
   }
   async function zipAll() {
@@ -1231,7 +1279,7 @@ function Player() {
     if (!S || S.phase === "closed" || !SETS[S.set]) return "wait0";
     if (P && P.kicked) return "kicked";
     if (S.phase === "lobby") return "lobby" + S.set;
-    if (isFree()) { if (!fItems().length) return "frwait" + S.fid; if (showMine || S.phase === "final") return "frmine" + S.fid + ":" + S.phase + ":" + Object.keys(OWN[S.fid] || {}).length + ":" + JSON.stringify((fs() || {}).s || []).length;
+    if (isFree()) { if (!fItems().length) return "frwait" + S.fid; if (showMine || S.phase === "final") return "frmine" + S.fid + ":" + S.phase + ":" + Object.keys(OWN[S.fid] || {}).length + ":" + JSON.stringify((fs() || {}).s || []).length + ":" + ((fs() || {}).p100) + ":" + !!(fs() || {}).hide;
       const it = fItems()[curF]; return "fr" + S.fid + ":" + curF + ":" + lang() + (it && it.type === "mc" ? ":" + (fst(curF).a != null) : ""); }
     const r = RR();
     if (S.phase === "question") {
@@ -1392,6 +1440,7 @@ function Player() {
         ${!fin ? `<button class="btn ghost" data-go="${i}">${t_("Тапсырмаға өту", "Открыть задание")}</button>` : ""}</div>`; }).join("");
     const mcs = items.map((it, i) => it.type === "mc" ? fst(i) : null).filter(Boolean);
     app.innerHTML = `<div class="ply"><div class="pw-wrap">${top()}<div class="pq up" style="margin-top:14px">${fin ? t_("Практика окончена", "Практика завершена") : t_("Менің жұмыстарым", "Мои работы")}</div>
+      ${!hide && fs() && fs().p100 != null ? `<div class="p100"><b>${fs().p100}</b><span>/ 100</span></div>` : ""}
       ${mcs.length ? `<p class="mut" style="margin:0 0 10px">${t_("Пернелер сұрақтары", "Вопросы по горячим клавишам")}: ${mcs.filter(x => x.c).length} / ${mcs.length}</p>` : ""}
       <button class="btn" id="zipme" style="width:100%;margin-bottom:12px">⬇ ${t_("Барлығын жүктеу (ZIP)", "Скачать все работы (ZIP)")}</button>
       <div class="minelist">${cards}</div>
@@ -1404,6 +1453,7 @@ function Player() {
       items.forEach((it, i) => { if (it.type !== "task") return; k++; const x = fst(i); lines.push(`${k}. ${it.title}: ${x.d ? (hide ? "✓" : (x.tg || x.ag)) + " · " + mmss(x.sec || 0) : "—"}`);
         if (own[i]) { zip.file(String(k).padStart(2, "0") + "_" + safeName(it.title) + ".jpg", dataToBytes(own[i])); n++; } });
       if (mcs.length) lines.push("", t_("Пернелер сұрақтары", "Горячие клавиши") + `: ${mcs.filter(x => x.c).length}/${mcs.length}`);
+      if (!hide && fs() && fs().p100 != null) lines.push("", t_("Қорытынды", "Итог") + `: ${fs().p100} / 100`);
       zip.file(t_("нәтижелер.txt", "итоги.txt"), lines.join("\r\n"));
       downloadBlob(await zip.generateAsync({type: "blob"}), safeName(TITLE + " — " + name) + ".zip"); toast(t_(`${n} жұмыс`, `Работ в архиве: ${n}`));
     };
