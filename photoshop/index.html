@@ -361,6 +361,42 @@ a.btn svg{width:18px;height:18px}
 .noimg2{width:100%;aspect-ratio:16/10;display:flex;align-items:center;justify-content:center;text-align:center;padding:12px;background:var(--s2);color:var(--mut);font-weight:700;font-size:14px}
 .tgrid .steps{max-height:calc(100vh - 300px);overflow:auto}
 .tgrid .gal{max-height:calc(100vh - 420px)}
+:root{--g5:#2FB36D;--g4:#3E7BFA;--g3:#F5A524;--g2:#E5484D}
+.fhost{padding:22px 28px}
+.ftop{display:flex;justify-content:space-between;align-items:flex-end;gap:16px;margin:10px 0 14px;flex-wrap:wrap}
+.fbtns{display:flex;gap:8px;flex-wrap:wrap}.fbtns .btn{height:42px;font-size:14px;padding:0 14px}
+.fwrap{flex:1;overflow:auto;border:1px solid var(--line);border-radius:14px;margin-bottom:14px;max-height:calc(100vh - 250px)}
+.fm{border-collapse:separate;border-spacing:0;width:100%;font-size:14px}
+.fm th,.fm td{border-bottom:1px solid var(--line);border-right:1px solid var(--line);padding:6px 8px;text-align:center;white-space:nowrap}
+.fm thead th{position:sticky;top:0;background:var(--s1);z-index:2;font-weight:800;font-size:13px}
+.fm thead th small{display:block;font-weight:500;color:var(--mut);font-size:11px;max-width:90px;overflow:hidden;text-overflow:ellipsis}
+.fm th.nm{position:sticky;left:0;background:var(--s1);text-align:left;z-index:1;min-width:150px;max-width:200px;overflow:hidden;text-overflow:ellipsis}
+.fm thead th.nm{z-index:3}
+.fm th.nm small{margin-left:8px;color:var(--a3);font-weight:700}
+.fm td.t{min-width:64px;cursor:default;position:relative}
+.fm td[data-c]{cursor:pointer}.fm td[data-c]:hover{background:var(--s2)}
+.fm td.t small{display:block;color:var(--mut);font-size:12px;font-variant-numeric:tabular-nums}
+.fm td.t b{display:inline-block;min-width:26px;padding:1px 6px;border-radius:6px;color:#111;font-size:15px;font-weight:800}
+.fm td.t b.g5{background:var(--g5)}.fm td.t b.g4{background:var(--g4);color:#fff}.fm td.t b.g3{background:var(--g3)}.fm td.t b.g2{background:var(--g2);color:#fff}
+.fm td.t.tg b{outline:2px solid var(--tx)}
+.fm td.t.run{background:rgba(245,165,36,.08)}
+.fm td.t.done{background:rgba(47,179,109,.08)}
+.fm td.t em{position:absolute;top:2px;right:4px;font-style:normal;font-size:10px;color:var(--ok)}
+.fm .fd{display:flex;gap:3px;justify-content:center;margin-top:3px}.fm .fd i{width:7px;height:7px;border-radius:50%}.fm .fd i.g{background:var(--ok)}.fm .fd i.b{background:var(--bad)}
+.fm td.q,.fm th.q{min-width:34px;color:var(--mut)}
+.fm td.q.ok{color:var(--ok);font-weight:800}.fm td.q.no{color:var(--bad);font-weight:800}
+.fm td.sum b{font-size:17px}.fm td.sum small{display:block;color:var(--mut);font-size:12px}
+.btn.grade.g5.on{border-color:var(--g5);color:var(--g5)}.btn.grade.g4.on{border-color:var(--g4);color:var(--g4)}.btn.grade.g3.on{border-color:var(--g3);color:var(--g3)}.btn.grade.g2.on{border-color:var(--g2);color:var(--g2)}
+.fnav{position:sticky;bottom:0;display:flex;gap:8px;padding:12px 0 calc(10px + env(safe-area-inset-bottom));background:linear-gradient(transparent,var(--bg) 30%);margin-top:16px}
+.fnav .btn{height:52px}.fnav #fprev{width:56px;padding:0}.fnav #flist{flex:none;padding:0 14px}.fnav #fnext{flex:1;font-size:16px}
+.fres{margin-top:12px;padding:14px;border-radius:12px;font-weight:700;font-size:16px}.fres.ok{background:rgba(47,179,109,.15);color:var(--ok)}.fres.no{background:rgba(229,72,77,.15);color:#FF8A8F}
+.ans.pick{box-shadow:0 0 0 3px var(--tx)}
+.fli b.si{display:inline-block;width:20px}.fli b.sok{color:var(--ok)}.fli b.sno{color:var(--bad)}.fli b.srun{color:var(--a2)}
+.minelist{display:flex;flex-direction:column;gap:12px}
+.mine{background:var(--s1);border:1px solid var(--line);border-radius:14px;padding:12px;display:flex;flex-direction:column;gap:8px}
+.mine .mt{display:flex;justify-content:space-between;gap:10px;font-size:15px}
+.mine img{width:100%;border-radius:8px;background:#fff}
+.mine .btn{height:42px;font-size:14px}
 </style>
 </head>
 <body>
@@ -368,19 +404,26 @@ a.btn svg{width:18px;height:18px}
 <div id="app"></div>
 <canvas id="cf" class="hidden"></canvas>
 <script src="../mqtt.min.js"></script>
+<script src="../jszip.min.js"></script>
 <script>
 "use strict";
-const COURSE = {"ns": "psq1", "title": "СОӨЖ · ОН 2.1 · Adobe Photoshop", "joinTitle": "Photoshop практикасы", "tool": {"name": "Photopea", "url": "https://www.photopea.com"}, "quiz": [{"type": "mc", "t": 15, "q": "Қабаттарды топтау пернелері?", "a": ["Ctrl+E", "Ctrl+G", "Ctrl+J", "Ctrl+T"], "c": 1}, {"type": "mc", "t": 15, "q": "Қабаттың көшірмесін жасау (дубликат)?", "a": ["Ctrl+J", "Ctrl+D", "Ctrl+G", "Ctrl+Z"], "c": 0}, {"type": "mc", "t": 15, "q": "[[Свободное трансформирование|Free Transform]] пернелері?", "a": ["Ctrl+A", "Ctrl+R", "Ctrl+T", "Ctrl+M"], "c": 2}, {"type": "mc", "t": 18, "q": "[[Обтравочная маска|Clipping Mask]] не істейді?", "a": ["Қабатты жояды", "Жоғарғы қабат төменгі қабаттың пішіні ішінде ғана көрінеді", "Түсті инверттейді", "Файлды сақтайды"], "c": 1}, {"type": "mc", "t": 18, "q": "[[Слой-маска|Layer Mask]] ішіндегі қара түс нені білдіреді?", "a": ["Жасырады", "Көрсетеді", "Түсін өзгертеді", "Ештеңе"], "c": 0}, {"type": "mc", "t": 18, "q": "Сайттағы фотосуретке қай формат?", "a": ["PSD", "TIFF", "BMP", "JPG немесе WebP"], "c": 3}, {"type": "mc", "t": 18, "q": "Мөлдір фоны бар суретке қай формат?", "a": ["JPG", "PNG", "BMP", "CMYK TIFF"], "c": 1}, {"type": "mc", "t": 18, "q": "Экранға (веб) арналған түс моделі?", "a": ["CMYK", "Lab", "RGB", "Grayscale"], "c": 2}], "bank": [{"id": "ps-banner", "title": "Веб-баннер «Жеңілдік −30%»", "min": 8, "ex": "banner", "steps": ["Жаңа құжат: 1200×628 px — [[Файл → Создать|File → New]].", "Фонға градиент: [[инструмент «Градиент» (G)|Gradient Tool (G)]].", "Үлкен тақырып «Жеңілдік −30%»: [[инструмент «Горизонтальный текст» (T)|Horizontal Type Tool (T)]].", "Батырма: [[«Прямоугольник» (U)|Rectangle Tool (U)]] + бұрыш радиусы, үстіне «Сатып алу».", "Экспорт: [[Файл → Экспортировать → Экспортировать как|File → Export → Export As]] → JPG, немесе экран скриншоты. Жіберіңіз."], "crit": ["Тақырып оқылады", "Батырма бар", "Түстер үйлесімді"]}, {"id": "ps-clip", "title": "Мәтін ішіндегі фото (Clipping Mask)", "min": 6, "ex": "clip", "steps": ["Жаңа құжат: 1080×1080 px — [[Файл → Создать|File → New]].", "Өте жуан қаріппен үлкен мәтін жазыңыз (мысалы, атыңыз).", "Кез келген фото қосыңыз: [[Файл → Поместить встроенные|File → Place Embedded]].", "Фото қабаты мәтін қабатының ҮСТІНДЕ тұрсын.", "Фото қабатына: [[Слой → Создать обтравочную маску|Layer → Create Clipping Mask]] (Alt+Ctrl+G).", "Экспорт: [[Файл → Экспортировать → Экспортировать как|File → Export → Export As]] → JPG, немесе экран скриншоты. Жіберіңіз."], "crit": ["Фото тек мәтін ішінде", "Мәтін оқылады"]}, {"id": "ps-states", "title": "Батырманың 3 күйі", "min": 6, "ex": "states", "steps": ["Жаңа құжат: 900×400 px — [[Файл → Создать|File → New]]. Ақ фон.", "Батырма: [[«Прямоугольник» (U)|Rectangle Tool (U)]] + «Тіркелу» мәтіні.", "Қабат стильдері (қабатқа екі рет басу): [[Тень + Обводка|Drop Shadow + Stroke]].", "Ctrl+J-мен екі рет көшіріңіз: hover — түсі қоюлау, disabled — сұр.", "Үшеуін туралаңыз: [[панель «Выравнивание»|Align options]].", "Экспорт: [[Файл → Экспортировать → Экспортировать как|File → Export → Export As]] → JPG, немесе экран скриншоты. Жіберіңіз."], "crit": ["3 күй", "Көлеңке мен шекара", "Тураланған"]}, {"id": "ps-color", "title": "Түс коррекциясы: «дейін / кейін»", "min": 6, "ex": "color", "steps": ["Телефондағы кез келген фотоны ашыңыз.", "Қабатты көшіріңіз (Ctrl+J) — бұл «кейін» нұсқасы.", "[[Изображение → Коррекция → Кривые|Image → Adjustments → Curves]] (Ctrl+M) немесе [[Уровни|Levels]] (Ctrl+L).", "Түсті сәл күшейтіңіз: [[Коррекция → Сочность|Adjustments → Vibrance]].", "[[Изображение → Размер холста|Image → Canvas Size]]: енін екі есе үлкейтіп, екі нұсқаны қатар қойыңыз.", "Экспорт: [[Файл → Экспортировать → Экспортировать как|File → Export → Export As]] → JPG, немесе экран скриншоты. Жіберіңіз."], "crit": ["Айырмашылық көрінеді", "Түстер табиғи"]}, {"id": "ps-insta", "title": "Instagram пост: кофехана жаңалығы", "min": 8, "ex": "insta", "steps": ["Жаңа құжат: 1080×1080 px — [[Файл → Создать|File → New]].", "Фон: бір түс немесе фото. Үстіне жартылай мөлдір тіктөртбұрыш (Opacity 70–80%).", "Тақырып: «Жаңа дәм — Карамель латте». Кіші мәтін: баға, мекенжай.", "Логотип немесе белгіше: [[«Эллипс» (U)|Ellipse Tool (U)]] + бас әріп.", "Мәтін шетке 60 px-тен жақын тұрмасын.", "Экспорт: [[Файл → Экспортировать → Экспортировать как|File → Export → Export As]] → JPG, немесе экран скриншоты. Жіберіңіз."], "crit": ["Иерархия: тақырып → мәтін", "Шегіністер", "2–3 түс"]}, {"id": "ps-youtube", "title": "YouTube превью", "min": 8, "ex": "youtube", "steps": ["Жаңа құжат: 1280×720 px — [[Файл → Создать|File → New]].", "Фон: жарқын түс немесе фото.", "3–5 сөзден тұратын ІРІ тақырып (кемінде 120 px).", "Мәтінге контраст: [[Стиль слоя → Обводка / Тень|Layer Style → Stroke / Drop Shadow]].", "Бір назар аударатын элемент: көрсеткі, белгі немесе шеңбер.", "Экспорт: [[Файл → Экспортировать → Экспортировать как|File → Export → Export As]] → JPG, немесе экран скриншоты. Жіберіңіз."], "crit": ["Кішірейтсе де оқылады", "Контраст жоғары"]}, {"id": "ps-hero", "title": "Сайттың бірінші экраны (Hero)", "min": 10, "ex": "hero", "steps": ["Жаңа құжат: 1440×900 px — [[Файл → Создать|File → New]].", "Жоғарыда мәзір жолағы: логотип + 4 сілтеме. Тураланған ([[Выравнивание|Align]]).", "Сол жақта тақырып (2 жол), астында сипаттама (2–3 жол).", "Екі батырма: негізгі (толтырылған) және екінші (контур).", "Оң жақта сурет немесе фигуралар композициясы.", "Экспорт: [[Файл → Экспортировать → Экспортировать как|File → Export → Export As]] → JPG, немесе экран скриншоты. Жіберіңіз."], "crit": ["Тор/туралау", "Батырма иерархиясы", "Бос кеңістік"]}, {"id": "ps-mobile", "title": "Мобильді экран: тіркелу формасы", "min": 8, "ex": "mobile", "steps": ["Жаңа құжат: 390×844 px — [[Файл → Создать|File → New]].", "Тақырып «Тіркелу» және қысқа сипаттама.", "3 өріс: аты, email, құпиясөз — [[«Прямоугольник» (U)|Rectangle Tool (U)]], радиус 12 px.", "Негізгі батырма толық ені бойынша, төменде «Кіру» сілтемесі.", "Шеттен шегініс 24 px, өрістер арасы 16 px.", "Экспорт: [[Файл → Экспортировать → Экспортировать как|File → Export → Export As]] → JPG, немесе экран скриншоты. Жіберіңіз."], "crit": ["Бірдей шегіністер", "Батырма көзге түседі"]}, {"id": "ps-card", "title": "Тауар карточкасы", "min": 8, "ex": "card", "steps": ["Жаңа құжат: 800×800 px — [[Файл → Создать|File → New]]. Фон ашық сұр.", "Ақ карточка 360×520 px, радиус 16, жұмсақ көлеңке.", "Жоғарғы бөлігінде тауар суреті (фото немесе фигура).", "Атауы, бағасы (ірі, акцент түсте), «Себетке» батырмасы.", "Сурет карточка шетінен шықпасын: [[обтравочная маска|clipping mask]].", "Экспорт: [[Файл → Экспортировать → Экспортировать как|File → Export → Export As]] → JPG, немесе экран скриншоты. Жіберіңіз."], "crit": ["Баға көзге түседі", "Тураланған", "Көлеңке жұмсақ"]}, {"id": "ps-duotone", "title": "Duotone эффект", "min": 6, "ex": "duotone", "steps": ["Кез келген портрет немесе қала фотосын ашыңыз.", "[[Слой → Новый корректирующий слой → Карта градиента|Layer → New Adjustment Layer → Gradient Map]].", "Градиент: қою түс (күңгірт аймақ) → ашық түс (жарық аймақ).", "Үстіне қысқа ақ мәтін қосыңыз.", "Экспорт: [[Файл → Экспортировать → Экспортировать как|File → Export → Export As]] → JPG, немесе экран скриншоты. Жіберіңіз."], "crit": ["Екі түс қана", "Контраст сақталған"]}, {"id": "ps-texteffect", "title": "Мәтіндік эффект", "min": 6, "ex": "texteffect", "steps": ["Жаңа құжат: 1200×600 px — [[Файл → Создать|File → New]]. Қою фон.", "Бір сөз жазыңыз, жуан қаріп, 200 px-тен үлкен.", "[[Стиль слоя → Наложение градиента|Layer Style → Gradient Overlay]].", "Қосыңыз: [[Обводка|Stroke]] 4–6 px және [[Тень|Drop Shadow]].", "Экспорт: [[Файл → Экспортировать → Экспортировать как|File → Export → Export As]] → JPG, немесе экран скриншоты. Жіберіңіз."], "crit": ["Кемінде 3 стиль", "Оқылады"]}, {"id": "ps-collage", "title": "Фото-коллаж торы", "min": 8, "ex": "collage", "steps": ["Жаңа құжат: 1200×800 px — [[Файл → Создать|File → New]]. Ақ фон.", "3–4 фото орнына тіктөртбұрыштар салыңыз, арасы бірдей 20 px.", "Әр фотоны тіктөртбұрышқа «қиып салыңыз»: [[обтравочная маска|clipping mask]] (Alt+Ctrl+G).", "Бір блокқа тақырып мәтінін қойыңыз.", "Экспорт: [[Файл → Экспортировать → Экспортировать как|File → Export → Export As]] → JPG, немесе экран скриншоты. Жіберіңіз."], "crit": ["Бірдей аралықтар", "Фото ұяшықтан шықпайды"]}, {"id": "ps-cutout", "title": "Фонды ауыстыру", "min": 8, "ex": "cutout", "steps": ["Заты немесе адамы бар фото ашыңыз.", "[[Выделение → Предмет|Select → Subject]], керек болса [[Выделение и маска|Select and Mask]].", "Маска жасаңыз: [[Слой → Слой-маска → Показать выделенную область|Layer → Layer Mask → Reveal Selection]].", "Астына жаңа фон: түс, градиент немесе басқа фото.", "Затқа жұмсақ көлеңке қосыңыз.", "Экспорт: [[Файл → Экспортировать → Экспортировать как|File → Export → Export As]] → JPG, немесе экран скриншоты. Жіберіңіз."], "crit": ["Шеттері таза", "Көлеңке табиғи"]}, {"id": "ps-mockup", "title": "Телефон мокапы (Smart Object)", "min": 8, "ex": "mockup", "steps": ["Жаңа құжат: 1200×800 px — [[Файл → Создать|File → New]].", "Телефон корпусы: [[«Прямоугольник» (U)|Rectangle Tool (U)]] радиус 48, қара түс.", "Ішіне экран тіктөртбұрышы → [[Слой → Смарт-объект → Преобразовать в смарт-объект|Layer → Smart Objects → Convert to Smart Object]].", "Смарт-объектті ашып (екі рет басу), өз баннеріңізді немесе экраныңызды салыңыз, сақтаңыз.", "Фонға жұмсақ градиент және телефонға көлеңке.", "Экспорт: [[Файл → Экспортировать → Экспортировать как|File → Export → Export As]] → JPG, немесе экран скриншоты. Жіберіңіз."], "crit": ["Экран ішінде дизайн", "Көлеңке бар"]}, {"id": "ps-avatar", "title": "Профиль аватары", "min": 5, "ex": "avatar", "steps": ["Жаңа құжат: 800×800 px — [[Файл → Создать|File → New]].", "Шеңбер: [[«Эллипс» (U)|Ellipse Tool (U)]] Shift басып тұрып.", "Фотоны шеңбер ішіне: [[обтравочная маска|clipping mask]].", "Шеңберге [[Обводка|Stroke]] 8 px (градиент) және [[Тень|Drop Shadow]].", "Астына аты-жөні мен мамандығы.", "Экспорт: [[Файл → Экспортировать → Экспортировать как|File → Export → Export As]] → JPG, немесе экран скриншоты. Жіберіңіз."], "crit": ["Мінсіз шеңбер", "Мәтін ортада"]}, {"id": "ps-email", "title": "Email-хаттың шапкасы", "min": 6, "ex": "email", "steps": ["Жаңа құжат: 600×220 px — [[Файл → Создать|File → New]].", "Сол жақта логотип, оң жақта қысқа ұран.", "Фон: бренд түсі немесе жеңіл өрнек.", "Мәтін көлемі 24 px-тен кем емес; [[Выравнивание по вертикали|Align vertical centers]].", "Экспорт: [[Файл → Экспортировать → Экспортировать как|File → Export → Export As]] → JPG, немесе экран скриншоты. Жіберіңіз."], "crit": ["Ықшам", "Вертикаль бойынша тураланған"]}], "defaults": ["ps-banner", "ps-clip", "ps-states", "ps-color"]};
+const COURSE = {"ns": "psq1", "title": "СОӨЖ · ОН 2.1 · Adobe Photoshop", "joinTitle": "Photoshop практикасы", "tool": {"name": "Photopea", "url": "https://www.photopea.com"}, "quiz": [{"type": "mc", "t": 15, "q": "Қабаттарды топтау пернелері?", "a": ["Ctrl+E", "Ctrl+G", "Ctrl+J", "Ctrl+T"], "c": 1}, {"type": "mc", "t": 15, "q": "Қабаттың көшірмесін жасау (дубликат)?", "a": ["Ctrl+J", "Ctrl+D", "Ctrl+G", "Ctrl+Z"], "c": 0}, {"type": "mc", "t": 15, "q": "[[Свободное трансформирование|Free Transform]] пернелері?", "a": ["Ctrl+A", "Ctrl+R", "Ctrl+T", "Ctrl+M"], "c": 2}, {"type": "mc", "t": 18, "q": "[[Обтравочная маска|Clipping Mask]] не істейді?", "a": ["Қабатты жояды", "Жоғарғы қабат төменгі қабаттың пішіні ішінде ғана көрінеді", "Түсті инверттейді", "Файлды сақтайды"], "c": 1}, {"type": "mc", "t": 18, "q": "[[Слой-маска|Layer Mask]] ішіндегі қара түс нені білдіреді?", "a": ["Жасырады", "Көрсетеді", "Түсін өзгертеді", "Ештеңе"], "c": 0}, {"type": "mc", "t": 18, "q": "Сайттағы фотосуретке қай формат?", "a": ["PSD", "TIFF", "BMP", "JPG немесе WebP"], "c": 3}, {"type": "mc", "t": 18, "q": "Мөлдір фоны бар суретке қай формат?", "a": ["JPG", "PNG", "BMP", "CMYK TIFF"], "c": 1}, {"type": "mc", "t": 18, "q": "Экранға (веб) арналған түс моделі?", "a": ["CMYK", "Lab", "RGB", "Grayscale"], "c": 2}], "hotkeys": [{"q": "Градиент құралының пернесі?", "a": ["G", "B", "M", "L"], "c": 0, "for": ["ps-banner", "ps-insta"]}, {"q": "[[Обтравочная маска|Clipping Mask]] пернелері?", "a": ["Ctrl+G", "Alt+Ctrl+G", "Ctrl+J", "Shift+Ctrl+N"], "c": 1, "for": ["ps-clip", "ps-collage", "ps-avatar"]}, {"q": "Қабатты көшіру (дубликат)?", "a": ["Ctrl+C", "Ctrl+D", "Ctrl+J", "Alt+J"], "c": 2, "for": ["ps-states"]}, {"q": "[[Кривые|Curves]] терезесі?", "a": ["Ctrl+M", "Ctrl+L", "Ctrl+U", "Ctrl+B"], "c": 0, "for": ["ps-color"]}, {"q": "[[Уровни|Levels]] терезесі?", "a": ["Ctrl+M", "Ctrl+L", "Ctrl+I", "Ctrl+K"], "c": 1, "for": ["ps-duotone"]}, {"q": "[[Свободное трансформирование|Free Transform]]?", "a": ["Ctrl+T", "Ctrl+R", "Ctrl+A", "Ctrl+E"], "c": 0, "for": ["ps-youtube", "ps-mockup"]}, {"q": "[[Линейки|Rulers]] көрсету/жасыру?", "a": ["Ctrl+H", "Ctrl+R", "Ctrl+;", "Ctrl+'"], "c": 1, "for": ["ps-hero", "ps-mobile"]}, {"q": "Қабаттарды топтау?", "a": ["Ctrl+E", "Ctrl+G", "Ctrl+J", "Ctrl+Shift+E"], "c": 1, "for": ["ps-card", "ps-email"]}, {"q": "[[Инверсия выделения|Inverse selection]]?", "a": ["Ctrl+I", "Shift+Ctrl+I", "Ctrl+D", "Alt+Ctrl+I"], "c": 1, "for": ["ps-cutout"]}, {"q": "Мінсіз шеңбер салу үшін эллипсті салғанда қай пернені басып тұрамыз?", "a": ["Ctrl", "Alt", "Shift", "Tab"], "c": 2, "for": ["ps-avatar"]}, {"q": "Мәтін құралы?", "a": ["T", "X", "Y", "W"], "c": 0, "for": ["ps-texteffect"]}, {"q": "Суретті экранға толық сыйдыру?", "a": ["Ctrl+0", "Ctrl+1", "Ctrl+F", "Ctrl+9"], "c": 0}], "bank": [{"id": "ps-banner", "title": "Веб-баннер «Жеңілдік −30%»", "min": 8, "ex": "banner", "steps": ["Жаңа құжат: 1200×628 px — [[Файл → Создать|File → New]].", "Фонға градиент: [[инструмент «Градиент» (G)|Gradient Tool (G)]].", "Үлкен тақырып «Жеңілдік −30%»: [[инструмент «Горизонтальный текст» (T)|Horizontal Type Tool (T)]].", "Батырма: [[«Прямоугольник» (U)|Rectangle Tool (U)]] + бұрыш радиусы, үстіне «Сатып алу».", "Экспорт: [[Файл → Экспортировать → Экспортировать как|File → Export → Export As]] → JPG, немесе экран скриншоты. Жіберіңіз."], "crit": ["Тақырып оқылады", "Батырма бар", "Түстер үйлесімді"]}, {"id": "ps-clip", "title": "Мәтін ішіндегі фото (Clipping Mask)", "min": 6, "ex": "clip", "steps": ["Жаңа құжат: 1080×1080 px — [[Файл → Создать|File → New]].", "Өте жуан қаріппен үлкен мәтін жазыңыз (мысалы, атыңыз).", "Кез келген фото қосыңыз: [[Файл → Поместить встроенные|File → Place Embedded]].", "Фото қабаты мәтін қабатының ҮСТІНДЕ тұрсын.", "Фото қабатына: [[Слой → Создать обтравочную маску|Layer → Create Clipping Mask]] (Alt+Ctrl+G).", "Экспорт: [[Файл → Экспортировать → Экспортировать как|File → Export → Export As]] → JPG, немесе экран скриншоты. Жіберіңіз."], "crit": ["Фото тек мәтін ішінде", "Мәтін оқылады"]}, {"id": "ps-states", "title": "Батырманың 3 күйі", "min": 6, "ex": "states", "steps": ["Жаңа құжат: 900×400 px — [[Файл → Создать|File → New]]. Ақ фон.", "Батырма: [[«Прямоугольник» (U)|Rectangle Tool (U)]] + «Тіркелу» мәтіні.", "Қабат стильдері (қабатқа екі рет басу): [[Тень + Обводка|Drop Shadow + Stroke]].", "Ctrl+J-мен екі рет көшіріңіз: hover — түсі қоюлау, disabled — сұр.", "Үшеуін туралаңыз: [[панель «Выравнивание»|Align options]].", "Экспорт: [[Файл → Экспортировать → Экспортировать как|File → Export → Export As]] → JPG, немесе экран скриншоты. Жіберіңіз."], "crit": ["3 күй", "Көлеңке мен шекара", "Тураланған"]}, {"id": "ps-color", "title": "Түс коррекциясы: «дейін / кейін»", "min": 6, "ex": "color", "steps": ["Телефондағы кез келген фотоны ашыңыз.", "Қабатты көшіріңіз (Ctrl+J) — бұл «кейін» нұсқасы.", "[[Изображение → Коррекция → Кривые|Image → Adjustments → Curves]] (Ctrl+M) немесе [[Уровни|Levels]] (Ctrl+L).", "Түсті сәл күшейтіңіз: [[Коррекция → Сочность|Adjustments → Vibrance]].", "[[Изображение → Размер холста|Image → Canvas Size]]: енін екі есе үлкейтіп, екі нұсқаны қатар қойыңыз.", "Экспорт: [[Файл → Экспортировать → Экспортировать как|File → Export → Export As]] → JPG, немесе экран скриншоты. Жіберіңіз."], "crit": ["Айырмашылық көрінеді", "Түстер табиғи"]}, {"id": "ps-insta", "title": "Instagram пост: кофехана жаңалығы", "min": 8, "ex": "insta", "steps": ["Жаңа құжат: 1080×1080 px — [[Файл → Создать|File → New]].", "Фон: бір түс немесе фото. Үстіне жартылай мөлдір тіктөртбұрыш (Opacity 70–80%).", "Тақырып: «Жаңа дәм — Карамель латте». Кіші мәтін: баға, мекенжай.", "Логотип немесе белгіше: [[«Эллипс» (U)|Ellipse Tool (U)]] + бас әріп.", "Мәтін шетке 60 px-тен жақын тұрмасын.", "Экспорт: [[Файл → Экспортировать → Экспортировать как|File → Export → Export As]] → JPG, немесе экран скриншоты. Жіберіңіз."], "crit": ["Иерархия: тақырып → мәтін", "Шегіністер", "2–3 түс"]}, {"id": "ps-youtube", "title": "YouTube превью", "min": 8, "ex": "youtube", "steps": ["Жаңа құжат: 1280×720 px — [[Файл → Создать|File → New]].", "Фон: жарқын түс немесе фото.", "3–5 сөзден тұратын ІРІ тақырып (кемінде 120 px).", "Мәтінге контраст: [[Стиль слоя → Обводка / Тень|Layer Style → Stroke / Drop Shadow]].", "Бір назар аударатын элемент: көрсеткі, белгі немесе шеңбер.", "Экспорт: [[Файл → Экспортировать → Экспортировать как|File → Export → Export As]] → JPG, немесе экран скриншоты. Жіберіңіз."], "crit": ["Кішірейтсе де оқылады", "Контраст жоғары"]}, {"id": "ps-hero", "title": "Сайттың бірінші экраны (Hero)", "min": 10, "ex": "hero", "steps": ["Жаңа құжат: 1440×900 px — [[Файл → Создать|File → New]].", "Жоғарыда мәзір жолағы: логотип + 4 сілтеме. Тураланған ([[Выравнивание|Align]]).", "Сол жақта тақырып (2 жол), астында сипаттама (2–3 жол).", "Екі батырма: негізгі (толтырылған) және екінші (контур).", "Оң жақта сурет немесе фигуралар композициясы.", "Экспорт: [[Файл → Экспортировать → Экспортировать как|File → Export → Export As]] → JPG, немесе экран скриншоты. Жіберіңіз."], "crit": ["Тор/туралау", "Батырма иерархиясы", "Бос кеңістік"]}, {"id": "ps-mobile", "title": "Мобильді экран: тіркелу формасы", "min": 8, "ex": "mobile", "steps": ["Жаңа құжат: 390×844 px — [[Файл → Создать|File → New]].", "Тақырып «Тіркелу» және қысқа сипаттама.", "3 өріс: аты, email, құпиясөз — [[«Прямоугольник» (U)|Rectangle Tool (U)]], радиус 12 px.", "Негізгі батырма толық ені бойынша, төменде «Кіру» сілтемесі.", "Шеттен шегініс 24 px, өрістер арасы 16 px.", "Экспорт: [[Файл → Экспортировать → Экспортировать как|File → Export → Export As]] → JPG, немесе экран скриншоты. Жіберіңіз."], "crit": ["Бірдей шегіністер", "Батырма көзге түседі"]}, {"id": "ps-card", "title": "Тауар карточкасы", "min": 8, "ex": "card", "steps": ["Жаңа құжат: 800×800 px — [[Файл → Создать|File → New]]. Фон ашық сұр.", "Ақ карточка 360×520 px, радиус 16, жұмсақ көлеңке.", "Жоғарғы бөлігінде тауар суреті (фото немесе фигура).", "Атауы, бағасы (ірі, акцент түсте), «Себетке» батырмасы.", "Сурет карточка шетінен шықпасын: [[обтравочная маска|clipping mask]].", "Экспорт: [[Файл → Экспортировать → Экспортировать как|File → Export → Export As]] → JPG, немесе экран скриншоты. Жіберіңіз."], "crit": ["Баға көзге түседі", "Тураланған", "Көлеңке жұмсақ"]}, {"id": "ps-duotone", "title": "Duotone эффект", "min": 6, "ex": "duotone", "steps": ["Кез келген портрет немесе қала фотосын ашыңыз.", "[[Слой → Новый корректирующий слой → Карта градиента|Layer → New Adjustment Layer → Gradient Map]].", "Градиент: қою түс (күңгірт аймақ) → ашық түс (жарық аймақ).", "Үстіне қысқа ақ мәтін қосыңыз.", "Экспорт: [[Файл → Экспортировать → Экспортировать как|File → Export → Export As]] → JPG, немесе экран скриншоты. Жіберіңіз."], "crit": ["Екі түс қана", "Контраст сақталған"]}, {"id": "ps-texteffect", "title": "Мәтіндік эффект", "min": 6, "ex": "texteffect", "steps": ["Жаңа құжат: 1200×600 px — [[Файл → Создать|File → New]]. Қою фон.", "Бір сөз жазыңыз, жуан қаріп, 200 px-тен үлкен.", "[[Стиль слоя → Наложение градиента|Layer Style → Gradient Overlay]].", "Қосыңыз: [[Обводка|Stroke]] 4–6 px және [[Тень|Drop Shadow]].", "Экспорт: [[Файл → Экспортировать → Экспортировать как|File → Export → Export As]] → JPG, немесе экран скриншоты. Жіберіңіз."], "crit": ["Кемінде 3 стиль", "Оқылады"]}, {"id": "ps-collage", "title": "Фото-коллаж торы", "min": 8, "ex": "collage", "steps": ["Жаңа құжат: 1200×800 px — [[Файл → Создать|File → New]]. Ақ фон.", "3–4 фото орнына тіктөртбұрыштар салыңыз, арасы бірдей 20 px.", "Әр фотоны тіктөртбұрышқа «қиып салыңыз»: [[обтравочная маска|clipping mask]] (Alt+Ctrl+G).", "Бір блокқа тақырып мәтінін қойыңыз.", "Экспорт: [[Файл → Экспортировать → Экспортировать как|File → Export → Export As]] → JPG, немесе экран скриншоты. Жіберіңіз."], "crit": ["Бірдей аралықтар", "Фото ұяшықтан шықпайды"]}, {"id": "ps-cutout", "title": "Фонды ауыстыру", "min": 8, "ex": "cutout", "steps": ["Заты немесе адамы бар фото ашыңыз.", "[[Выделение → Предмет|Select → Subject]], керек болса [[Выделение и маска|Select and Mask]].", "Маска жасаңыз: [[Слой → Слой-маска → Показать выделенную область|Layer → Layer Mask → Reveal Selection]].", "Астына жаңа фон: түс, градиент немесе басқа фото.", "Затқа жұмсақ көлеңке қосыңыз.", "Экспорт: [[Файл → Экспортировать → Экспортировать как|File → Export → Export As]] → JPG, немесе экран скриншоты. Жіберіңіз."], "crit": ["Шеттері таза", "Көлеңке табиғи"]}, {"id": "ps-mockup", "title": "Телефон мокапы (Smart Object)", "min": 8, "ex": "mockup", "steps": ["Жаңа құжат: 1200×800 px — [[Файл → Создать|File → New]].", "Телефон корпусы: [[«Прямоугольник» (U)|Rectangle Tool (U)]] радиус 48, қара түс.", "Ішіне экран тіктөртбұрышы → [[Слой → Смарт-объект → Преобразовать в смарт-объект|Layer → Smart Objects → Convert to Smart Object]].", "Смарт-объектті ашып (екі рет басу), өз баннеріңізді немесе экраныңызды салыңыз, сақтаңыз.", "Фонға жұмсақ градиент және телефонға көлеңке.", "Экспорт: [[Файл → Экспортировать → Экспортировать как|File → Export → Export As]] → JPG, немесе экран скриншоты. Жіберіңіз."], "crit": ["Экран ішінде дизайн", "Көлеңке бар"]}, {"id": "ps-avatar", "title": "Профиль аватары", "min": 5, "ex": "avatar", "steps": ["Жаңа құжат: 800×800 px — [[Файл → Создать|File → New]].", "Шеңбер: [[«Эллипс» (U)|Ellipse Tool (U)]] Shift басып тұрып.", "Фотоны шеңбер ішіне: [[обтравочная маска|clipping mask]].", "Шеңберге [[Обводка|Stroke]] 8 px (градиент) және [[Тень|Drop Shadow]].", "Астына аты-жөні мен мамандығы.", "Экспорт: [[Файл → Экспортировать → Экспортировать как|File → Export → Export As]] → JPG, немесе экран скриншоты. Жіберіңіз."], "crit": ["Мінсіз шеңбер", "Мәтін ортада"]}, {"id": "ps-email", "title": "Email-хаттың шапкасы", "min": 6, "ex": "email", "steps": ["Жаңа құжат: 600×220 px — [[Файл → Создать|File → New]].", "Сол жақта логотип, оң жақта қысқа ұран.", "Фон: бренд түсі немесе жеңіл өрнек.", "Мәтін көлемі 24 px-тен кем емес; [[Выравнивание по вертикали|Align vertical centers]].", "Экспорт: [[Файл → Экспортировать → Экспортировать как|File → Export → Export As]] → JPG, немесе экран скриншоты. Жіберіңіз."], "crit": ["Ықшам", "Вертикаль бойынша тураланған"]}], "defaults": ["ps-banner", "ps-clip", "ps-states", "ps-color"]};
 /* ===================== НАСТРОЙКИ ===================== */
 /* COURSE = {ns, title, tool:{name,url}, quiz:[...], tasks:[...]} задаётся на странице */
-const SETS = {
-  quiz: {name: () => "Квиз · 5 минут", short: "Квиз", quick: true},
-  practice: {name: n => "Практика · " + n + " тапсырма", short: "Практика", quick: false}
-};
-/* [[орысша|english]] → таңдалған интерфейс тілі */
-const L = (s, lang) => String(s == null ? "" : s).replace(/\[\[([^|\]]*)\|([^\]]*)\]\]/g, (m, ru, en) => lang === "en" ? en : ru);
 const RU = COURSE.ui === "ru";
 const t_ = (kk, ru) => RU ? ru : kk;
+const SETS = {
+  quiz: {name: () => "Квиз · 5 минут", short: "Квиз", quick: true},
+  practice: {name: n => "Практика · " + n + " тапсырма", short: "Практика", quick: false},
+  free: {name: () => t_("Еркін практика", "Свободная практика"), short: t_("Еркін", "Свободно"), quick: false}
+};
+const autoGrade = (sec, limitSec, thr) => { const r = sec / Math.max(1, limitSec) * 100; return r <= thr[0] ? 5 : r <= thr[1] ? 4 : r <= thr[2] ? 3 : 2; };
+const mmss = x => Math.floor(x / 60) + ":" + String(Math.floor(x % 60)).padStart(2, "0");
+const safeName = s => String(s || "").replace(/[\\/:*?"<>|]+/g, "_").trim().slice(0, 40) || "file";
+function downloadBlob(blob, name) { const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = name; document.body.appendChild(a); a.click(); setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 2000); }
+const dataToBytes = d => { const b = atob(d.split(",")[1]); const u = new Uint8Array(b.length); for (let i = 0; i < b.length; i++) u[i] = b.charCodeAt(i); return u; };
+/* [[орысша|english]] → таңдалған интерфейс тілі */
+const L = (s, lang) => String(s == null ? "" : s).replace(/\[\[([^|\]]*)\|([^\]]*)\]\]/g, (m, ru, en) => lang === "en" ? en : ru);
 const LANGS = COURSE.langs || [["ru", "Орысша"], ["en", "English"]];
 const LANG_LABEL = COURSE.langLabel || "Интерфейс:";
 const exUrl = ex => !ex ? "" : /^https?:\/\//.test(ex) ? ex : "ex/" + ex + ".jpg";
@@ -548,15 +591,44 @@ function PlanEditor(plan0, onDone) {
 /* ===================== ЖҮРГІЗУШІ (мұғалім) ===================== */
 function Host() {
   let H = store.get("host");
-  const fresh = () => ({room: rid(5, "ABCDEFGHJKLMNPQRSTUVWXYZ23456789"), b: +(PARAMS.get("b") || 0), lang: store.get("lang") || "ru", plan: store.get("plan") || defaultPlan(), set: "quiz", phase: "lobby", qi: -1, players: {}, ans: {}, counts: [0, 0, 0, 0], qEnd: 0, feed: [], prevRank: {}, subs: {}, grades: {}, rates: {}, chk: {}});
+  const fresh = () => ({room: rid(5, "ABCDEFGHJKLMNPQRSTUVWXYZ23456789"), b: +(PARAMS.get("b") || 0), lang: store.get("lang") || "ru", plan: store.get("plan") || defaultPlan(), set: "quiz", phase: "lobby", qi: -1, players: {}, ans: {}, counts: [0, 0, 0, 0], qEnd: 0, feed: [], prevRank: {}, subs: {}, grades: {}, rates: {}, chk: {}, mix: "after", thr: [100, 150, 200], fs: {}, items: null, fid: "", hideMarks: false});
   if (!H || !H.room || !SETS[H.set]) H = fresh();
   if (!Array.isArray(H.plan) || !H.plan.length) H.plan = store.get("plan") || defaultPlan();
   if (!H.lang) H.lang = "ru";
-  const IMG = {}; /* pid -> dataURL (ағымдағы тапсырма) */
+  if (!H.thr) H.thr = [100, 150, 200]; if (!H.mix) H.mix = "after"; if (!H.fs) H.fs = {};
+  const IMG = {}, IMGF = {};
+  const FREE = () => H.set === "free";
+  const fItem = i => (H.items || [])[i];
+  const fSt = (pid, i) => { const a = H.fs[pid] = H.fs[pid] || []; return a[i] = a[i] || {}; }; /* pid -> dataURL (ағымдағы тапсырма) */
   let client = null, tick = null, pubTimer = null, connectedOnce = false, lb = null;
   const save = () => store.set("host", H);
-  const RS = () => H.set === "quiz" ? COURSE.quiz : H.plan.map(toRound), total = () => RS().length, R = () => RS()[H.qi];
+  const RS = () => H.set === "quiz" ? COURSE.quiz : H.set === "free" ? (H.items || []) : H.plan.map(toRound), total = () => RS().length, R = () => RS()[H.qi];
   const setName = k => SETS[k].name(k === "quiz" ? COURSE.quiz.length : H.plan.length);
+  function buildFree() {
+    const hk = (COURSE.hotkeys || []).map(q => Object.assign({type: "mc"}, q)), items = [];
+    const take = id => { if (!hk.length) return null; let i = hk.findIndex(q => q.for && q.for.includes(id)); if (i < 0) i = hk.findIndex(q => !q.for); if (i < 0) return null; return hk.splice(i, 1)[0]; };
+    H.plan.forEach((t, i) => { const r = toRound(t, i); r.k = t_((i + 1) + "-тапсырма", "Задание " + (i + 1)) + " · " + t.min + " " + t_("мин", "мин"); items.push(r);
+      if (H.mix === "after") { const q = take(t.id); if (q) items.push(Object.assign(q, {k: t_("Пернелер сұрағы", "Вопрос по горячим клавишам")})); } });
+    if (H.mix === "end") hk.forEach(q => items.push(Object.assign(q, {k: t_("Пернелер сұрағы", "Вопрос по горячим клавишам")})));
+    return items;
+  }
+  function fTryDone(pid, i) {
+    const it = fItem(i), s = fSt(pid, i); if (!it || s.d) return;
+    if (it.type === "task") {
+      if (it.checks.length && !(s.ok && s.ok.length && s.ok.every(Boolean))) return;
+      if (it.shot && !s.sub) return;
+      if (!it.checks.length && !s.sub) return;
+      s.d = Date.now(); if (!s.o) s.o = s.d;
+      s.sec = Math.round((s.d - s.o) / 1000); s.ag = autoGrade(s.sec, it.t, H.thr);
+      addFeed("ok", `<b>${esc(H.players[pid].name)}</b>: ${esc(it.title)} — ${mmss(s.sec)}`);
+    }
+  }
+  function startFree() {
+    H.items = buildFree(); H.fid = rid(5); H.fs = {}; H.phase = "free"; H.fstart = Date.now(); H.feed = [];
+    for (const k in IMGF) delete IMGF[k];
+    save(); pubItems(); pubState(); pids().forEach(pubPlayer); render();
+  }
+  function pubItems() { if (H.items) pub("items", {fid: H.fid, items: H.items, thr: H.thr}, true); }
   const rk = () => H.set + ":" + H.qi;
   const pids = () => Object.keys(H.players);
   const leftMs = () => H.paused ? (H.pauseLeft || 0) : Math.max(0, H.qEnd - Date.now());
@@ -567,11 +639,11 @@ function Host() {
   function start() {
     client && client.end(true);
     connectedOnce = false;
-    client = connect(H.b, c => { connectedOnce = true; c.subscribe([T(H.room) + "i", T(H.room) + "img/+"], {qos: 1}); pubState(); pids().forEach(pubPlayer); }, onMsg);
+    client = connect(H.b, c => { connectedOnce = true; c.subscribe([T(H.room) + "i", T(H.room) + "img/+", T(H.room) + "img/+/+"], {qos: 1}); if (FREE() && H.items) pubItems(); pubState(); pids().forEach(pubPlayer); }, onMsg);
     setTimeout(() => { if (!connectedOnce && H.phase === "lobby") render(); }, 9000);
     save(); render();
     clearInterval(tick); tick = setInterval(onTick, 200);
-    clearInterval(pubTimer); pubTimer = setInterval(() => { if (H.phase === "question" || H.phase === "vote") pubState(); }, 1000);
+    clearInterval(pubTimer); pubTimer = setInterval(() => { if (H.phase === "question" || H.phase === "vote") pubState(); if (H.phase === "free" && !lb && !document.querySelector(".fset")) { const t = $("#ftime"); if (t) t.textContent = mmss((Date.now() - H.fstart) / 1000); document.querySelectorAll("[data-run]").forEach(e => { e.textContent = mmss((Date.now() - +e.dataset.run) / 1000); }); } }, 1000);
   }
   function pub(topic, obj, retain) { if (client && client.connected) client.publish(T(H.room) + topic, JSON.stringify(obj), {qos: 1, retain: !!retain}); }
   function ranked() { return pids().sort((a, b) => H.players[b].score - H.players[a].score || H.players[a].name.localeCompare(H.players[b].name)); }
@@ -585,7 +657,8 @@ function Host() {
 
   function pubState() {
     const st = {v: 3, set: H.set, lang: H.lang, setName: setName(H.set), phase: H.phase, qi: H.qi, total: total(), n: pids().length, answered: isTask(R()) ? Object.keys(H.subs).length : Object.keys(H.ans).length};
-    if (isTask(R()) && H.phase !== "lobby") st.task = R();
+    if (isTask(R()) && H.phase !== "lobby" && !FREE()) st.task = R();
+    if (FREE()) { st.fid = H.fid; st.nItems = (H.items || []).length; }
     if (H.phase === "question") { st.endsIn = leftMs(); st.paused = !!H.paused; st.roster = ranked().slice(0, 40).map(id => [id, H.players[id].name]); }
     if (H.phase === "vote") st.cands = subPids().map(id => [id, H.players[id].name]);
     pub("s", st, true);
@@ -596,11 +669,12 @@ function Host() {
     pub("p/" + pid, {name: p.name, score: p.score, rank: r.indexOf(pid) + 1, of: r.length, streak: p.streak, pw: p.pw, x2on: p.x2on ? rk() : "", hide: p.hide, frozen: p.frozen, last: p.last,
       locked: H.ans[pid] ? {set: H.set, qi: H.qi, a: H.ans[pid].a} : null,
       sub: H.subs[pid] ? {k: rk(), left: H.subs[pid].left} : null, chk: H.chk && H.chk[pid] ? Object.assign({k: rk(), place: place(pid)}, H.chk[pid]) : null, grade: H.grades[pid] ? {k: rk(), g: H.grades[pid]} : null, rates: {k: rk(), m: (H.rates || {})[pid] || {}},
+      fs: FREE() ? {fid: H.fid, s: H.fs[pid] || [], hide: !!H.hideMarks, now: Date.now()} : null,
       note: p.note, kicked: !!p.kicked}, true);
   }
 
   function onMsg(topic, m) {
-    if (topic.indexOf("/img/") > 0) return onImg(topic.split("/").pop(), m);
+    if (topic.indexOf("/img/") > 0) { const parts = topic.split("/"); const ii = parts.indexOf("img"); if (parts.length - ii === 3) return onImgFree(parts[ii + 1], +parts[ii + 2], m); return onImg(parts.pop(), m); }
     if (!m || typeof m.pid !== "string" || m.pid.length > 40) return;
     const pid = m.pid, p = H.players[pid];
     if (m.t === "join") {
@@ -614,6 +688,7 @@ function Host() {
       save(); pubPlayer(pid); pubState(); render(); return;
     }
     if (!p || m.set !== H.set) return;
+    if (FREE()) { onFreeMsg(pid, p, m); return; }
     const r = R();
     if (m.t === "chk") {
       const r2 = R();
@@ -671,6 +746,33 @@ function Host() {
     addFeed("ok", t_(`<b>${esc(p.name)}</b> ${pl}-орында аяқтады`, `<b>${esc(p.name)}</b> финишировал ${pl}-м`));
     note(pid, t_(`Дайын! Сіздің орныңыз: ${pl}`, `Готово! Ваше место: ${pl}`));
   }
+  function onFreeMsg(pid, p, m) {
+    if (H.phase !== "free" || m.fid !== H.fid) return;
+    const i = m.i | 0, it = fItem(i); if (!it) return;
+    const s = fSt(pid, i);
+    if (m.t === "fopen") { if (!s.o) s.o = Date.now(); p.cur = i; }
+    else if (m.t === "fchk" && it.type === "task" && it.checks.length && Array.isArray(m.vals)) {
+      if (s.d) { pubPlayer(pid); return; }
+      if (!s.o) s.o = Date.now();
+      s.ok = it.checks.map((ch, j) => checkOk(ch, m.vals[j])); s.tries = (s.tries || 0) + 1; if (!s.ok.every(Boolean)) s.wrong = (s.wrong || 0) + 1;
+      fTryDone(pid, i);
+    } else if (m.t === "fmc" && it.type === "mc") {
+      if (s.a != null) { pubPlayer(pid); return; }
+      const a = m.a | 0; if (a < 0 || a >= it.a.length) return;
+      s.a = a; s.c = a === it.c; s.d = Date.now(); if (!s.o) s.o = s.d;
+    } else return;
+    save(); pubPlayer(pid); fRender();
+  }
+  function onImgFree(pid, i, m) {
+    if (!FREE() || !m || m.fid !== H.fid || typeof m.data !== "string" || m.data.slice(0, 23) !== "data:image/jpeg;base64," || m.data.length > 400000) return;
+    const p = H.players[pid], it = fItem(i); if (!p || !it || it.type !== "task") return;
+    (IMGF[pid] = IMGF[pid] || {})[i] = m.data;
+    const s = fSt(pid, i);
+    if (s.subId !== m.id && H.phase === "free") { s.subId = m.id; s.sub = true; if (!s.o) s.o = Date.now(); fTryDone(pid, i); save(); pubPlayer(pid); }
+    fRender();
+  }
+  let fTimer = null;
+  function fRender() { if (fTimer) return; fTimer = setTimeout(() => { fTimer = null; if (lb) drawFlb(); else if (!document.querySelector(".fset")) render(); }, 250); }
   function onImg(pid, m) {
     if (!m || typeof m.data !== "string" || m.data.slice(0, 23) !== "data:image/jpeg;base64," || m.data.length > 400000) return;
     const p = H.players[pid]; if (!p || m.set !== H.set || m.qi !== H.qi || !isTask(R())) return;
@@ -752,13 +854,14 @@ function Host() {
   function board() { H.phase = "board"; save(); pubState(); render(); }
   function finish() { H.phase = "final"; save(); pubState(); pids().forEach(pubPlayer); render(); }
   function toSet(set) {
-    H.set = set; H.phase = "lobby"; H.qi = -1; H.ans = {}; H.counts = [0, 0, 0, 0]; H.feed = []; H.prevRank = {}; H.subs = {}; H.grades = {}; H.rates = {}; H.chk = {};
+    H.set = set; H.phase = "lobby"; H.qi = -1; H.ans = {}; H.counts = [0, 0, 0, 0]; H.feed = []; H.prevRank = {}; H.subs = {}; H.grades = {}; H.rates = {}; H.chk = {}; H.fs = {}; H.items = null;
     for (const id of pids()) { const n = H.players[id].name; H.players[id] = newPlayer(n); }
     save(); pubState(); pids().forEach(pubPlayer); render();
   }
   function next() {
     if (lb) return;
-    if (H.phase === "lobby") { if (pids().length) startQ(); }
+    if (H.phase === "lobby") { if (pids().length) (FREE() ? startFree() : startQ()); }
+    else if (H.phase === "free") return;
     else if (H.phase === "question") reveal();
     else if (H.phase === "reveal") { if (SETS[H.set].quick) (H.qi + 1 >= total() ? board() : startQ()); else board(); }
     else if (H.phase === "review") finalizeTask();
@@ -774,7 +877,15 @@ function Host() {
     if (!H.paused && left <= 0) reveal();
   }
   document.addEventListener("keydown", e => {
-    if (e.target.tagName === "INPUT") return;
+    if (e.target.tagName === "INPUT" || e.target.tagName === "SELECT") return;
+    if (flb) {
+      const d = $("#lb");
+      if (e.code === "Escape") { flb = null; if (d) d.remove(); render(); }
+      else if (e.code === "ArrowRight" && d && d._step) { e.preventDefault(); d._step(1); }
+      else if (e.code === "ArrowLeft" && d && d._step) { e.preventDefault(); d._step(-1); }
+      else if (/^Digit[2-5]$/.test(e.code)) fSetGrade(+e.code.slice(5)); else if (e.code === "KeyA" || e.code === "Digit0") fSetGrade(0);
+      return;
+    }
     if (lb) {
       if (e.code === "Escape") { closeLb(); }
       else if (e.code === "ArrowRight") { e.preventDefault(); stepLb(1); }
@@ -841,8 +952,106 @@ function Host() {
       return `<button class="thumb" data-p="${id}">${IMG[id] ? `<img src="${IMG[id]}" alt="${esc(H.players[id].name)}">` : `<span class="ph">…</span>`}
         <span class="cap"><span>${esc(H.players[id].name)}</span>${st[id] ? `<b>${avgTxt(st[id])}</b>` : ""}${g && g !== "ok" ? `<i style="background:${GRADE[g].c}">${g === "best" ? "★" : "↺"}</i>` : ""}</span></button>`; }).join("")}</div>`;
   }
+
+  /* ---------- Еркін режим: мониторинг ---------- */
+  let flb = null;
+  const fGrade = s => s && s.d ? (s.tg || s.ag || null) : (s && s.tg) || null;
+  function fRow(pid) {
+    const items = H.items || [], st = H.fs[pid] || [];
+    const g = items.map((it, i) => it.type === "task" ? fGrade(st[i]) : null).filter(Boolean);
+    const mcs = items.map((it, i) => it.type === "mc" ? st[i] : undefined).filter(x => x !== undefined);
+    return {avg: g.length ? Math.round(g.reduce((a, b) => a + b, 0) / g.length * 10) / 10 : null, hk: mcs.filter(x => x && x.c).length, hkN: mcs.length, done: items.filter((it, i) => st[i] && st[i].d).length};
+  }
+  function freeTable() {
+    const items = H.items || [], hide = H.hideMarks;
+    const ids = pids().sort((a, b) => H.players[a].name.localeCompare(H.players[b].name));
+    let tn = 0;
+    const heads = items.map((it, i) => it.type === "task" ? `<th title="${esc(it.title)}">${++tn}<small>${esc(it.title.slice(0, 14))}</small></th>` : `<th class="q" title="${esc(L(it.q, H.lang))}">⌨</th>`).join("");
+    const rows = ids.map(id => { const p = H.players[id], st = H.fs[id] || [], rr = fRow(id);
+      const cells = items.map((it, i) => { const x = st[i] || {};
+        if (it.type === "mc") return `<td class="q ${x.a == null ? "" : x.c ? "ok" : "no"}">${x.a == null ? (x.o ? "…" : "") : x.c ? "✓" : "✗"}</td>`;
+        const g = fGrade(x), dots = it.checks.length && x.ok ? `<span class="fd">${x.ok.map(o => `<i class="${o ? "g" : "b"}"></i>`).join("")}</span>` : "";
+        if (x.d) return `<td class="t done ${x.tg ? "tg" : ""}" data-c="${id}:${i}">${hide ? "✓" : `<b class="g${g}">${g}</b>`}<small>${mmss(x.sec || 0)}</small>${x.sub ? "<em>▣</em>" : ""}</td>`;
+        if (x.o) return `<td class="t run" data-c="${id}:${i}"><small data-run="${x.o}">${mmss((Date.now() - x.o) / 1000)}</small>${dots}${x.sub ? "<em>▣</em>" : ""}${x.tg && !hide ? `<b class="g${x.tg}">${x.tg}</b>` : ""}</td>`;
+        return `<td class="t"></td>`; }).join("");
+      return `<tr><th class="nm">${esc(p.name)}${p.cur != null && items[p.cur] ? `<small>→ ${items[p.cur].type === "task" ? items.slice(0, p.cur + 1).filter(x => x.type === "task").length : "⌨"}</small>` : ""}</th>${cells}<td class="sum">${hide ? rr.done + "/" + items.length : `<b>${rr.avg == null ? "—" : String(rr.avg).replace(".", ",")}</b>`}${rr.hkN ? `<small>⌨ ${rr.hk}/${rr.hkN}</small>` : ""}</td></tr>`; }).join("");
+    return `<div class="fwrap"><table class="fm"><thead><tr><th class="nm">${t_("Студент", "Студент")}</th>${heads}<th class="sum">${t_("Орташа", "Итог")}</th></tr></thead><tbody>${rows || `<tr><td class="mut" colspan="${items.length + 2}" style="padding:20px">${t_("Ойыншылар жоқ", "Нет участников")}</td></tr>`}</tbody></table></div>`;
+  }
+  function renderFree() {
+    const fin = H.phase === "final";
+    const head = `<div class="htop"><span class="tag">${TITLE} · ${SETS.free.short}</span><span class="tag">${pids().length} ${t_("ойыншы", "участников")}</span></div>`;
+    app.innerHTML = `<div class="host fhost">${head}
+      <div class="ftop"><div><div class="kicker">${fin ? t_("Аяқталды", "Завершено") : t_("Еркін практика жүріп жатыр", "Идёт свободная практика")}</div>
+        <h2 class="qtext" style="font-size:34px">${t_("Уақыт", "Прошло")}: <span id="ftime">${mmss(((fin ? H.fend : Date.now()) - H.fstart) / 1000)}</span></h2>
+        <div class="mut" style="font-size:14px;margin-top:4px">${t_("Бағалау уақыт бойынша", "Оценка по времени")}: 5 ≤ ${H.thr[0]}% · 4 ≤ ${H.thr[1]}% · 3 ≤ ${H.thr[2]}% ${t_("нормадан", "от нормы")} · ${t_("ұяшықты басып — өз бағаңыз", "клик по ячейке — ваша оценка")}</div></div>
+        <div class="fbtns"><button class="btn ghost" id="fhide">${H.hideMarks ? t_("👁 Бағаларды көрсету", "👁 Показать оценки") : t_("👁 Бағаларды жасыру", "👁 Скрыть оценки")}</button>
+          <button class="btn ghost" id="fzip">⬇ ${t_("Барлық жұмыстар (ZIP)", "Все работы (ZIP)")}</button><button class="btn ghost" id="fcsv">⬇ ${t_("Журнал (CSV)", "Журнал (CSV)")}</button></div></div>
+      ${freeTable()}
+      ${ctlBar("", fin ? `<button class="btn ghost" id="freopen">${t_("Қайта ашу", "Открыть снова")}</button>` : `<button class="btn" id="fend">${t_("Практиканы аяқтау", "Завершить практику")}</button>`)}</div>`;
+    $("#fhide").onclick = () => { H.hideMarks = !H.hideMarks; save(); pids().forEach(pubPlayer); render(); };
+    $("#fzip").onclick = zipAll; $("#fcsv").onclick = () => downloadBlob(new Blob(["﻿" + journalCsv()], {type: "text/csv;charset=utf-8"}), safeName(TITLE) + " — журнал.csv");
+    const fe = $("#fend"); if (fe) fe.onclick = () => { if (fe.dataset.c !== "1") { fe.dataset.c = "1"; fe.textContent = t_("Растау: аяқтау", "Точно завершить?"); setTimeout(() => { fe.dataset.c = ""; fe.textContent = t_("Практиканы аяқтау", "Завершить практику"); }, 3000); return; }
+      H.phase = "final"; H.fend = Date.now(); save(); pubState(); pids().forEach(pubPlayer); render(); };
+    const fr = $("#freopen"); if (fr) fr.onclick = () => { H.phase = "free"; save(); pubState(); render(); };
+    document.querySelectorAll("td[data-c]").forEach(td => td.onclick = () => { const [pid, i] = td.dataset.c.split(":"); flb = {pid, i: +i}; drawFlb(); });
+  }
+  function drawFlb() {
+    if (!flb) return;
+    let d = $("#lb"); if (!d) { d = document.createElement("div"); d.id = "lb"; d.className = "lb"; document.body.appendChild(d); }
+    const it = fItem(flb.i), p = H.players[flb.pid], x = fSt(flb.pid, flb.i), img = (IMGF[flb.pid] || {})[flb.i];
+    d.innerHTML = `<div class="lbtop"><span class="lbn">${esc(p ? p.name : "")}</span><span class="mut">${esc(it.title)}${x.d ? ` · ${mmss(x.sec)} · ${t_("уақыт бағасы", "оценка по времени")}: ${x.ag}` : x.o ? ` · ${t_("орындап жатыр", "в процессе")}` : ""}${x.tries ? ` · ${t_("тексеру", "проверок")}: ${x.tries}` : ""}</span><button class="btn ghost" id="lbx">${t_("Жабу · Esc", "Закрыть · Esc")}</button></div>
+      <div class="lbimg">${img ? `<img src="${img}" alt="">` : `<div class="mut">${t_("Скриншот әлі жоқ", "Скриншота пока нет")}</div>`}</div>
+      ${it.checks.length ? `<div class="mut" style="font-size:15px">${it.checks.map((c, j) => `${x.ok && x.ok[j] ? "✓" : x.ok ? "✗" : "·"} ${esc(L(c.l, H.lang))}`).join(" &nbsp; ")}</div>` : ""}
+      <div class="lbbar"><button class="btn ghost" id="lbp">←</button>
+        <div style="display:flex;gap:10px;align-items:center"><span class="mut">${t_("Сіздің бағаңыз", "Ваша оценка")}:</span>${[5, 4, 3, 2].map(g => `<button class="btn grade g${g} ${x.tg === g ? "on" : ""}" data-g="${g}" style="--gc:var(--g${g})">${g}</button>`).join("")}<button class="btn grade ${!x.tg ? "on" : ""}" data-g="0" style="--gc:var(--mut)">${t_("Авто", "Авто")}${x.ag ? " (" + x.ag + ")" : ""}</button></div>
+        <button class="btn ghost" id="lbn">→</button></div>`;
+    $("#lbx").onclick = () => { flb = null; d.remove(); render(); };
+    const others = pids().filter(id => { const y = (H.fs[id] || [])[flb.i]; return y && (y.o || y.sub); }).sort((a, b) => H.players[a].name.localeCompare(H.players[b].name));
+    const step = k => { if (!others.length) return; const j = others.indexOf(flb.pid); flb.pid = others[(j + k + others.length) % others.length]; drawFlb(); };
+    $("#lbp").onclick = () => step(-1); $("#lbn").onclick = () => step(1);
+    d.querySelectorAll(".grade").forEach(b => b.onclick = () => fSetGrade(+b.dataset.g));
+    d._step = step;
+  }
+  function fSetGrade(g) { if (!flb) return; const x = fSt(flb.pid, flb.i); x.tg = g || null; save(); pubPlayer(flb.pid); drawFlb(); }
+  function journalCsv() {
+    const items = H.items || [], tasks = items.map((it, i) => [it, i]).filter(([it]) => it.type === "task");
+    const q = v => `"${String(v == null ? "" : v).replace(/"/g, '""')}"`;
+    const head = [t_("Студент", "Студент"), ...tasks.flatMap(([it], n) => [`${n + 1}. ${it.title} — ${t_("уақыт", "время")}`, `${n + 1}. ${t_("баға", "оценка")}`]), t_("Орташа баға", "Средняя оценка"), t_("Пернелер (дұрыс)", "Горячие клавиши (верно)")];
+    const rows = pids().sort((a, b) => H.players[a].name.localeCompare(H.players[b].name)).map(id => { const st = H.fs[id] || [], rr = fRow(id);
+      return [H.players[id].name, ...tasks.flatMap(([it, i]) => { const x = st[i] || {}; return [x.d ? mmss(x.sec) : "", fGrade(x) || ""]; }), rr.avg == null ? "" : String(rr.avg).replace(".", ","), rr.hkN ? rr.hk + "/" + rr.hkN : ""]; });
+    return [head, ...rows].map(r => r.map(q).join(";")).join("\r\n");
+  }
+  async function zipAll() {
+    if (typeof JSZip === "undefined") { toast(t_("ZIP кітапханасы жүктелмеді", "Не загрузилась библиотека ZIP")); return; }
+    const zip = new JSZip(), items = H.items || [];
+    zip.file(t_("журнал.csv", "журнал.csv"), "﻿" + journalCsv());
+    let n = 0;
+    for (const id of pids()) { const imgs = IMGF[id] || {}, folder = zip.folder(safeName(H.players[id].name));
+      let tn = 0; items.forEach((it, i) => { if (it.type !== "task") return; tn++; if (imgs[i]) { folder.file(String(tn).padStart(2, "0") + "_" + safeName(it.title) + ".jpg", dataToBytes(imgs[i])); n++; } }); }
+    const blob = await zip.generateAsync({type: "blob"});
+    downloadBlob(blob, safeName(TITLE) + ".zip"); toast(t_(`${n} жұмыс жүктелді`, `Скачано работ: ${n}`));
+  }
+  function FreeSettings() {
+    const w = document.createElement("div"); w.className = "edm fset"; document.body.appendChild(w);
+    const nHk = (COURSE.hotkeys || []).length;
+    w.innerHTML = `<div class="edbox" style="max-width:640px"><h3 class="disp" style="margin:0;font-size:26px">${t_("Еркін практика баптаулары", "Настройки свободной практики")}</h3>
+      <p class="mut" style="margin:0;font-size:15px">${t_("Әр студент өз қарқынымен жүреді: тапсырманы бітірген соң келесісіне өтеді. Баға уақытқа қарай қойылады, сіз оны өзгерте аласыз.", "Каждый идёт в своём темпе: сдал задание — переходит к следующему. Оценка ставится автоматически по времени, вы можете её изменить.")}</p>
+      <div class="ff"><label>${t_("Пернелер сұрақтары", "Вопросы по горячим клавишам")} (${nHk})</label><select id="fs-mix">
+        <option value="after" ${H.mix === "after" ? "selected" : ""}>${t_("Әр тапсырмадан кейін 1 сұрақ", "После каждого задания — 1 вопрос")}</option>
+        <option value="end" ${H.mix === "end" ? "selected" : ""}>${t_("Барлығы соңында", "Все в конце")}</option>
+        <option value="none" ${H.mix === "none" ? "selected" : ""}>${t_("Сұрақсыз", "Без вопросов")}</option></select></div>
+      <div class="ff"><label>${t_("Уақыт бойынша баға (тапсырма нормасынан %)", "Оценка по времени (% от нормы задания)")}</label>
+        <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">«5» ≤ <input id="fs-t0" type="number" min="10" max="500" value="${H.thr[0]}" style="width:90px">% «4» ≤ <input id="fs-t1" type="number" min="10" max="600" value="${H.thr[1]}" style="width:90px">% «3» ≤ <input id="fs-t2" type="number" min="10" max="800" value="${H.thr[2]}" style="width:90px">% ${t_(", одан ұзақ — «2»", ", дольше — «2»")}</div>
+        <div class="hint">${t_("Мысалы, 10 минуттық тапсырма: 10 мин-қа дейін — 5, 15-ке дейін — 4, 20-ға дейін — 3.", "Пример для задания на 10 минут: до 10 мин — 5, до 15 — 4, до 20 — 3, дольше — 2.")}</div></div>
+      <div class="edtop" style="margin:0;justify-content:flex-end"><button class="btn ghost" id="fs-x">${t_("Болдырмау", "Отмена")}</button><button class="btn" id="fs-ok">${t_("Сақтау", "Сохранить")}</button></div></div>`;
+    $("#fs-x").onclick = () => w.remove();
+    $("#fs-ok").onclick = () => { const t = [0, 1, 2].map(i => Math.max(10, +$("#fs-t" + i).value || 100)).sort((a, b) => a - b);
+      H.mix = $("#fs-mix").value; H.thr = t; save(); w.remove(); render(); };
+  }
   function render() {
     if (lb) { drawLb(); return; }
+    if (flb) { drawFlb(); return; }
+    if (FREE() && (H.phase === "free" || H.phase === "final")) { renderFree(); bind(); return; }
     const head = `<div class="htop"><span class="tag">${TITLE} · ${SETS[H.set].short}</span><span class="tag">${H.phase === "lobby" || H.phase === "final" ? "" : `${H.qi + 1} / ${total()}`}</span></div>`;
     if (H.phase === "lobby") {
       const ps = pids();
@@ -856,7 +1065,7 @@ function Host() {
             ${!connectedOnce ? `<button class="btn ghost" id="srv">Басқа сервер (${H.b + 1}/${BROKERS.length})</button>` : ""}</div></div>
         </div>
         <div><div class="setrow" style="margin:0 0 14px"><span class="mut">${LANG_LABEL}</span><div class="mode" style="margin:0">${LANGS.map(([k, t]) => `<button data-lang="${k}" class="${H.lang === k ? "on" : ""}">${t}</button>`).join("")}</div>
-            <button class="btn ghost" id="plan" style="height:40px;font-size:14px;margin-left:auto">✎ Тапсырмалар (${H.plan.length})</button></div>
+            <button class="btn ghost" id="plan" style="height:40px;font-size:14px;margin-left:auto">✎ Тапсырмалар (${H.plan.length})</button>${FREE() ? `<button class="btn ghost" id="fset" style="height:40px;font-size:14px">⚙ ${t_("Баптау", "Настройки")}</button>` : ""}</div>
         <div class="plbox"><div class="count">${ps.length} ойыншы</div>
           <div class="pl">${ps.map(id => `<button class="chip" data-k="${id}" title="Ойыннан шығару">${esc(H.players[id].name)}</button>`).join("") || `<span class="mut" style="font-size:18px">Ойыншыларды күтудеміз…</span>`}</div></div></div>
         </div></div>${ctlBar(ps.length ? "Бастау: " + SETS[H.set].short : "", "", `<div class="mode" style="margin:0">${Object.keys(SETS).map(k => `<button data-set="${k}" class="${H.set === k ? "on" : ""}">${setName(k)}</button>`).join("")}</div>`)}</div>`;
@@ -864,6 +1073,7 @@ function Host() {
       const srv = $("#srv"); if (srv) srv.onclick = () => { H.b = (H.b + 1) % BROKERS.length; start(); };
       document.querySelectorAll(".mode button[data-set]").forEach(b => b.onclick = () => { if (H.set !== b.dataset.set) { H.set = b.dataset.set; save(); pubState(); render(); } });
       document.querySelectorAll(".mode button[data-lang]").forEach(b => b.onclick = () => { H.lang = b.dataset.lang; store.set("lang", H.lang); save(); pubState(); render(); });
+      const fsb = $("#fset"); if (fsb) fsb.onclick = FreeSettings;
       $("#plan").onclick = () => PlanEditor(H.plan, plan => { H.plan = plan; store.set("plan", plan); save(); pubState(); render(); });
       document.querySelectorAll(".chip[data-k]").forEach(b => b.onclick = () => {
         const id = b.dataset.k; if (b.dataset.c !== "1") { b.dataset.c = "1"; b.textContent = "Шығару?"; setTimeout(render, 2500); return; }
@@ -922,27 +1132,34 @@ function Player() {
   let joined = !!(name && room && store.get("joinedRoom") === room);
   let client = null, S = null, P = null, lastScreen = "", myLock = null, raf = 0, deadline = 0;
   let draft = {k: "", data: null}, sending = false, sentLocal = {k: "", data: null};
+  let ITEMS = null, curF = 0, showMine = false, skew = 0; const OWN = {};
+  const isFree = () => S && S.set === "free" && (S.phase === "free" || S.phase === "final");
+  const fs = () => P && P.fs && S && P.fs.fid === S.fid ? P.fs : null;
+  const fst = i => { const f = fs(); return (f && f.s[i]) || {}; };
+  const fItems = () => ITEMS && S && ITEMS.fid === S.fid ? ITEMS.items : [];
   const seen = {note: null, frozen: null, res: null};
   let iceTimer = null, thSub = false, viewer = null;
   const THUMBS = {}, myRates = {}, chkVals = {};
-  const RR = () => !S || S.qi < 0 || !SETS[S.set] ? null : S.set === "quiz" ? COURSE.quiz[S.qi] : S.task || null;
+  const RR = () => !S || !SETS[S.set] ? null : isFree() ? fItems()[curF] || null : S.qi < 0 ? null : S.set === "quiz" ? COURSE.quiz[S.qi] : S.task || null;
   const lang = () => store.get("lang") || (S && S.lang) || "ru";
-  const qkey = () => S ? S.set + ":" + S.qi : "";
+  const qkey = () => !S ? "" : isFree() ? "f:" + S.fid + ":" + curF : S.set + ":" + S.qi;
 
-  function send(o) { o.pid = pid; if (S) o.set = S.set; if (client && client.connected) { client.publish(T(room) + "i", JSON.stringify(o), {qos: 1}); return true; } return false; }
+  function send(o) { o.pid = pid; if (S) { o.set = S.set; if (S.fid) o.fid = S.fid; } if (client && client.connected) { client.publish(T(room) + "i", JSON.stringify(o), {qos: 1}); return true; } return false; }
   function go() {
     client && client.end(true);
     thSub = false;
-    client = connect(bi, c => { thSub = false; c.subscribe([T(room) + "s", T(room) + "p/" + pid], {qos: 1}); if (joined) send({t: "join", name}); },
+    client = connect(bi, c => { thSub = false; c.subscribe([T(room) + "s", T(room) + "p/" + pid, T(room) + "items", T(room) + "img/" + pid + "/+"], {qos: 1}); if (joined) send({t: "join", name}); },
       (topic, m) => {
+        if (topic.endsWith("/items")) { ITEMS = m; if (S && S.fid === m.fid) { const sv = store.get("cur_" + m.fid); curF = sv != null ? Math.min(sv, m.items.length - 1) : 0; } lastScreen = ""; render(); return; }
+        if (topic.indexOf("/img/" + pid + "/") > 0) { if (m && m.fid && typeof m.data === "string") (OWN[m.fid] = OWN[m.fid] || {})[m.i] = m.data; if (showMine) { lastScreen = ""; render(); } return; }
         if (topic.indexOf("/th/") > 0) { onThumb(topic.split("/").pop(), m); return; }
         if (topic.endsWith("/s")) { S = m; if (S.phase === "question") deadline = performance.now() + (S.endsIn || 0); if (S.phase === "vote" && !thSub && client.connected) { thSub = true; client.subscribe(T(room) + "th/+", {qos: 1}); } }
-        else { P = m; onPlayerMsg(); }
+        else { P = m; if (P.fs && P.fs.now) skew = P.fs.now - Date.now(); onPlayerMsg(); }
         render();
       });
   }
   const locked = () => S && ((myLock && myLock.k === qkey()) || (P && P.locked && P.locked.set === S.set && P.locked.qi === S.qi));
-  const mySub = () => P && P.sub && P.sub.k === qkey();
+  const mySub = () => isFree() ? !!fst(curF).sub : P && P.sub && P.sub.k === qkey();
   function onPlayerMsg() {
     if (P.kicked) { joined = false; store.del("joinedRoom"); return; }
     if (P.name && P.name !== name) { name = P.name; store.set("name", name); }
@@ -1014,6 +1231,8 @@ function Player() {
     if (!S || S.phase === "closed" || !SETS[S.set]) return "wait0";
     if (P && P.kicked) return "kicked";
     if (S.phase === "lobby") return "lobby" + S.set;
+    if (isFree()) { if (!fItems().length) return "frwait" + S.fid; if (showMine || S.phase === "final") return "frmine" + S.fid + ":" + S.phase + ":" + Object.keys(OWN[S.fid] || {}).length + ":" + JSON.stringify((fs() || {}).s || []).length;
+      const it = fItems()[curF]; return "fr" + S.fid + ":" + curF + ":" + lang() + (it && it.type === "mc" ? ":" + (fst(curF).a != null) : ""); }
     const r = RR();
     if (S.phase === "question") {
       if (isTask(r)) return "task" + qkey() + lang();
@@ -1025,7 +1244,7 @@ function Player() {
     if (S.phase === "board") return "board" + qkey() + (P && P.last ? P.last.k + P.last.pts : "");
     return S.phase + qkey();
   }
-  const top = () => `<div class="pbar"><span class="me">${esc(name)}</span><span>${P ? P.score + " ұпай" : ""}${S && S.qi >= 0 && S.total ? ` · ${S.qi + 1}/${S.total}` : ""}</span></div>`;
+  const top = () => isFree() ? `<div class="pbar"><span class="me">${esc(name)}</span><span>${fItems().filter((it, i) => fst(i).d).length} / ${fItems().length} ${t_("дайын", "готово")}</span></div>` : `<div class="pbar"><span class="me">${esc(name)}</span><span>${P ? P.score + " ұпай" : ""}${S && S.qi >= 0 && S.total ? ` · ${S.qi + 1}/${S.total}` : ""}</span></div>`;
   function sendMc(a) {
     if ($("#ice") || locked()) return;
     if (!send({t: "ans", qi: S.qi, a})) { toast("Байланыс жоқ — қайта басыңыз"); return; }
@@ -1034,7 +1253,7 @@ function Player() {
   function taskUpload(force) {
     const r = RR(), k = qkey(), box = $("#upbox"); if (!box) return;
     const sent = mySub(), have = draft.k === k && draft.data;
-    const sentImg = sentLocal.k === k ? sentLocal.data : null;
+    const sentImg = isFree() ? (OWN[S.fid] || {})[curF] || null : sentLocal.k === k ? sentLocal.data : null;
     const sig = [k, !!sent, have ? draft.data.length : 0, sending, sentImg ? sentImg.length : 0].join("|");
     if (!force && sig === upSig && box.childElementCount) return; upSig = sig;
     box.innerHTML = have ? `<img class="prev" src="${draft.data}" alt="Таңдалған сурет">
@@ -1047,10 +1266,12 @@ function Player() {
       if (!client || !client.connected) { toast("Байланыс жоқ — қайта басыңыз"); return; }
       sending = true; taskUpload();
       const id = rid(8);
-      client.publish(T(room) + "img/" + pid, JSON.stringify({set: S.set, qi: S.qi, id, data: draft.data}), {qos: 1, retain: true}, err => {
+      const fi = curF, free = isFree();
+      client.publish(T(room) + "img/" + pid + (free ? "/" + fi : ""), JSON.stringify(free ? {fid: S.fid, i: fi, id, data: draft.data} : {set: S.set, qi: S.qi, id, data: draft.data}), {qos: 1, retain: true}, err => {
         sending = false;
         if (err) { toast("Жіберілмеді — қайта басыңыз"); taskUpload(); return; }
-        sentLocal = {k, data: draft.data}; draft = {k: "", data: null}; vibrate(40); toast("Жіберілді!"); taskUpload();
+        if (free) (OWN[S.fid] = OWN[S.fid] || {})[fi] = draft.data; else sentLocal = {k, data: draft.data};
+        draft = {k: "", data: null}; vibrate(40); toast("Жіберілді!"); taskUpload();
       });
     };
   }
@@ -1087,22 +1308,119 @@ function Player() {
     $("#chkgo").onclick = () => {
       const vals = r.checks.map((c, i) => chkVals[k][i] == null ? "" : chkVals[k][i]);
       if (vals.some(x => x === "")) { toast(t_("Барлық өрістерді толтырыңыз", "Заполните все поля")); return; }
-      if (!send({t: "chk", qi: S.qi, vals})) { toast(t_("Байланыс жоқ — қайта басыңыз", "Нет связи — нажмите ещё раз")); return; }
+      if (!send(isFree() ? {t: "fchk", i: curF, vals} : {t: "chk", qi: S.qi, vals})) { toast(t_("Байланыс жоқ — қайта басыңыз", "Нет связи — нажмите ещё раз")); return; }
       vibrate(20); const st = $("#chkst"); if (st) st.textContent = t_("Тексерілуде…", "Проверяем…");
+    };
+  }
+
+  /* ---------- Еркін режим (студент) ---------- */
+  function openItem(i) { const n = fItems().length; if (!n) return; curF = Math.max(0, Math.min(n - 1, i)); store.set("cur_" + S.fid, curF); showMine = false; closeList(); send({t: "fopen", i: curF}); lastScreen = ""; render(); window.scrollTo(0, 0); }
+  function itemLabel(it, i) { return it.type === "task" ? it.title : t_("Пернелер сұрағы", "Вопрос: горячие клавиши"); }
+  function statusIcon(i) { const x = fst(i), it = fItems()[i]; if (it.type === "mc") return x.a == null ? "○" : x.c ? "✓" : "✗"; return x.d ? "✓" : x.o || x.tries || x.sub ? "◐" : "○"; }
+  function openList() {
+    closeList(); const items = fItems(), hide = fs() && fs().hide;
+    const d = document.createElement("div"); d.className = "sheet"; d.id = "flist";
+    d.innerHTML = `<div class="in"><h3>${t_("Барлық тапсырмалар", "Все задания")}</h3>
+      ${items.map((it, i) => { const x = fst(i), g = x.tg || x.ag; return `<button class="tg fli ${i === curF ? "on" : ""}" data-i="${i}"><span><b class="si s${statusIcon(i) === "✓" ? "ok" : statusIcon(i) === "✗" ? "no" : statusIcon(i) === "◐" ? "run" : ""}">${statusIcon(i)}</b> ${esc(itemLabel(it, i))}</span><span class="mut">${it.type === "task" && x.d && !hide ? "«" + g + "» · " + mmss(x.sec || 0) : it.type === "task" ? it.t / 60 + " " + t_("мин", "мин") : ""}</span></button>`; }).join("")}
+      <button class="btn ghost" id="fmine" style="width:100%;margin-top:14px">${t_("Менің жұмыстарым", "Мои работы")}</button>
+      <button class="btn ghost" id="flx" style="width:100%;margin-top:8px">${t_("Жабу", "Закрыть")}</button></div>`;
+    document.body.appendChild(d);
+    d.onclick = e => { if (e.target === d) closeList(); };
+    d.querySelectorAll(".fli").forEach(b => b.onclick = () => openItem(+b.dataset.i));
+    $("#flx").onclick = closeList; $("#fmine").onclick = () => { closeList(); showMine = true; lastScreen = ""; render(); };
+  }
+  function closeList() { const d = $("#flist"); if (d) d.remove(); }
+  function freeNav() {
+    const n = fItems().length;
+    return `<div class="fnav" id="fnav"><button class="btn ghost" id="fprev" ${curF === 0 ? "disabled" : ""}>←</button><button class="btn ghost" id="fmenu">☰ ${curF + 1}/${n}</button><button class="btn" id="fnext"></button></div>`;
+  }
+  function updateFreeNav() {
+    const b = $("#fnext"); if (!b) return; const n = fItems().length, x = fst(curF), last = curF >= n - 1;
+    const done = x.d || x.a != null;
+    b.textContent = last ? t_("Менің жұмыстарым →", "Мои работы →") : done ? t_("Келесі тапсырма →", "Следующее →") : t_("Өткізіп жіберу →", "Пропустить →");
+    b.classList.toggle("ghost", !done && !last);
+  }
+  function bindFreeNav() {
+    $("#fprev").onclick = () => openItem(curF - 1);
+    $("#fmenu").onclick = openList;
+    $("#fnext").onclick = () => { const n = fItems().length, x = fst(curF);
+      if (curF >= n - 1) { showMine = true; lastScreen = ""; render(); return; }
+      const b = $("#fnext");
+      if (!(x.d || x.a != null) && b.dataset.c !== "1") { b.dataset.c = "1"; b.textContent = t_("Тапсырылмаған. Бәрібір өту?", "Не сдано. Всё равно перейти?"); setTimeout(() => { b.dataset.c = ""; updateFreeNav(); }, 3000); return; }
+      let j = curF + 1; openItem(j); };
+    updateFreeNav();
+  }
+  function renderFreeItem() {
+    const r = RR(), x = fst(curF);
+    if (!x.o) send({t: "fopen", i: curF});
+    if (r.type === "mc") {
+      const answered = x.a != null;
+      app.innerHTML = `<div class="ply"><div class="pw-wrap">${top()}<div class="pk">${esc(r.k || "")}</div><div class="pq up">${esc(L(r.q, lang()))}</div>
+        <div class="answers">${r.a.map((a, i) => `<button class="ans t${i} ${answered ? (i === r.c ? "pick" : i === x.a ? "" : "gone") : ""}" data-a="${i}" ${answered ? "disabled" : ""}>${SHAPES[i]}<span>${esc(L(a, lang()))}</span></button>`).join("")}</div>
+        ${answered ? `<div class="fres ${x.c ? "ok" : "no"}">${x.c ? t_("Дұрыс!", "Верно!") : t_("Қате. Дұрыс жауап", "Неверно. Правильно") + ": " + esc(L(r.a[r.c], lang()))}</div>` : ""}
+        ${freeNav()}</div></div>`;
+      document.querySelectorAll(".ans:not([disabled])").forEach(b => b.onclick = () => { if (!send({t: "fmc", i: curF, a: +b.dataset.a})) { toast(t_("Байланыс жоқ", "Нет связи")); return; } vibrate(25); document.querySelectorAll(".ans").forEach(z => z.disabled = true); });
+      bindFreeNav(); return;
+    }
+    app.innerHTML = `<div class="ply"><div class="pw-wrap">${top()}
+      <div class="pk">${esc(r.k)} · ${t_("уақыт", "время")} <span id="ptt">${x.o ? "" : "0:00"}</span></div><div class="pq up">${esc(r.title)}</div>
+      <div class="langsw"><span class="mut">${LANG_LABEL}</span>${LANGS.map(([k, t]) => `<button data-l="${k}" class="${lang() === k ? "on" : ""}">${t}</button>`).join("")}</div>
+      <ol class="psteps">${r.steps.map(s => `<li>${esc(L(s, lang()))}</li>`).join("")}</ol>
+      ${r.crit && r.crit.length ? `<div class="crit">${r.crit.map(c => `<span>${esc(c)}</span>`).join("")}</div>` : ""}
+      ${r.table ? dataTable(r.table) : ""}
+      ${r.hints && r.hints.length ? `<details class="exd"><summary>${t_("Кеңестер", "Подсказки")} (${r.hints.length})</summary><ul class="hints">${r.hints.map(h => `<li>${esc(L(h, lang()))}</li>`).join("")}</ul></details>` : ""}
+      ${r.ex ? `<details class="exd"><summary>${t_("Мысалды көру", "Посмотреть образец")}</summary><img src="${esc(exUrl(r.ex))}" alt="" onerror="this.parentNode.remove()"></details>` : ""}
+      ${r.checks && r.checks.length ? checkForm(r) : ""}
+      <a class="btn ghost" href="${COURSE.tool.url}" target="_blank" rel="noopener" style="width:100%;margin:12px 0">${ICON.ext}<span>${esc(COURSE.tool.name)} ашу</span></a>
+      <input type="file" id="file" accept="image/*" class="hidden">
+      ${r.shot === false ? "" : `<div class="edh" style="margin-top:6px">${t_("Скриншот", "Скриншот")}</div><div id="upbox" class="upbox"></div>`}
+      ${freeNav()}</div></div>`;
+    document.querySelectorAll(".langsw button").forEach(b => b.onclick = () => { store.set("lang", b.dataset.l); lastScreen = ""; render(); });
+    $("#file").onchange = async e => { const f = e.target.files && e.target.files[0]; e.target.value = ""; if (!f) return;
+      try { draft = {k: qkey(), data: await compressImage(f)}; taskUpload(); } catch (err) { toast("Бұл файлды ашу мүмкін болмады. JPG/PNG немесе скриншот таңдаңыз"); } };
+    upSig = ""; lastChk = ""; taskUpload(); bindChecks(r); updateChecks(); bindFreeNav();
+    const cp = $("#copytbl"); if (cp) cp.onclick = () => copyText(r.table.head.join("\t") + "\n" + r.table.rows.map(z => z.join("\t")).join("\n"));
+    const loop = () => { const el = $("#ptt"); if (!el) return; const y = fst(curF); el.textContent = y.d ? mmss(y.sec || 0) + " ✓" : y.o ? mmss(Math.max(0, (Date.now() + skew - y.o) / 1000)) : "0:00"; raf = requestAnimationFrame(() => setTimeout(loop, 500)); };
+    loop();
+  }
+  function renderMine() {
+    const items = fItems(), own = OWN[S.fid] || {}, hide = fs() && fs().hide, fin = S.phase === "final";
+    let tn = 0;
+    const cards = items.map((it, i) => { if (it.type !== "task") return ""; tn++; const x = fst(i), img = own[i], g = x.tg || x.ag;
+      return `<div class="mine"><div class="mt"><b>${tn}. ${esc(it.title)}</b><span class="mut">${x.d ? (hide ? "✓" : "«" + g + "»") + " · " + mmss(x.sec || 0) : x.o ? t_("аяқталмаған", "не завершено") : t_("ашылмаған", "не начато")}</span></div>
+        ${img ? `<img src="${img}" alt=""><a class="btn ghost" download="${String(tn).padStart(2, "0")}_${esc(safeName(it.title))}.jpg" href="${img}">⬇ ${t_("Сақтау", "Сохранить")}</a>` : `<div class="mut" style="font-size:13px">${t_("Скриншот жоқ", "Скриншота нет")}</div>`}
+        ${!fin ? `<button class="btn ghost" data-go="${i}">${t_("Тапсырмаға өту", "Открыть задание")}</button>` : ""}</div>`; }).join("");
+    const mcs = items.map((it, i) => it.type === "mc" ? fst(i) : null).filter(Boolean);
+    app.innerHTML = `<div class="ply"><div class="pw-wrap">${top()}<div class="pq up" style="margin-top:14px">${fin ? t_("Практика аяқталды", "Практика завершена") : t_("Менің жұмыстарым", "Мои работы")}</div>
+      ${mcs.length ? `<p class="mut" style="margin:0 0 10px">${t_("Пернелер сұрақтары", "Вопросы по горячим клавишам")}: ${mcs.filter(x => x.c).length} / ${mcs.length}</p>` : ""}
+      <button class="btn" id="zipme" style="width:100%;margin-bottom:12px">⬇ ${t_("Барлығын жүктеу (ZIP)", "Скачать все работы (ZIP)")}</button>
+      <div class="minelist">${cards}</div>
+      ${!fin ? `<button class="btn ghost" id="back2" style="width:100%;margin-top:12px">← ${t_("Тапсырмаларға оралу", "Вернуться к заданиям")}</button>` : ""}</div></div>`;
+    document.querySelectorAll("[data-go]").forEach(b => b.onclick = () => openItem(+b.dataset.go));
+    const bk = $("#back2"); if (bk) bk.onclick = () => { showMine = false; lastScreen = ""; render(); };
+    $("#zipme").onclick = async () => {
+      if (typeof JSZip === "undefined") { toast(t_("ZIP жүктелмеді", "Не загрузился ZIP")); return; }
+      const zip = new JSZip(); let n = 0, k = 0, lines = [`${TITLE}`, `${name}`, ""];
+      items.forEach((it, i) => { if (it.type !== "task") return; k++; const x = fst(i); lines.push(`${k}. ${it.title}: ${x.d ? (hide ? "✓" : (x.tg || x.ag)) + " · " + mmss(x.sec || 0) : "—"}`);
+        if (own[i]) { zip.file(String(k).padStart(2, "0") + "_" + safeName(it.title) + ".jpg", dataToBytes(own[i])); n++; } });
+      if (mcs.length) lines.push("", t_("Пернелер сұрақтары", "Горячие клавиши") + `: ${mcs.filter(x => x.c).length}/${mcs.length}`);
+      zip.file(t_("нәтижелер.txt", "итоги.txt"), lines.join("\r\n"));
+      downloadBlob(await zip.generateAsync({type: "blob"}), safeName(TITLE + " — " + name) + ".zip"); toast(t_(`${n} жұмыс`, `Работ в архиве: ${n}`));
     };
   }
   let lastChk = "";
   function updateChecks() {
     const box = $("#chkbox"); if (!box) return;
-    const c = P && P.chk && P.chk.k === qkey() ? P.chk : null;
-    const sig = c ? JSON.stringify([c.ok, c.tries, c.fin, c.place]) : "";
+    let c = P && P.chk && P.chk.k === qkey() ? P.chk : null;
+    if (isFree()) { const x = fst(curF); c = x.tries || x.d ? {ok: x.ok || [], tries: x.tries || 0, fin: x.d ? 1 : null, place: 0, ag: x.ag, tg: x.tg} : null; }
+    const sig = c ? JSON.stringify([c.ok, c.tries, c.fin, c.place, c.ag, c.tg]) : "";
     if (sig === lastChk && box.dataset.done === sig) return; lastChk = sig; box.dataset.done = sig;
     const r = RR();
     box.querySelectorAll(".chf").forEach(f => { const i = +f.dataset.i, s = f.querySelector(".chs");
       f.classList.toggle("good", !!(c && c.ok[i])); f.classList.toggle("bad", !!(c && c.ok.length && !c.ok[i]));
       s.textContent = c && c.ok.length ? (c.ok[i] ? "✓" : "✗") : ""; const inp = f.querySelector("input"); if (inp) inp.disabled = !!(c && c.ok[i]); });
     const st = $("#chkst"), allOk = c && c.ok.length && c.ok.every(Boolean);
-    if (st) st.innerHTML = !c ? "" : c.fin != null ? `<b class="okc">${t_("Дайын!", "Готово!")} ${t_("Орныңыз", "Ваше место")}: ${c.place}</b>`
+    if (st) st.innerHTML = !c ? "" : c.fin != null ? (isFree() ? `<b class="okc">${t_("Дайын!", "Готово!")}</b> ${fs() && fs().hide ? "" : t_("Уақыт бағасы", "Оценка по времени") + ": <b>" + (c.tg || c.ag) + "</b>"}` : `<b class="okc">${t_("Дайын!", "Готово!")} ${t_("Орныңыз", "Ваше место")}: ${c.place}</b>`)
       : allOk ? (r && r.shot ? `<b class="okc">${t_("Сандар дұрыс ✓", "Числа верны ✓")}</b> ${t_("Енді скриншот жіберіңіз.", "Теперь отправьте скриншот.")}` : "")
       : `<span class="badc">${t_("Қатесі бар — ✗ белгіленген өрістерді тексеріңіз.", "Есть ошибки — проверьте поля с ✗.")}</span>`;
     const go = $("#chkgo"); if (go) go.disabled = !!allOk;
@@ -1111,8 +1429,11 @@ function Player() {
   function render() {
     const key = screenKey();
     if (key.startsWith("q")) updatePw();
-    if (key === lastScreen) { if (key.startsWith("task")) { taskUpload(); updateChecks(); } return; }
+    if (key === lastScreen) { if (key.startsWith("task") || (key.startsWith("fr") && !key.startsWith("frmine") && !key.startsWith("frwait"))) { taskUpload(); updateChecks(); updateFreeNav(); } return; }
     const prev = lastScreen; lastScreen = key;
+    if (key.startsWith("frwait")) { app.innerHTML = `<div class="ply">${top()}<div class="pc"><div class="wait up"><div class="ring"></div><h1>${t_("Тапсырмалар жүктелуде…", "Загружаем задания…")}</h1></div></div></div>`; return; }
+    if (key.startsWith("frmine")) { closeSheet(); renderMine(); return; }
+    if (key.startsWith("fr")) { closeSheet(); cancelAnimationFrame(raf); renderFreeItem(); return; }
     if (!key.startsWith("q")) closeSheet();
     if (!key.startsWith("vote")) closeViewer();
     if (!(key.startsWith("q") || key.startsWith("locked"))) unfreeze(true);
