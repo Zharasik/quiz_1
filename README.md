@@ -13,3 +13,7 @@
 
 - Photoshop (ОН 2.1): `https://zharasik.github.io/quiz_1/photoshop/?host`
 - Illustrator (ОН 2.2): `https://zharasik.github.io/quiz_1/illustrator/?host`
+
+## Практика № 19 · Диаграммы в Excel (БУХ 2-2)
+
+- Преподаватель: `https://zharasik.github.io/quiz_1/diagrammy/?host`

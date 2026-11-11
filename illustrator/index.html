@@ -324,6 +324,43 @@ a.btn svg{width:18px;height:18px}
 .pvimg img{max-width:100%;max-height:100%;object-fit:contain;border-radius:8px;background:#fff}
 .pvbar{display:flex;align-items:center;justify-content:space-between;gap:8px}
 .pvbar .btn{height:48px;width:48px;padding:0;flex:none}
+.race{display:flex;flex-direction:column;gap:6px;margin-bottom:14px;max-height:34vh;overflow:auto}
+.rrow{display:grid;grid-template-columns:34px 1fr auto 60px;align-items:center;gap:10px;background:var(--s1);border:1px solid var(--line);border-radius:10px;padding:8px 12px;font-size:16px;font-weight:600}
+.rrow.fin{border-color:var(--ok)}
+.rrow .rp{font-family:var(--disp);font-weight:800;color:var(--ok);text-align:center}
+.rrow .rn{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.rrow .rd{display:flex;gap:5px;align-items:center}
+.rrow .rd i{width:12px;height:12px;border-radius:50%;background:var(--s2);border:1px solid var(--line)}
+.rrow .rd i.g{background:var(--ok);border-color:var(--ok)}
+.rrow .rd i.b{background:var(--bad);border-color:var(--bad)}
+.rrow .rd i.cam{width:auto;height:auto;border:0;background:none;font-style:normal;font-size:14px;color:var(--mut)}
+.rrow .rd i.cam.g{color:var(--ok);background:none}
+.rrow .rt{text-align:right;font-variant-numeric:tabular-nums;color:var(--mut)}
+.rrow.fin .rt{color:var(--ok)}
+.dt{display:flex;flex-direction:column;gap:8px;margin:12px 0 0}
+.dtw{overflow-x:auto;border-radius:10px;border:1px solid #D4D4D4}
+.dt table{border-collapse:collapse;background:#fff;color:#1f1f1f;font-size:14px;width:100%}
+.dt th{background:#F3F3F3;color:#666;font-size:11px;font-weight:600;padding:3px 6px;border:1px solid #E1E1E1}
+.dt td{border:1px solid #E1E1E1;padding:5px 8px;white-space:nowrap}
+.dt td.num{text-align:right;font-variant-numeric:tabular-nums}
+.hints{margin:10px 0 0;padding-left:20px;display:flex;flex-direction:column;gap:6px;font-size:14px;line-height:1.4}
+.chkbox{display:flex;flex-direction:column;gap:10px;margin:14px 0;background:var(--s1);border:1px solid var(--line);border-radius:14px;padding:14px}
+.chf{display:grid;grid-template-columns:1fr auto;gap:6px;align-items:center}
+.chf label{grid-column:1 / -1;font-size:14px;font-weight:600}
+.chf input{height:48px;border-radius:10px;border:1px solid var(--line);background:var(--bg);color:var(--tx);padding:0 12px;font-size:18px;font-weight:600;outline:none;min-width:0}
+.chf .chopts{display:flex;flex-wrap:wrap;gap:6px}
+.chf .chopts button{height:40px;padding:0 12px;border-radius:10px;background:var(--s2);border:1px solid var(--line);font-size:14px;font-weight:600}
+.chf .chopts button.on{background:var(--tx);color:var(--bg)}
+.chf .chs{font-size:22px;font-weight:800;width:24px;text-align:center}
+.chf.good input,.chf.good .chopts button.on{border-color:var(--ok)}
+.chf.good .chs{color:var(--ok)}
+.chf.bad input,.chf.bad .chopts button.on{border-color:var(--bad)}
+.chf.bad .chs{color:var(--bad)}
+.chkst{font-size:15px;line-height:1.4}
+.okc{color:var(--ok)}.badc{color:#FF8A8F}
+.noimg2{width:100%;aspect-ratio:16/10;display:flex;align-items:center;justify-content:center;text-align:center;padding:12px;background:var(--s2);color:var(--mut);font-weight:700;font-size:14px}
+.tgrid .steps{max-height:calc(100vh - 300px);overflow:auto}
+.tgrid .gal{max-height:calc(100vh - 420px)}
 </style>
 </head>
 <body>
@@ -342,10 +379,15 @@ const SETS = {
 };
 /* [[орысша|english]] → таңдалған интерфейс тілі */
 const L = (s, lang) => String(s == null ? "" : s).replace(/\[\[([^|\]]*)\|([^\]]*)\]\]/g, (m, ru, en) => lang === "en" ? en : ru);
+const RU = COURSE.ui === "ru";
+const t_ = (kk, ru) => RU ? ru : kk;
+const LANGS = COURSE.langs || [["ru", "Орысша"], ["en", "English"]];
+const LANG_LABEL = COURSE.langLabel || "Интерфейс:";
 const exUrl = ex => !ex ? "" : /^https?:\/\//.test(ex) ? ex : "ex/" + ex + ".jpg";
 const fromBank = id => { const b = COURSE.bank.find(x => x.id === id); return b ? JSON.parse(JSON.stringify(Object.assign({uid: rid(6)}, b))) : null; };
 const defaultPlan = () => COURSE.defaults.map(fromBank).filter(Boolean);
-const toRound = (t, i) => ({type: "task", t: Math.max(1, +t.min || 5) * 60, k: (i + 1) + "-тапсырма · " + (+t.min || 5) + " мин", title: t.title, steps: t.steps || [], crit: t.crit || [], ex: t.ex || ""});
+const toRound = (t, i) => ({type: "task", t: Math.max(1, +t.min || 5) * 60, k: (i + 1) + "-тапсырма · " + (+t.min || 5) + " мин", title: t.title, steps: t.steps || [], crit: t.crit || [], ex: t.ex || "", table: t.table || null, hints: t.hints || [], checks: t.checks || [], shot: t.shot !== false});
+const checkOk = (c, v) => { if (c.opts) return (v | 0) === c.c && v !== "" && v != null; const x = parseFloat(String(v == null ? "" : v).replace(/[\s\u00a0]/g, "").replace("%", "").replace(",", ".")); if (!isFinite(x)) return false; const tol = c.tol != null ? c.tol : Math.max(0.5, Math.abs(c.a) * 0.002); return Math.abs(x - c.a) <= tol || (c.pct && Math.abs(x * 100 - c.a) <= tol); };
 const NS = COURSE.ns;
 const TITLE = COURSE.title;
 const BROKERS = ["wss://broker.emqx.io:8084/mqtt", "wss://broker.hivemq.com:8884/mqtt", "wss://test.mosquitto.org:8081"];
@@ -447,7 +489,7 @@ function PlanEditor(plan0, onDone) {
             </div>`).join("") || `<p class="mut">Тапсырма таңдалмаған. Оң жақтағы банктен қосыңыз.</p>`}
         </div>
         <div class="edbank"><div class="edh">Тапсырмалар банкі · ${COURSE.bank.length}</div><div class="bgrid">
-          ${COURSE.bank.map(b => `<div class="bcard ${inPlan.has(b.id) ? "on" : ""}"><img src="${esc(exUrl(b.ex))}" alt="${esc(b.title)}"><div class="bt"><b>${esc(b.title)}</b><span class="mut">${b.min} мин</span></div>
+          ${COURSE.bank.map(b => `<div class="bcard ${inPlan.has(b.id) ? "on" : ""}">${b.ex ? `<img src="${esc(exUrl(b.ex))}" alt="${esc(b.title)}">` : `<div class="noimg2">${esc(b.title)}</div>`}<div class="bt"><b>${esc(b.title)}</b><span class="mut">${b.min} мин</span></div>
             <button class="btn ${inPlan.has(b.id) ? "ghost" : ""}" data-add="${b.id}" ${inPlan.has(b.id) ? "disabled" : ""}>${inPlan.has(b.id) ? "✓ Қосылған" : "+ Қосу"}</button></div>`).join("")}
         </div></div>
       </div>`;
@@ -478,9 +520,9 @@ function PlanEditor(plan0, onDone) {
         <div class="ff wide"><label>Қадамдар — әр жолға бір қадам</label><textarea id="f-steps" rows="8">${esc((t.steps || []).join("\n"))}</textarea>
           <div class="hint">Мәзір атауын екі тілде жазу: <code>[[Файл → Создать|File → New]]</code> — студент таңдаған интерфейс тіліне қарай біреуі көрінеді.</div></div>
         <div class="ff"><label>Бағалау критерийлері — әр жолға біреу</label><textarea id="f-crit" rows="3">${esc((t.crit || []).join("\n"))}</textarea></div>
-        <div class="ff"><label>Мысал сурет</label><select id="f-exsel"><option value="">Жоқ</option>${COURSE.bank.map(b => `<option value="${b.ex}" ${t.ex === b.ex ? "selected" : ""}>Банктен: ${esc(b.title)}</option>`).join("")}<option value="__url" ${/^https?:/.test(t.ex) ? "selected" : ""}>Сілтеме (URL)…</option></select>
+        <div class="ff"><label>Мысал сурет</label><select id="f-exsel"><option value="">Жоқ</option>${COURSE.bank.filter(b => b.ex).map(b => `<option value="${b.ex}" ${t.ex === b.ex ? "selected" : ""}>Банктен: ${esc(b.title)}</option>`).join("")}<option value="__url" ${/^https?:/.test(t.ex) ? "selected" : ""}>Сілтеме (URL)…</option></select>
           <input id="f-exurl" placeholder="https://…/surat.jpg" value="${/^https?:/.test(t.ex) ? esc(t.ex) : ""}" style="margin-top:8px;${/^https?:/.test(t.ex) ? "" : "display:none"}"></div>
-        <div class="ff wide"><div class="pvh"><label>Алдын ала қарау</label><div class="mode" style="margin:0">${[["ru", "Орысша"], ["en", "English"]].map(([k, x]) => `<button data-pv="${k}" class="${pvLang === k ? "on" : ""}">${x}</button>`).join("")}</div></div><ol class="pv" id="pv"></ol></div>
+        <div class="ff wide"><div class="pvh"><label>Алдын ала қарау</label><div class="mode" style="margin:0">${LANGS.map(([k, x]) => `<button data-pv="${k}" class="${pvLang === k ? "on" : ""}">${x}</button>`).join("")}</div></div><ol class="pv" id="pv"></ol></div>
       </div>
       <div class="edtop" style="margin:0;justify-content:flex-end">${bankItem && i >= 0 ? `<button class="btn ghost" id="mreset">Банктегі нұсқаға қайтару</button>` : ""}<button class="btn" id="msave">Сақтау</button></div></div>`;
     const pv = () => { $("#pv").innerHTML = $("#f-steps").value.split("\n").map(x => x.trim()).filter(Boolean).map(x => `<li>${esc(L(x, pvLang))}</li>`).join("") || `<li class="mut">Қадамдар жоқ</li>`; };
@@ -506,7 +548,7 @@ function PlanEditor(plan0, onDone) {
 /* ===================== ЖҮРГІЗУШІ (мұғалім) ===================== */
 function Host() {
   let H = store.get("host");
-  const fresh = () => ({room: rid(5, "ABCDEFGHJKLMNPQRSTUVWXYZ23456789"), b: +(PARAMS.get("b") || 0), lang: store.get("lang") || "ru", plan: store.get("plan") || defaultPlan(), set: "quiz", phase: "lobby", qi: -1, players: {}, ans: {}, counts: [0, 0, 0, 0], qEnd: 0, feed: [], prevRank: {}, subs: {}, grades: {}, rates: {}});
+  const fresh = () => ({room: rid(5, "ABCDEFGHJKLMNPQRSTUVWXYZ23456789"), b: +(PARAMS.get("b") || 0), lang: store.get("lang") || "ru", plan: store.get("plan") || defaultPlan(), set: "quiz", phase: "lobby", qi: -1, players: {}, ans: {}, counts: [0, 0, 0, 0], qEnd: 0, feed: [], prevRank: {}, subs: {}, grades: {}, rates: {}, chk: {}});
   if (!H || !H.room || !SETS[H.set]) H = fresh();
   if (!Array.isArray(H.plan) || !H.plan.length) H.plan = store.get("plan") || defaultPlan();
   if (!H.lang) H.lang = "ru";
@@ -553,7 +595,7 @@ function Host() {
     const r = ranked();
     pub("p/" + pid, {name: p.name, score: p.score, rank: r.indexOf(pid) + 1, of: r.length, streak: p.streak, pw: p.pw, x2on: p.x2on ? rk() : "", hide: p.hide, frozen: p.frozen, last: p.last,
       locked: H.ans[pid] ? {set: H.set, qi: H.qi, a: H.ans[pid].a} : null,
-      sub: H.subs[pid] ? {k: rk(), left: H.subs[pid].left} : null, grade: H.grades[pid] ? {k: rk(), g: H.grades[pid]} : null, rates: {k: rk(), m: (H.rates || {})[pid] || {}},
+      sub: H.subs[pid] ? {k: rk(), left: H.subs[pid].left} : null, chk: H.chk && H.chk[pid] ? Object.assign({k: rk(), place: place(pid)}, H.chk[pid]) : null, grade: H.grades[pid] ? {k: rk(), g: H.grades[pid]} : null, rates: {k: rk(), m: (H.rates || {})[pid] || {}},
       note: p.note, kicked: !!p.kicked}, true);
   }
 
@@ -573,6 +615,18 @@ function Host() {
     }
     if (!p || m.set !== H.set) return;
     const r = R();
+    if (m.t === "chk") {
+      const r2 = R();
+      if (H.phase !== "question" || m.qi !== H.qi || !isTask(r2) || !r2.checks.length || !Array.isArray(m.vals)) return;
+      if (!H.paused && Date.now() > H.qEnd + 1500) return;
+      H.chk = H.chk || {};
+      const c = H.chk[pid] = H.chk[pid] || {ok: [], tries: 0, wrong: 0};
+      if (c.fin != null) { pubPlayer(pid); return; }
+      c.ok = r2.checks.map((ch, i) => checkOk(ch, m.vals[i]));
+      c.tries++; if (!c.ok.every(Boolean)) c.wrong++;
+      tryFinish(pid, r2);
+      save(); pubPlayer(pid); pubState(); render(); return;
+    }
     if (m.t === "rate") {
       const v = m.v | 0;
       if (H.phase !== "vote" || m.qi !== H.qi || !H.subs[m.to] || m.to === pid || v < 1 || v > 5) return;
@@ -609,6 +663,14 @@ function Host() {
       save(); pubPlayer(pid); render();
     }
   }
+  function place(pid) { const c = H.chk && H.chk[pid]; if (!c || c.fin == null) return 0; return 1 + Object.values(H.chk).filter(x => x.fin != null && x.fin > c.fin).length; }
+  function tryFinish(pid, r) {
+    const c = H.chk && H.chk[pid]; if (!c || c.fin != null || !r.checks.length) return;
+    if (!c.ok.length || !c.ok.every(Boolean) || (r.shot && !H.subs[pid])) return;
+    c.fin = leftMs(); const pl = place(pid), p = H.players[pid];
+    addFeed("ok", t_(`<b>${esc(p.name)}</b> ${pl}-орында аяқтады`, `<b>${esc(p.name)}</b> финишировал ${pl}-м`));
+    note(pid, t_(`Дайын! Сіздің орныңыз: ${pl}`, `Готово! Ваше место: ${pl}`));
+  }
   function onImg(pid, m) {
     if (!m || typeof m.data !== "string" || m.data.slice(0, 23) !== "data:image/jpeg;base64," || m.data.length > 400000) return;
     const p = H.players[pid]; if (!p || m.set !== H.set || m.qi !== H.qi || !isTask(R())) return;
@@ -618,13 +680,14 @@ function Host() {
     const first = !H.subs[pid];
     H.subs[pid] = {id: m.id, left: first ? leftMs() : H.subs[pid].left};
     IMG[pid] = m.data;
-    if (first) addFeed("ok", `<b>${esc(p.name)}</b> жұмысын жіберді`);
+    if (first && !R().checks.length) addFeed("ok", `<b>${esc(p.name)}</b> жұмысын жіберді`);
+    tryFinish(pid, R());
     save(); pubPlayer(pid); pubState(); render();
   }
 
   function startQ() {
     if (H.qi + 1 >= total()) return finish();
-    H.qi++; H.phase = "question"; H.ans = {}; H.counts = [0, 0, 0, 0]; H.feed = []; H.subs = {}; H.grades = {}; H.rates = {}; H.paused = false;
+    H.qi++; H.phase = "question"; H.ans = {}; H.counts = [0, 0, 0, 0]; H.feed = []; H.subs = {}; H.grades = {}; H.rates = {}; H.chk = {}; H.paused = false;
     for (const k in IMG) delete IMG[k];
     for (const id of pids()) { const p = H.players[id]; p.x2on = false; p.hide = null; p.frozen = null; }
     H.qEnd = Date.now() + R().t * 1000;
@@ -664,6 +727,17 @@ function Host() {
     H.prevRank = {}; ranked().forEach((id, i) => H.prevRank[id] = i);
     for (const id of pids()) {
       const p = H.players[id], s = H.subs[id];
+      if (r.checks.length) {
+        const c = (H.chk || {})[id], g = H.grades[id] || "ok", pl = place(id);
+        let pts = 0;
+        if (c && c.fin != null) { pts = Math.round(500 + 500 * Math.min(1, c.fin / T0)) - Math.min(200, 25 * (c.wrong || 0)) + (pl === 1 ? 300 : pl === 2 ? 200 : pl === 3 ? 100 : 0); p.done = (p.done || 0) + 1; }
+        else if (c && c.ok.length && c.ok.every(Boolean)) pts = 300;
+        else if (s || (c && c.ok.some(Boolean))) pts = 150;
+        if (g === "best") pts += 500; if (g === "redo") pts = Math.min(pts, 150);
+        const fav = max > 0 && st[id] && st[id].avg === max; if (fav) pts += 300;
+        if (!s && !c) { p.last = {k: rk(), ok: false, pts: 0, none: true}; continue; }
+        p.score += pts; p.last = {k: rk(), ok: !!(c && c.fin != null), pts, g, place: pl, avg: st[id] ? st[id].avg : 0, fav}; continue;
+      }
       if (!s) { p.last = {k: rk(), ok: false, pts: 0, none: true}; continue; }
       const g = H.grades[id] || "ok";
       let pts = 0;
@@ -678,7 +752,7 @@ function Host() {
   function board() { H.phase = "board"; save(); pubState(); render(); }
   function finish() { H.phase = "final"; save(); pubState(); pids().forEach(pubPlayer); render(); }
   function toSet(set) {
-    H.set = set; H.phase = "lobby"; H.qi = -1; H.ans = {}; H.counts = [0, 0, 0, 0]; H.feed = []; H.prevRank = {}; H.subs = {}; H.grades = {}; H.rates = {};
+    H.set = set; H.phase = "lobby"; H.qi = -1; H.ans = {}; H.counts = [0, 0, 0, 0]; H.feed = []; H.prevRank = {}; H.subs = {}; H.grades = {}; H.rates = {}; H.chk = {};
     for (const id of pids()) { const n = H.players[id].name; H.players[id] = newPlayer(n); }
     save(); pubState(); pids().forEach(pubPlayer); render();
   }
@@ -749,6 +823,17 @@ function Host() {
     return `<div class="side"><div><div class="big">${done}<span class="mut" style="font-size:24px"> / ${n}</span></div><div class="mut" style="font-size:15px;margin-top:6px">жауап берді</div></div>
       <div class="feed">${H.feed.map(e => `<div class="ev ${e.k}">${e.h}</div>`).join("") || `<div class="mut" style="font-size:14px">Мұздату, 50/50 және ×2 осында көрінеді</div>`}</div></div>`;
   }
+  function race(r) {
+    const C = H.chk || {}, ids = pids().sort((a, b) => { const A = C[a] || {}, B = C[b] || {};
+      if ((A.fin != null) !== (B.fin != null)) return A.fin != null ? -1 : 1;
+      if (A.fin != null) return B.fin - A.fin;
+      return ((B.ok || []).filter(Boolean).length + (H.subs[b] ? 1 : 0)) - ((A.ok || []).filter(Boolean).length + (H.subs[a] ? 1 : 0)); });
+    const T0 = r.t * 1000;
+    return `<div class="race">${ids.map(id => { const c = C[id] || {}, pl = place(id);
+      return `<div class="rrow ${c.fin != null ? "fin" : ""}"><span class="rp">${pl || ""}</span><span class="rn">${esc(H.players[id].name)}</span>
+        <span class="rd">${r.checks.map((x, i) => `<i class="${c.ok && c.ok[i] ? "g" : c.ok && c.ok.length ? "b" : ""}"></i>`).join("")}${r.shot ? `<i class="cam ${H.subs[id] ? "g" : ""}">▣</i>` : ""}</span>
+        <span class="rt">${c.fin != null ? (x => Math.floor(x / 60) + ":" + String(x % 60).padStart(2, "0"))(Math.round((T0 - c.fin) / 1000)) : c.tries ? c.tries + "×" : ""}</span></div>`; }).join("")}</div>`;
+  }
   function gallery(big) {
     const L = subPids(), st = stats();
     if (!L.length) return `<div class="mut" style="font-size:18px;padding:30px 0">Әзірге жұмыс жоқ…</div>`;
@@ -770,7 +855,7 @@ function Host() {
             <div style="display:flex;gap:10px;margin-top:18px;flex-wrap:wrap"><button class="btn ghost" id="copy">Сілтемені көшіру</button>
             ${!connectedOnce ? `<button class="btn ghost" id="srv">Басқа сервер (${H.b + 1}/${BROKERS.length})</button>` : ""}</div></div>
         </div>
-        <div><div class="setrow" style="margin:0 0 14px"><span class="mut">Интерфейс:</span><div class="mode" style="margin:0">${[["ru", "Орысша"], ["en", "English"]].map(([k, t]) => `<button data-lang="${k}" class="${H.lang === k ? "on" : ""}">${t}</button>`).join("")}</div>
+        <div><div class="setrow" style="margin:0 0 14px"><span class="mut">${LANG_LABEL}</span><div class="mode" style="margin:0">${LANGS.map(([k, t]) => `<button data-lang="${k}" class="${H.lang === k ? "on" : ""}">${t}</button>`).join("")}</div>
             <button class="btn ghost" id="plan" style="height:40px;font-size:14px;margin-left:auto">✎ Тапсырмалар (${H.plan.length})</button></div>
         <div class="plbox"><div class="count">${ps.length} ойыншы</div>
           <div class="pl">${ps.map(id => `<button class="chip" data-k="${id}" title="Ойыннан шығару">${esc(H.players[id].name)}</button>`).join("") || `<span class="mut" style="font-size:18px">Ойыншыларды күтудеміз…</span>`}</div></div></div>
@@ -799,7 +884,7 @@ function Host() {
         <div class="bar"><i id="hbar" style="transform:scaleX(${left / (r.t * 1000)})"></i></div>
         <div class="tgrid">
           <div class="steps">${r.ex ? `<img class="exh" src="${esc(exUrl(r.ex))}" alt="Мысал" onerror="this.remove()">` : ""}<ol>${r.steps.map(s => `<li>${esc(L(s, H.lang))}</li>`).join("")}</ol>${r.crit && r.crit.length ? `<div class="crit">${r.crit.map(c => `<span>${esc(c)}</span>`).join("")}</div>` : ""}</div>
-          <div><div class="count">${done} / ${n} жіберді</div>${gallery(false)}</div>
+          <div>${r.checks.length ? race(r) : ""}<div class="count">${done} / ${n} жіберді</div>${gallery(false)}</div>
         </div></div>${ctlBar("Уақытты аяқтау", `<button class="btn ghost" id="pause">${H.paused ? "▶ Жалғастыру" : "❚❚ Кідірту"}</button>`)}</div>`;
     } else if (H.phase === "review" || H.phase === "vote") {
       const r = R(), n = pids().length, L = subPids(), vote = H.phase === "vote", nv = Object.keys(H.rates || {}).length;
@@ -839,7 +924,7 @@ function Player() {
   let draft = {k: "", data: null}, sending = false, sentLocal = {k: "", data: null};
   const seen = {note: null, frozen: null, res: null};
   let iceTimer = null, thSub = false, viewer = null;
-  const THUMBS = {}, myRates = {};
+  const THUMBS = {}, myRates = {}, chkVals = {};
   const RR = () => !S || S.qi < 0 || !SETS[S.set] ? null : S.set === "quiz" ? COURSE.quiz[S.qi] : S.task || null;
   const lang = () => store.get("lang") || (S && S.lang) || "ru";
   const qkey = () => S ? S.set + ":" + S.qi : "";
@@ -970,10 +1055,63 @@ function Player() {
     };
   }
   let upSig = "";
+  function dataTable(tb) {
+    const cols = tb.head.length, L0 = "ABCDEFGHIJ";
+    return `<div class="dt"><div class="edh" style="margin:0">${t_("Енгізетін кесте", "Таблица для ввода")}</div><div class="dtw"><table><tr><th></th>${tb.head.map((h, i) => `<th>${L0[i]}</th>`).join("")}</tr>
+      <tr><th>1</th>${tb.head.map(h => `<td><b>${esc(h)}</b></td>`).join("")}</tr>
+      ${tb.rows.map((r, i) => `<tr><th>${i + 2}</th>${Array.from({length: cols}, (_, j) => `<td class="${j && r[j] !== "" && !isNaN(+r[j]) ? "num" : ""}">${esc(r[j] == null ? "" : r[j])}</td>`).join("")}</tr>`).join("")}</table></div>
+      <button class="btn ghost" id="copytbl" style="width:100%;height:44px;font-size:15px">${t_("Кестені көшіру", "Скопировать таблицу")}</button>
+      <div class="mut" style="font-size:12px">${t_("A1 ұяшығына қойыңыз (Ctrl+V немесе ұзақ басу → Қою).", "Вставьте в ячейку A1 (Ctrl+V или долгое нажатие → Вставить).")}</div></div>`;
+  }
+  function copyText(t) {
+    const ok = () => toast(t_("Көшірілді — A1-ге қойыңыз", "Скопировано — вставьте в A1"));
+    const fb = () => { const a = document.createElement("textarea"); a.value = t; a.style.position = "fixed"; a.style.opacity = "0"; document.body.appendChild(a); a.select(); try { document.execCommand("copy"); ok(); } catch (e) { toast(t_("Көшіру мүмкін болмады", "Не удалось скопировать")); } a.remove(); };
+    if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(t).then(ok, fb); else fb();
+  }
+  function checkForm(r) {
+    const v = chkVals[qkey()] || [];
+    return `<div class="chkbox" id="chkbox"><div class="edh" style="margin:0">${t_("Тексеру: нәтижені енгізіңіз", "Проверка: введите результаты")}</div>
+      ${r.checks.map((c, i) => `<div class="chf" data-i="${i}"><label>${esc(L(c.l, lang()))}</label>
+        ${c.opts ? `<div class="chopts">${c.opts.map((o, j) => `<button data-o="${j}" class="${String(v[i]) === String(j) ? "on" : ""}">${esc(o)}</button>`).join("")}</div>`
+          : `<input inputmode="decimal" autocomplete="off" value="${esc(v[i] == null ? "" : v[i])}" placeholder="${c.pct ? "%" : t_("сан", "число")}">`}<span class="chs"></span></div>`).join("")}
+      <button class="btn" id="chkgo" style="width:100%">${t_("Тексеру", "Проверить")}</button><div id="chkst" class="chkst"></div></div>`;
+  }
+  function bindChecks(r) {
+    const box = $("#chkbox"); if (!box) return;
+    const k = qkey(); chkVals[k] = chkVals[k] || [];
+    box.querySelectorAll(".chf").forEach(f => {
+      const i = +f.dataset.i, inp = f.querySelector("input");
+      if (inp) inp.oninput = () => { chkVals[k][i] = inp.value; };
+      f.querySelectorAll(".chopts button").forEach(b => b.onclick = () => { chkVals[k][i] = +b.dataset.o; f.querySelectorAll(".chopts button").forEach(x => x.classList.toggle("on", x === b)); });
+    });
+    $("#chkgo").onclick = () => {
+      const vals = r.checks.map((c, i) => chkVals[k][i] == null ? "" : chkVals[k][i]);
+      if (vals.some(x => x === "")) { toast(t_("Барлық өрістерді толтырыңыз", "Заполните все поля")); return; }
+      if (!send({t: "chk", qi: S.qi, vals})) { toast(t_("Байланыс жоқ — қайта басыңыз", "Нет связи — нажмите ещё раз")); return; }
+      vibrate(20); const st = $("#chkst"); if (st) st.textContent = t_("Тексерілуде…", "Проверяем…");
+    };
+  }
+  let lastChk = "";
+  function updateChecks() {
+    const box = $("#chkbox"); if (!box) return;
+    const c = P && P.chk && P.chk.k === qkey() ? P.chk : null;
+    const sig = c ? JSON.stringify([c.ok, c.tries, c.fin, c.place]) : "";
+    if (sig === lastChk && box.dataset.done === sig) return; lastChk = sig; box.dataset.done = sig;
+    const r = RR();
+    box.querySelectorAll(".chf").forEach(f => { const i = +f.dataset.i, s = f.querySelector(".chs");
+      f.classList.toggle("good", !!(c && c.ok[i])); f.classList.toggle("bad", !!(c && c.ok.length && !c.ok[i]));
+      s.textContent = c && c.ok.length ? (c.ok[i] ? "✓" : "✗") : ""; const inp = f.querySelector("input"); if (inp) inp.disabled = !!(c && c.ok[i]); });
+    const st = $("#chkst"), allOk = c && c.ok.length && c.ok.every(Boolean);
+    if (st) st.innerHTML = !c ? "" : c.fin != null ? `<b class="okc">${t_("Дайын!", "Готово!")} ${t_("Орныңыз", "Ваше место")}: ${c.place}</b>`
+      : allOk ? (r && r.shot ? `<b class="okc">${t_("Сандар дұрыс ✓", "Числа верны ✓")}</b> ${t_("Енді скриншот жіберіңіз.", "Теперь отправьте скриншот.")}` : "")
+      : `<span class="badc">${t_("Қатесі бар — ✗ белгіленген өрістерді тексеріңіз.", "Есть ошибки — проверьте поля с ✗.")}</span>`;
+    const go = $("#chkgo"); if (go) go.disabled = !!allOk;
+    if (c && c.fin != null && seen.res !== qkey() + "fin") { seen.res = qkey() + "fin"; confetti(); vibrate(60); }
+  }
   function render() {
     const key = screenKey();
     if (key.startsWith("q")) updatePw();
-    if (key === lastScreen) { if (key.startsWith("task")) taskUpload(); return; }
+    if (key === lastScreen) { if (key.startsWith("task")) { taskUpload(); updateChecks(); } return; }
     const prev = lastScreen; lastScreen = key;
     if (!key.startsWith("q")) closeSheet();
     if (!key.startsWith("vote")) closeViewer();
@@ -1012,13 +1150,16 @@ function Player() {
     if (key.startsWith("task")) {
       app.innerHTML = `<div class="ply"><div class="pw-wrap">${top()}<div class="ptimer"><i id="pt"></i></div><div id="pzl" class="hidden pzl">Кідірту — уақыт тоқтатылды</div>
         <div class="pk">${esc(r.k)} · <span id="ptt"></span></div><div class="pq up">${esc(r.title)}</div>
-        <div class="langsw"><span class="mut">Интерфейс:</span>${[["ru", "Орысша"], ["en", "English"]].map(([k, t]) => `<button data-l="${k}" class="${lang() === k ? "on" : ""}">${t}</button>`).join("")}</div>
+        <div class="langsw"><span class="mut">${LANG_LABEL}</span>${LANGS.map(([k, t]) => `<button data-l="${k}" class="${lang() === k ? "on" : ""}">${t}</button>`).join("")}</div>
         <ol class="psteps">${r.steps.map(s => `<li>${esc(L(s, lang()))}</li>`).join("")}</ol>
         ${r.crit && r.crit.length ? `<div class="crit">${r.crit.map(c => `<span>${esc(c)}</span>`).join("")}</div>` : ""}
-        ${r.ex ? `<details class="exd"><summary>Мысалды көру</summary><img src="${esc(exUrl(r.ex))}" alt="Мысал" onerror="this.parentNode.remove()"></details>` : ""}
+        ${r.table ? dataTable(r.table) : ""}
+        ${r.hints && r.hints.length ? `<details class="exd"><summary>${t_("Кеңестер", "Подсказки")} (${r.hints.length})</summary><ul class="hints">${r.hints.map(h => `<li>${esc(L(h, lang()))}</li>`).join("")}</ul></details>` : ""}
+        ${r.ex ? `<details class="exd"><summary>${t_("Мысалды көру", "Посмотреть образец")}</summary><img src="${esc(exUrl(r.ex))}" alt="Мысал" onerror="this.parentNode.remove()"></details>` : ""}
+        ${r.checks && r.checks.length ? checkForm(r) : ""}
         <a class="btn ghost" href="${COURSE.tool.url}" target="_blank" rel="noopener" style="width:100%;margin:12px 0">${ICON.ext}<span>${esc(COURSE.tool.name)} ашу</span></a>
         <input type="file" id="file" accept="image/*" class="hidden">
-        <div id="upbox" class="upbox"></div>
+        ${r.shot === false ? "" : `${r.checks && r.checks.length ? `<div class="edh" style="margin-top:6px">${t_("Скриншот", "Скриншот диаграммы")}</div>` : ""}<div id="upbox" class="upbox"></div>`}
         <p class="mut" style="font-size:13px;margin:10px 0 0">Ноутбукта Adobe бағдарламасында жұмыс істесеңіз — экспорттап, файлды осы бетке (браузерде) жүктеңіз.</p>
         </div></div>`;
       document.querySelectorAll(".langsw button").forEach(b => b.onclick = () => { store.set("lang", b.dataset.l); lastScreen = ""; render(); });
@@ -1027,7 +1168,8 @@ function Player() {
         try { draft = {k: qkey(), data: await compressImage(f)}; taskUpload(); }
         catch (err) { toast("Бұл файлды ашу мүмкін болмады. JPG/PNG немесе скриншот таңдаңыз"); }
       };
-      upSig = ""; taskUpload();
+      upSig = ""; taskUpload(); bindChecks(r); updateChecks();
+      const cp = $("#copytbl"); if (cp) cp.onclick = () => copyText(r.table.head.join("\t") + "\n" + r.table.rows.map(x => x.join("\t")).join("\n"));
       const loop = () => { const el = $("#pt"); if (!el) return; const ms = S.paused ? (S.endsIn || 0) : deadline - performance.now(); el.style.transform = `scaleX(${Math.max(0, Math.min(1, ms / (r.t * 1000)))})`; el.style.background = S.paused ? "var(--a2)" : "";
         const pl = $("#pzl"); if (pl) pl.classList.toggle("hidden", !S.paused); const tt = $("#ptt"); if (tt) tt.textContent = fmtTime(Math.max(0, Math.ceil(ms / 1000))); raf = requestAnimationFrame(loop); };
       loop();
@@ -1087,7 +1229,7 @@ function Player() {
     }
     if (S.phase === "board" || S.phase === "final") {
       const fin = S.phase === "final", L = P && P.last && P.last.k === qkey() ? P.last : null;
-      const taskLine = L && isTask(r) ? (L.none ? "Жұмыс жіберілмеді" : `+${L.pts} ұпай${L.g === "best" ? " · үздік жұмыс" : L.g === "redo" ? " · пысықтау керек" : ""}${L.avg ? " · бағаңыз ★ " + String(L.avg).replace(".", ",") : ""}${L.fav ? " · сыныптастар таңдауы" : ""}`) : "";
+      const taskLine = L && isTask(r) ? (L.place ? t_("Орын", "Место") + ": " + L.place + " · +" + L.pts + (RU ? " очков" : " ұпай") : L.none ? "Жұмыс жіберілмеді" : `+${L.pts} ұпай${L.g === "best" ? " · үздік жұмыс" : L.g === "redo" ? " · пысықтау керек" : ""}${L.avg ? " · бағаңыз ★ " + String(L.avg).replace(".", ",") : ""}${L.fav ? " · сыныптастар таңдауы" : ""}`) : "";
       app.innerHTML = `<div class="ply">${top()}<div class="pc"><div class="wait up">
         <div class="big disp" style="font-size:88px">${P ? P.rank : "–"}</div><div class="mut" style="font-size:17px;margin-top:-6px">${P ? `орын · ${P.of} ойыншы` : ""}</div>
         ${taskLine ? `<div class="gbadge" style="background:var(--s2);color:var(--tx)">${esc(taskLine)}</div>` : ""}

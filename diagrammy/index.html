@@ -1,0 +1,1259 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0F1115">
+<title>Практика № 19 · Диаграммы в Excel</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@600;800&family=Inter:wght@400;500;600;700&display=swap">
+<style>
+:root{
+  --bg:#0F1115;--s1:#171A21;--s2:#1F232C;--line:#2A2F3A;--tx:#F3F4F6;--mut:#9AA1AE;
+  --a0:#E5484D;--a1:#3E7BFA;--a2:#F5A524;--a3:#2FB36D;--ok:#2FB36D;--bad:#E5484D;--xl:#107C41;
+  --disp:"Inter Tight",Inter,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+  --txt:Inter,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;min-height:100%;background:var(--bg);color:var(--tx);font-family:var(--txt)}
+body{overflow-x:hidden}
+button{font:inherit;color:inherit;border:0;background:none;cursor:pointer;padding:0}
+input{font:inherit}
+.hidden{display:none!important}
+.disp{font-family:var(--disp);letter-spacing:-.02em}
+.mut{color:var(--mut)}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:10px;height:52px;padding:0 24px;border-radius:12px;background:var(--tx);color:var(--bg);font-weight:700;font-size:17px;transition:transform .12s,opacity .2s}
+.btn:active{transform:scale(.97)}
+.btn.ghost{background:var(--s2);color:var(--tx)}
+.btn.green{background:var(--xl);color:#fff}
+.btn[disabled]{opacity:.4;pointer-events:none}
+.net{position:fixed;top:12px;right:12px;z-index:50;display:flex;align-items:center;gap:8px;font-size:13px;color:var(--mut);background:var(--s1);border:1px solid var(--line);padding:6px 12px;border-radius:999px}
+.net i{width:8px;height:8px;border-radius:50%;background:var(--bad)}
+.net.on i{background:var(--ok)}
+.net.on{opacity:0;pointer-events:none;transition:opacity .6s 1.5s}
+.shape{width:28px;height:28px;flex:none}
+@keyframes pop{0%{transform:scale(.6);opacity:0}70%{transform:scale(1.06)}100%{transform:scale(1);opacity:1}}
+@keyframes up{from{transform:translateY(14px);opacity:0}to{transform:none;opacity:1}}
+@keyframes shake{0%,100%{transform:none}20%{transform:translateX(-10px)}40%{transform:translateX(9px)}60%{transform:translateX(-6px)}80%{transform:translateX(4px)}}
+.up{animation:up .35s ease both}
+
+/* ---------- Excel-like sheet ---------- */
+.xl{background:#fff;color:#1F1F1F;border-radius:12px;overflow:hidden;font-family:"Segoe UI",Calibri,Inter,system-ui,sans-serif;border:1px solid #D4D4D4}
+.xl .fb{display:flex;align-items:stretch;border-bottom:1px solid #D4D4D4;min-height:38px;font-size:15px}
+.xl .nb{width:52px;flex:none;display:flex;align-items:center;justify-content:center;border-right:1px solid #D4D4D4;font-weight:600;color:#333}
+.xl .fx{width:30px;flex:none;display:flex;align-items:center;justify-content:center;color:#777;font-style:italic;font-family:Georgia,serif;border-right:1px solid #E6E6E6}
+.xl .fc{flex:1;display:flex;align-items:center;padding:0 10px;font-family:Consolas,"SF Mono",Menlo,monospace;font-size:14px;color:#1F1F1F;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
+.xl .fc input{width:100%;height:30px;border:1px solid var(--xl);border-radius:4px;padding:0 8px;font:inherit;outline:none;color:#1F1F1F;background:#fff}
+.xl table{border-collapse:collapse;width:100%;table-layout:fixed;font-size:15px}
+.xl th{background:#F3F3F3;color:#555;font-weight:600;font-size:12px;height:24px;border:1px solid #E1E1E1}
+.xl th.rh{width:30px}
+.xl td{border:1px solid #E1E1E1;height:40px;padding:0 8px;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
+.xl td.lb{color:#333;font-size:14px}
+.xl td.v{text-align:right;font-variant-numeric:tabular-nums;font-weight:600;cursor:pointer}
+.xl td.v.f{color:#0B5A2E}
+.xl td.v.sel{outline:2px solid var(--xl);outline-offset:-2px;background:#F1F8F3}
+.xl td.v.flash{animation:flash 1s ease}
+@keyframes flash{0%{background:#C7EBD3}100%{background:transparent}}
+.xl .colA{width:58%}
+.xl.ro td.v{cursor:default}
+.note{font-size:14px;line-height:1.45;color:var(--mut);background:var(--s1);border:1px solid var(--line);border-radius:10px;padding:10px 12px}
+/* Goal seek dialog (Excel-like) */
+.gsw{position:fixed;inset:0;z-index:35;background:rgba(0,0,0,.5);display:flex;align-items:flex-end;justify-content:center}
+.gs{width:100%;max-width:480px;background:#fff;color:#1F1F1F;border-radius:16px 16px 0 0;padding:0 0 max(16px,env(safe-area-inset-bottom));animation:up .22s ease both;font-family:"Segoe UI",Inter,system-ui,sans-serif;max-height:88vh;overflow:auto}
+.gs .tb{display:flex;align-items:center;justify-content:space-between;padding:14px 18px;border-bottom:1px solid #E6E6E6;font-weight:600;font-size:16px}
+.gs .tb button{font-size:22px;color:#666;width:32px;height:32px}
+.gs .bd{padding:14px 18px;display:flex;flex-direction:column;gap:14px}
+.gs label{font-size:14px;color:#333;display:block;margin-bottom:6px}
+.gs input{width:100%;height:44px;border:1px solid #BDBDBD;border-radius:6px;padding:0 12px;font-size:17px;color:#1F1F1F;background:#fff;outline:none}
+.gs input:focus{border-color:var(--xl);box-shadow:0 0 0 1px var(--xl)}
+.gs .refs{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
+.gs .refs button{height:32px;padding:0 12px;border-radius:6px;background:#F3F3F3;border:1px solid #DADADA;font-size:14px;font-weight:600;color:#333}
+.gs .refs button.on{background:#E6F2EA;border-color:var(--xl);color:var(--xl)}
+.gs .err{color:#C42B1C;font-size:14px;min-height:0}
+.gs .ft{display:flex;gap:10px;justify-content:flex-end;padding:4px 18px 0}
+.gs .ft button{min-width:110px;height:44px;border-radius:6px;font-weight:600;font-size:16px;border:1px solid #BDBDBD;background:#F7F7F7;color:#1F1F1F}
+.gs .ft button.pri{background:var(--xl);border-color:var(--xl);color:#fff}
+.gs .rs{font-size:15px;line-height:1.6}
+.gs .rs b{font-variant-numeric:tabular-nums}
+
+/* ---------- HOST ---------- */
+.host{min-height:100vh;display:flex;flex-direction:column;padding:28px 40px 24px}
+.htop{display:flex;align-items:center;justify-content:space-between;gap:20px;min-height:44px}
+.tag{font-size:15px;font-weight:600;color:var(--mut);letter-spacing:.02em}
+.hbody{flex:1;display:flex;flex-direction:column;justify-content:center;padding:18px 0}
+.hctl{display:flex;justify-content:space-between;align-items:center;gap:12px}
+.lobby{display:grid;grid-template-columns:minmax(0,1.05fr) minmax(0,1fr);gap:48px;align-items:center}
+.lobby h1{font-size:clamp(34px,4vw,58px);line-height:1.02;margin:0 0 14px;font-weight:800}
+.joinbox{background:var(--s1);border:1px solid var(--line);border-radius:20px;padding:22px 26px;margin-top:22px}
+.joinbox .lbl{font-size:14px;color:var(--mut);font-weight:600;margin-bottom:8px}
+.joinbox .url{font-size:clamp(17px,1.7vw,22px);font-weight:600;word-break:break-all}
+.code{font-family:var(--disp);font-weight:800;font-size:clamp(48px,6vw,88px);letter-spacing:.08em;line-height:1}
+.plbox{background:var(--s1);border:1px solid var(--line);border-radius:20px;padding:24px 26px;min-height:46vh}
+.pl{display:flex;flex-wrap:wrap;gap:10px;align-content:flex-start;max-height:58vh;overflow:auto}
+.chip{background:var(--s2);border:1px solid var(--line);border-radius:999px;padding:12px 20px;font-weight:600;font-size:20px;animation:pop .35s ease both}
+.chip:hover{border-color:var(--bad);text-decoration:line-through}
+.count{font-family:var(--disp);font-size:20px;font-weight:800;margin-bottom:14px}
+.qhead{display:flex;align-items:flex-start;gap:24px}
+.kicker{font-size:15px;font-weight:700;color:var(--a3);letter-spacing:.04em;text-transform:uppercase;margin-bottom:8px}
+.timer{font-family:var(--disp);font-weight:800;font-size:56px;min-width:110px;text-align:right;line-height:1}
+.bar{height:6px;background:var(--s2);border-radius:6px;overflow:hidden;margin:18px 0 22px}
+.bar i{display:block;height:100%;background:var(--tx);width:100%;transform-origin:left}
+.qtext{font-family:var(--disp);font-weight:800;font-size:clamp(28px,3.2vw,46px);line-height:1.12;margin:0}
+.hgrid{display:grid;grid-template-columns:minmax(0,1fr) 300px;gap:28px;align-items:stretch}
+.tiles{display:grid;grid-template-columns:1fr 1fr;gap:14px;align-content:start}
+.tile{position:relative;overflow:hidden;display:flex;align-items:center;gap:16px;padding:20px 22px;border-radius:14px;font-weight:700;font-size:clamp(18px,1.7vw,24px);min-height:84px;transition:opacity .35s}
+.tile .cnt{margin-left:auto;font-family:var(--disp);font-weight:800;font-size:30px}
+.tile .fill{position:absolute;left:0;bottom:0;height:6px;background:rgba(255,255,255,.55);transition:width .8s ease}
+.t0{background:var(--a0)}.t1{background:var(--a1)}.t2{background:var(--a2);color:#1A1405}.t3{background:var(--a3)}
+.tile.off{opacity:.22}
+.tile.win{box-shadow:0 0 0 4px var(--tx)}
+.side{background:var(--s1);border:1px solid var(--line);border-radius:16px;padding:18px;display:flex;flex-direction:column;gap:14px;min-height:0}
+.big{font-family:var(--disp);font-weight:800;font-size:44px;line-height:1}
+.feed{display:flex;flex-direction:column;gap:8px;overflow:hidden;flex:1}
+.ev{font-size:15px;line-height:1.35;padding:10px 12px;background:var(--s2);border-radius:10px;animation:up .3s ease both}
+.ev b{font-weight:700}
+.ev.fr{border-left:3px solid #9BDCFF}.ev.sh{border-left:3px solid var(--a2)}.ev.x2{border-left:3px solid var(--a3)}.ev.ff{border-left:3px solid var(--a1)}.ev.ok{border-left:3px solid var(--ok)}
+.hsheet{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,1fr);gap:24px;align-items:start}
+.hsheet .xl table{font-size:19px}.hsheet .xl td{height:48px}.hsheet .xl td.lb{font-size:18px}
+.answer{background:var(--s1);border:1px solid var(--line);border-radius:16px;padding:24px}
+.answer .val{font-family:var(--disp);font-weight:800;font-size:clamp(40px,4.6vw,64px);line-height:1.05;margin:6px 0 14px}
+.answer .how{font-size:17px;line-height:1.5;color:var(--mut)}
+.answer .how b{color:var(--tx)}
+.stat{display:flex;flex-direction:column;gap:10px;margin-top:18px}
+.stat .r{display:grid;grid-template-columns:130px 1fr 40px;align-items:center;gap:12px;font-size:16px;font-weight:600}
+.stat .tr{height:12px;background:var(--s2);border-radius:6px;overflow:hidden}
+.stat .tr i{display:block;height:100%;border-radius:6px;transition:width .8s ease}
+.board{display:flex;flex-direction:column;gap:12px;max-width:900px;width:100%;margin:0 auto}
+.row{display:grid;grid-template-columns:56px 1fr auto;align-items:center;gap:16px;background:var(--s1);border:1px solid var(--line);border-radius:14px;padding:16px 22px;font-size:24px;font-weight:700;animation:up .4s ease both}
+.row .n{font-family:var(--disp);font-weight:800;color:var(--mut)}
+.row .sc{font-family:var(--disp);font-weight:800}
+.row .d{font-size:15px;color:var(--ok);font-weight:700;margin-left:12px}
+.row.first{background:var(--tx);color:var(--bg)}.row.first .n{color:var(--bg)}
+.h2{font-family:var(--disp);font-weight:800;font-size:clamp(34px,4vw,56px);margin:0 0 28px;text-align:center}
+.podium{display:flex;align-items:flex-end;justify-content:center;gap:18px;margin:10px 0 30px}
+.pod{width:min(240px,28vw);text-align:center}
+.pod .nm{font-size:24px;font-weight:700;margin-bottom:10px;word-break:break-word;animation:up .5s ease both}
+.pod .blk{border-radius:14px 14px 0 0;background:var(--s2);border:1px solid var(--line);border-bottom:0;display:flex;flex-direction:column;align-items:center;padding-top:18px;gap:6px;transform-origin:bottom;animation:grow .9s cubic-bezier(.2,.8,.2,1) both}
+.pod .pl1{background:var(--tx);color:var(--bg)}
+.pod .place{font-family:var(--disp);font-weight:800;font-size:56px;line-height:1}
+.pod .pts{font-size:16px;font-weight:600;opacity:.75}
+@keyframes grow{from{transform:scaleY(0)}to{transform:scaleY(1)}}
+
+/* ---------- PLAYER ---------- */
+.ply{min-height:100vh;min-height:100dvh;display:flex;flex-direction:column;padding:max(14px,env(safe-area-inset-top)) 14px max(16px,env(safe-area-inset-bottom))}
+.pc{flex:1;display:flex;flex-direction:column;justify-content:center;gap:14px;max-width:520px;width:100%;margin:0 auto}
+.pw-wrap{max-width:520px;width:100%;margin:0 auto}
+.pc h1{font-family:var(--disp);font-weight:800;font-size:34px;line-height:1.05;margin:0}
+.field{width:100%;height:58px;border-radius:12px;border:1px solid var(--line);background:var(--s1);color:var(--tx);padding:0 18px;font-size:20px;font-weight:600;outline:none}
+.field:focus{border-color:var(--mut)}
+.field.codef{text-transform:uppercase;letter-spacing:.2em;font-family:var(--disp);font-weight:800;text-align:center;font-size:26px}
+.pbar{display:flex;align-items:center;justify-content:space-between;gap:10px;font-size:14px;font-weight:600;color:var(--mut)}
+.pbar .me{color:var(--tx);max-width:50%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.ptimer{height:5px;background:var(--s2);border-radius:5px;overflow:hidden;margin:10px 0 4px}
+.ptimer i{display:block;height:100%;background:var(--tx);transform-origin:left}
+.pk{font-size:12px;font-weight:700;color:var(--a3);letter-spacing:.05em;text-transform:uppercase;margin-top:12px}
+.pq{font-family:var(--disp);font-weight:800;font-size:clamp(20px,5.4vw,26px);line-height:1.2;margin:6px 0 12px}
+.answers{display:grid;grid-template-columns:1fr;gap:10px}
+.ans{display:flex;align-items:center;gap:14px;text-align:left;padding:15px 16px;border-radius:14px;font-weight:700;font-size:17px;line-height:1.25;min-height:62px;transition:transform .12s,opacity .25s}
+.ans:active{transform:scale(.97)}
+.ans.gone{opacity:.12;pointer-events:none}
+.tools{display:flex;gap:8px;margin:10px 0}
+.tools .btn{height:46px;font-size:15px;padding:0 14px;flex:1}
+.ansrow{display:flex;gap:8px;margin-top:4px}
+.ansrow .field{height:54px;font-size:20px;flex:1;min-width:0}
+.ansrow .btn{height:54px;flex:none}
+.unit{font-size:13px;color:var(--mut);margin-top:6px}
+.pw{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:12px}
+.pwb{position:relative;display:flex;flex-direction:column;align-items:center;gap:4px;padding:10px 4px;border-radius:12px;background:var(--s1);border:1px solid var(--line);font-size:13px;font-weight:600}
+.pwb svg{width:22px;height:22px}
+.pwb .k{position:absolute;top:6px;right:8px;font-size:12px;color:var(--mut);font-weight:700}
+.pwb[disabled]{opacity:.3;pointer-events:none}
+.pwb.on{border-color:var(--a3);color:var(--a3)}
+.shld{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--mut);margin-top:8px;justify-content:center}
+.shld svg{width:16px;height:16px}
+.wait{text-align:center;display:flex;flex-direction:column;align-items:center;gap:14px}
+.ring{width:84px;height:84px;border-radius:50%;border:4px solid var(--s2);border-top-color:var(--tx);animation:spin 1s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.res{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;gap:10px;border-radius:20px;padding:28px}
+.res.good{background:var(--ok)}.res.bad{background:var(--bad);animation:shake .5s ease}.res.none{background:var(--s1)}
+.res .big{font-size:50px}
+.res .pts{font-family:var(--disp);font-weight:800;font-size:30px;background:rgba(0,0,0,.18);padding:8px 18px;border-radius:999px}
+.res .rk{font-size:17px;font-weight:600;opacity:.92}
+.sheet{position:fixed;inset:0;z-index:30;background:rgba(0,0,0,.55);display:flex;align-items:flex-end}
+.sheet .in{width:100%;max-height:75vh;overflow:auto;background:var(--s1);border-radius:20px 20px 0 0;padding:20px 16px max(20px,env(safe-area-inset-bottom));animation:up .25s ease both}
+.sheet h3{margin:0 0 4px;font-family:var(--disp);font-size:22px}
+.tg{display:flex;justify-content:space-between;align-items:center;width:100%;padding:14px 16px;border-radius:12px;background:var(--s2);margin-top:8px;font-weight:600;font-size:17px}
+.toast{position:fixed;left:50%;bottom:max(24px,env(safe-area-inset-bottom));transform:translateX(-50%);z-index:60;background:var(--tx);color:var(--bg);padding:12px 18px;border-radius:12px;font-weight:600;font-size:15px;max-width:90vw;text-align:center;animation:up .25s ease both}
+/* ice */
+#ice{position:fixed;inset:0;z-index:40;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;text-align:center;padding:24px;color:#08263A;
+  background:radial-gradient(120% 80% at 50% 45%,#EAF7FF 0%,#CDEBFD 55%,#A9D9F7 100%);
+  user-select:none;-webkit-user-select:none;touch-action:manipulation;animation:freeze .35s ease both}
+#ice.melt{animation:melt .5s ease forwards}
+#ice.hit{animation:hit .12s ease}
+#ice svg.frost{position:absolute;inset:0;width:100%;height:100%;pointer-events:none}
+#ice .flake{position:absolute;color:#fff;opacity:.55;pointer-events:none}
+#ice .flake svg{width:100%;height:100%}
+#ice .it1{font-family:var(--disp);font-weight:800;font-size:34px;position:relative}
+#ice .it2{font-size:17px;font-weight:600;position:relative}
+#ice .taps{position:relative;font-family:var(--disp);font-weight:800;font-size:64px;line-height:1}
+#ice path.crack{stroke:#5FA9D6;stroke-width:3;fill:none;stroke-linecap:round;opacity:0;transition:opacity .15s}
+@keyframes freeze{from{opacity:0;transform:scale(1.04)}to{opacity:1;transform:none}}
+@keyframes melt{to{opacity:0;transform:scale(1.03)}}
+@keyframes hit{50%{transform:scale(.985) rotate(-.4deg)}}
+canvas#cf{position:fixed;inset:0;width:100%;height:100%;pointer-events:none;z-index:45}
+@media (max-width:900px){.lobby,.hgrid,.hsheet{grid-template-columns:1fr}.host{padding:20px}}
+@media (min-width:600px){.answers{grid-template-columns:1fr 1fr}.ans{min-height:96px}}
+
+.xl .fb .ok,.xl .fb .no{width:38px;flex:none;display:flex;align-items:center;justify-content:center;font-size:20px;font-weight:700;border-right:1px solid #E6E6E6}
+.xl .fb .ok{color:var(--xl)}.xl .fb .no{color:#C42B1C}
+.xl .fc input{font-size:16px}
+.kb{display:flex;gap:6px;overflow-x:auto;padding:8px;background:#F3F3F3;border-bottom:1px solid #D4D4D4;scrollbar-width:none}
+.kb::-webkit-scrollbar{display:none}
+.kb button{flex:none;min-width:40px;height:38px;padding:0 10px;border-radius:6px;background:#fff;border:1px solid #D0D0D0;font-family:Consolas,"SF Mono",Menlo,monospace;font-size:16px;font-weight:600;color:#1F1F1F}
+.kb button.r{color:var(--xl);border-color:#9FCFB2}
+.xl td.v.ed{background:#FFFDF2}
+.xl td.v.ed:empty::after,.xl td.v.blank::after{content:"…";color:#B8B8B8;font-weight:400}
+.xl td.v.err{color:#C42B1C}
+.xl td.v.ref{background:#E8F4EC}
+.mode{display:flex;gap:10px;margin-top:18px;flex-wrap:wrap}
+.mode button{height:48px;padding:0 20px;border-radius:12px;background:var(--s2);border:1px solid var(--line);font-weight:700;font-size:16px;color:var(--mut)}
+.mode button.on{background:var(--tx);color:var(--bg);border-color:var(--tx)}
+.howf{font-family:Consolas,"SF Mono",Menlo,monospace;color:var(--tx);background:var(--s2);padding:2px 8px;border-radius:6px}
+.tgrid{display:grid;grid-template-columns:minmax(0,.85fr) minmax(0,1.15fr);gap:28px;align-items:start;margin-top:4px}
+.steps{background:var(--s1);border:1px solid var(--line);border-radius:16px;padding:20px 24px}
+.steps ol{margin:0;padding-left:24px;display:flex;flex-direction:column;gap:10px;font-size:19px;line-height:1.4}
+.crit{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px}
+.crit span{font-size:13px;font-weight:600;color:var(--mut);background:var(--s2);border:1px solid var(--line);border-radius:999px;padding:6px 12px}
+.gal{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:12px;max-height:52vh;overflow:auto;align-content:start}
+.gal.big{grid-template-columns:repeat(auto-fill,minmax(200px,1fr));max-height:60vh}
+.thumb{position:relative;display:flex;flex-direction:column;background:var(--s1);border:1px solid var(--line);border-radius:12px;overflow:hidden;text-align:left;animation:pop .35s ease both;transition:transform .15s,border-color .15s}
+.thumb:hover{transform:translateY(-2px);border-color:var(--mut)}
+.thumb img{width:100%;aspect-ratio:4/3;object-fit:contain;background:#fff;display:block}
+.thumb .ph{width:100%;aspect-ratio:4/3;display:flex;align-items:center;justify-content:center;color:var(--mut)}
+.thumb .cap{display:flex;align-items:center;gap:8px;padding:8px 10px;font-size:14px;font-weight:600}
+.thumb .cap span{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.thumb .cap b{color:#FF7A85;font-size:13px}
+.thumb .cap i{font-style:normal;color:#111;font-weight:800;border-radius:6px;padding:0 6px}
+.lb{position:fixed;inset:0;z-index:70;background:#0A0B0E;display:flex;flex-direction:column;padding:18px 28px;gap:14px}
+.lbtop{display:flex;align-items:center;gap:16px}
+.lbn{font-family:var(--disp);font-weight:800;font-size:30px;flex:1}
+.lbimg{flex:1;min-height:0;display:flex;align-items:center;justify-content:center}
+.lbimg img{max-width:100%;max-height:100%;object-fit:contain;border-radius:8px;background:#fff}
+.lbbar{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.btn.grade{background:var(--s2);color:var(--tx);border:2px solid transparent}
+.btn.grade.on{border-color:var(--gc);color:var(--gc)}
+.psteps{margin:0 0 4px;padding-left:22px;display:flex;flex-direction:column;gap:8px;font-size:16px;line-height:1.4}
+.pzl{font-size:12px;font-weight:700;color:var(--a2);letter-spacing:.05em;text-transform:uppercase}
+.upbox{display:flex;flex-direction:column;gap:10px}
+.drop{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;padding:24px 16px;border:2px dashed var(--line);border-radius:16px;background:var(--s1);text-align:center;cursor:pointer}
+.drop svg{width:30px;height:30px}
+.drop b{font-size:18px}
+.drop span{font-size:13px;color:var(--mut)}
+.prev{width:100%;max-height:46vh;object-fit:contain;border-radius:12px;background:#fff}
+.okline{font-size:15px;font-weight:600;color:var(--ok)}
+.gbadge{display:inline-block;padding:10px 18px;border-radius:999px;font-weight:700;font-size:17px;color:#111}
+label.btn{cursor:pointer}
+a.btn{text-decoration:none}
+a.btn svg{width:18px;height:18px}
+.tg.on{background:var(--tx);color:var(--bg)}
+@media (max-width:900px){.tgrid{grid-template-columns:1fr}}
+.setrow{display:flex;align-items:center;gap:12px;margin-top:16px;flex-wrap:wrap;font-size:15px}
+.setrow .mode button{height:40px;font-size:14px;padding:0 14px}
+.langsw{display:flex;align-items:center;gap:6px;margin:4px 0 10px;font-size:13px}
+.langsw button{height:30px;padding:0 12px;border-radius:999px;background:var(--s2);border:1px solid var(--line);font-size:13px;font-weight:700;color:var(--mut)}
+.langsw button.on{background:var(--tx);color:var(--bg);border-color:var(--tx)}
+.exd{margin:10px 0 0;background:var(--s1);border:1px solid var(--line);border-radius:12px;padding:10px 12px}
+.exd summary{font-weight:700;font-size:15px;cursor:pointer}
+.exd img{width:100%;border-radius:8px;margin-top:10px;display:block}
+.exh{width:100%;max-height:150px;object-fit:contain;background:#fff;border-radius:10px;margin-bottom:14px;display:block}
+.ed{position:fixed;inset:0;z-index:80;background:var(--bg);overflow:auto;padding:24px 32px}
+.edtop{display:flex;align-items:center;justify-content:space-between;gap:16px;margin-bottom:18px;flex-wrap:wrap}
+.edcols{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.1fr);gap:24px;align-items:start}
+.edh{font-size:14px;font-weight:700;color:var(--mut);text-transform:uppercase;letter-spacing:.05em;margin-bottom:10px}
+.edlist{display:flex;flex-direction:column;gap:8px}
+.edrow{display:flex;align-items:center;gap:10px;background:var(--s1);border:1px solid var(--line);border-radius:12px;padding:8px 10px}
+.edrow .n{font-family:var(--disp);font-weight:800;width:22px;text-align:center;color:var(--mut)}
+.edrow img,.edrow .noimg{width:64px;height:44px;object-fit:cover;border-radius:6px;background:var(--s2);flex:none}
+.edrow .tt{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}
+.edrow .tt b{font-size:15px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.edrow .tt span{font-size:12px}
+.mins{display:flex;align-items:center;gap:4px;font-size:14px;font-weight:700;white-space:nowrap}
+.mins button,.ib{width:32px;height:32px;border-radius:8px;background:var(--s2);border:1px solid var(--line);font-weight:700;font-size:15px}
+.ib[disabled]{opacity:.3}
+.ib.del:hover{border-color:var(--bad);color:var(--bad)}
+.bgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:12px}
+.bcard{display:flex;flex-direction:column;background:var(--s1);border:1px solid var(--line);border-radius:12px;overflow:hidden}
+.bcard.on{border-color:var(--ok)}
+.bcard img{width:100%;aspect-ratio:16/10;object-fit:cover;background:#fff}
+.bcard .bt{display:flex;flex-direction:column;gap:2px;padding:10px 12px;flex:1}
+.bcard .bt b{font-size:14px;line-height:1.3}
+.bcard .bt span{font-size:12px}
+.bcard .btn{height:40px;font-size:14px;margin:0 12px 12px;border-radius:10px}
+.edm{position:fixed;inset:0;z-index:90;background:rgba(0,0,0,.6);display:flex;align-items:flex-start;justify-content:center;overflow:auto;padding:30px 16px}
+.edbox{width:100%;max-width:980px;background:var(--s1);border:1px solid var(--line);border-radius:18px;padding:22px;display:flex;flex-direction:column;gap:16px}
+.edform{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.ff{display:flex;flex-direction:column;gap:6px}
+.ff.wide{grid-column:1 / -1}
+.ff label{font-size:13px;font-weight:700;color:var(--mut)}
+.ff input,.ff textarea,.ff select{background:var(--bg);color:var(--tx);border:1px solid var(--line);border-radius:10px;padding:10px 12px;font:inherit;font-size:15px;outline:none}
+.ff textarea{resize:vertical;line-height:1.45}
+.ff input:focus,.ff textarea:focus{border-color:var(--mut)}
+.hint{font-size:13px;color:var(--mut)}
+.hint code{background:var(--s2);padding:2px 6px;border-radius:6px;color:var(--tx)}
+.pvh{display:flex;align-items:center;justify-content:space-between}
+.pvh .mode button{height:34px;font-size:13px;padding:0 12px}
+.pv{margin:0;padding:12px 12px 12px 32px;background:var(--bg);border-radius:10px;display:flex;flex-direction:column;gap:6px;font-size:15px;line-height:1.4}
+@media (max-width:900px){.edcols,.edform{grid-template-columns:1fr}}
+.vgrid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.vcard{background:var(--s1);border:1px solid var(--line);border-radius:12px;overflow:hidden;display:flex;flex-direction:column}
+.vcard.own{opacity:.7}
+.vimg{display:flex;align-items:center;justify-content:center;width:100%;aspect-ratio:4/3;background:#fff;font-size:12px}
+.vimg img{width:100%;height:100%;object-fit:contain}
+.vname{font-size:13px;font-weight:700;padding:8px 10px 2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.stars{display:flex;justify-content:space-between;padding:2px 6px 8px}
+.stars button{font-size:22px;line-height:1;color:#3A3F4B;padding:4px 2px;flex:1}
+.stars button.on{color:#F5A524}
+.stars.big{gap:2px;padding:0;flex:1;min-width:0}
+.stars.big button{font-size:32px;padding:4px 0}
+.pview{position:fixed;inset:0;z-index:65;background:#0A0B0E;display:flex;flex-direction:column;padding:max(12px,env(safe-area-inset-top)) 12px max(14px,env(safe-area-inset-bottom));gap:10px}
+.pvtop{display:flex;align-items:center;gap:10px}
+.pvtop b{flex:1;font-size:18px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.pvtop .btn{height:42px;font-size:15px}
+.pvimg{flex:1;min-height:0;display:flex;align-items:center;justify-content:center}
+.pvimg img{max-width:100%;max-height:100%;object-fit:contain;border-radius:8px;background:#fff}
+.pvbar{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.pvbar .btn{height:48px;width:48px;padding:0;flex:none}
+.race{display:flex;flex-direction:column;gap:6px;margin-bottom:14px;max-height:34vh;overflow:auto}
+.rrow{display:grid;grid-template-columns:34px 1fr auto 60px;align-items:center;gap:10px;background:var(--s1);border:1px solid var(--line);border-radius:10px;padding:8px 12px;font-size:16px;font-weight:600}
+.rrow.fin{border-color:var(--ok)}
+.rrow .rp{font-family:var(--disp);font-weight:800;color:var(--ok);text-align:center}
+.rrow .rn{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.rrow .rd{display:flex;gap:5px;align-items:center}
+.rrow .rd i{width:12px;height:12px;border-radius:50%;background:var(--s2);border:1px solid var(--line)}
+.rrow .rd i.g{background:var(--ok);border-color:var(--ok)}
+.rrow .rd i.b{background:var(--bad);border-color:var(--bad)}
+.rrow .rd i.cam{width:auto;height:auto;border:0;background:none;font-style:normal;font-size:14px;color:var(--mut)}
+.rrow .rd i.cam.g{color:var(--ok);background:none}
+.rrow .rt{text-align:right;font-variant-numeric:tabular-nums;color:var(--mut)}
+.rrow.fin .rt{color:var(--ok)}
+.dt{display:flex;flex-direction:column;gap:8px;margin:12px 0 0}
+.dtw{overflow-x:auto;border-radius:10px;border:1px solid #D4D4D4}
+.dt table{border-collapse:collapse;background:#fff;color:#1f1f1f;font-size:14px;width:100%}
+.dt th{background:#F3F3F3;color:#666;font-size:11px;font-weight:600;padding:3px 6px;border:1px solid #E1E1E1}
+.dt td{border:1px solid #E1E1E1;padding:5px 8px;white-space:nowrap}
+.dt td.num{text-align:right;font-variant-numeric:tabular-nums}
+.hints{margin:10px 0 0;padding-left:20px;display:flex;flex-direction:column;gap:6px;font-size:14px;line-height:1.4}
+.chkbox{display:flex;flex-direction:column;gap:10px;margin:14px 0;background:var(--s1);border:1px solid var(--line);border-radius:14px;padding:14px}
+.chf{display:grid;grid-template-columns:1fr auto;gap:6px;align-items:center}
+.chf label{grid-column:1 / -1;font-size:14px;font-weight:600}
+.chf input{height:48px;border-radius:10px;border:1px solid var(--line);background:var(--bg);color:var(--tx);padding:0 12px;font-size:18px;font-weight:600;outline:none;min-width:0}
+.chf .chopts{display:flex;flex-wrap:wrap;gap:6px}
+.chf .chopts button{height:40px;padding:0 12px;border-radius:10px;background:var(--s2);border:1px solid var(--line);font-size:14px;font-weight:600}
+.chf .chopts button.on{background:var(--tx);color:var(--bg)}
+.chf .chs{font-size:22px;font-weight:800;width:24px;text-align:center}
+.chf.good input,.chf.good .chopts button.on{border-color:var(--ok)}
+.chf.good .chs{color:var(--ok)}
+.chf.bad input,.chf.bad .chopts button.on{border-color:var(--bad)}
+.chf.bad .chs{color:var(--bad)}
+.chkst{font-size:15px;line-height:1.4}
+.okc{color:var(--ok)}.badc{color:#FF8A8F}
+.noimg2{width:100%;aspect-ratio:16/10;display:flex;align-items:center;justify-content:center;text-align:center;padding:12px;background:var(--s2);color:var(--mut);font-weight:700;font-size:14px}
+.tgrid .steps{max-height:calc(100vh - 300px);overflow:auto}
+.tgrid .gal{max-height:calc(100vh - 420px)}
+</style>
+</head>
+<body>
+<div id="net" class="net"><i></i><span>Подключение…</span></div>
+<div id="app"></div>
+<canvas id="cf" class="hidden"></canvas>
+<script src="../mqtt.min.js"></script>
+<script>
+"use strict";
+const COURSE = {"ns": "dg19", "ui": "ru", "title": "Практика № 19 · Диаграммы в Excel · БУХ 2-2", "joinTitle": "Практика № 19: диаграммы", "tool": {"name": "Google Таблицы", "url": "https://docs.google.com/spreadsheets/"}, "langs": [["ru", "Excel"], ["en", "Google Таблицы"]], "langLabel": "Программа:", "quiz": [{"type": "mc", "t": 20, "q": "Как строить ЛЮБУЮ диаграмму?", "a": ["Вставка → тип, потом ввести данные", "Выделить таблицу с заголовками → Вставка → тип", "Файл → Создать → Диаграмма", "Данные → Сортировка"], "c": 1}, {"type": "mc", "t": 20, "q": "Какая диаграмма лучше покажет структуру (доли) расходов?", "a": ["График", "Гистограмма с группировкой", "Круговая", "Линейчатая с накоплением"], "c": 2}, {"type": "mc", "t": 20, "q": "Изменение выручки по месяцам удобнее показать на…", "a": ["Графике", "Круговой", "Кольцевой", "Пустой таблице"], "c": 0}, {"type": "mc", "t": 20, "q": "Что выделить для круговой диаграммы расходов (A1:B8, где B8 — Итого)?", "a": ["A1:B8", "A1:B7", "B2:B8", "Весь лист"], "c": 1}, {"type": "mc", "t": 20, "q": "Формула доли, которую можно протянуть вниз:", "a": ["=B2/B8", "=B2*B8", "=B2/$B$8", "=$B2/B8"], "c": 2}, {"type": "mc", "t": 20, "q": "Что показывает линия тренда?", "a": ["Сумму всех значений", "Общее направление изменений", "Самое большое значение", "Ошибки в данных"], "c": 1}, {"type": "mc", "t": 20, "q": "Гистограмма с накоплением показывает…", "a": ["Части, сложенные в один столбец", "Только максимум", "Проценты по кругу", "Прогноз на будущее"], "c": 0}, {"type": "mc", "t": 20, "q": "Внизу диаграммы товары, а нужны кварталы. Что нажать в Excel?", "a": ["Изменить цвета", "Строка/столбец", "Экспресс-макет", "Удалить"], "c": 1}], "bank": [{"id": "d1", "title": "Гистограмма: выручка за год", "min": 10, "ex": "t1", "table": {"head": ["Месяц", "Выручка"], "rows": [["Январь", 420], ["Февраль", 450], ["Март", 510], ["Апрель", 500], ["Май", 560], ["Июнь", 620], ["Июль", 680], ["Август", 650], ["Сентябрь", 590], ["Октябрь", 540], ["Ноябрь", 580], ["Декабрь", 740], ["Итого", ""], ["Максимум", ""], ["Минимум", ""], ["Среднее", ""]]}, "steps": ["Создайте лист «Выручка» (кнопка «+» внизу, переименовать — двойной щелчок) и вставьте таблицу: кнопка «Скопировать таблицу» → ячейка A1 → Вставить.", "Формулы: B14 =СУММ(B2:B13), B15 =МАКС(B2:B13), B16 =МИН(B2:B13), B17 =СРЗНАЧ(B2:B13).", "Выделите A1:B13 → [[Вставка → Гистограмма → первая|Вставка → Диаграмма → Тип: Гистограмма]].", "Название диаграммы: «Выручка за год, тыс. тг» — [[щёлкните по заголовку и впишите|Редактор → Дополнительные → Названия диаграмм и осей]].", "[[Правой кнопкой по столбцу → Добавить подписи данных|Редактор диаграмм → Дополнительные → Серии → поставить галочку «Ярлыки данных»]]", "Введите 4 числа в «Проверку» и нажмите «Проверить». Сделайте скриншот листа с диаграммой и загрузите его ниже."], "hints": ["Выделяйте A1:B13 — без строк «Итого», «Максимум»…, иначе они попадут в диаграмму.", "Формула не считается? Проверьте, что она начинается со знака «=» и диапазон B2:B13. [[Если Excel английский: SUM, MAX, MIN, AVERAGE.|В Google Таблицах те же функции: СУММ, МАКС, МИН, СРЗНАЧ.]]", "Среднее должно получиться целым: 570."], "checks": [{"l": "Итого (B14)", "a": 6840}, {"l": "Максимум (B15)", "a": 740}, {"l": "Минимум (B16)", "a": 420}, {"l": "Среднее (B17)", "a": 570}], "crit": ["Таблица и 4 формулы", "Гистограмма", "Название и подписи"]}, {"id": "d2", "title": "График: доходы и расходы", "min": 12, "ex": "", "table": {"head": ["Месяц", "Доходы", "Расходы", "Прибыль"], "rows": [["Январь", 420, 360, ""], ["Февраль", 450, 380, ""], ["Март", 510, 410, ""], ["Апрель", 500, 420, ""], ["Май", 560, 440, ""], ["Июнь", 620, 480, ""], ["Июль", 680, 510, ""], ["Август", 650, 500, ""], ["Сентябрь", 590, 470, ""], ["Октябрь", 540, 450, ""], ["Ноябрь", 580, 460, ""], ["Декабрь", 740, 550, ""], ["Итого", "", "", ""]]}, "steps": ["Создайте лист «Доходы» (кнопка «+» внизу, переименовать — двойной щелчок) и вставьте таблицу: кнопка «Скопировать таблицу» → ячейка A1 → Вставить. Столбец D пока пустой.", "D2: =B2-C2 → [[протяните за маркер (квадратик в углу) до D13|потяните синий квадратик в углу ячейки до D13]].", "B14, C14, D14: =СУММ(…) по своему столбцу (B2:B13, C2:C13, D2:D13).", "Выделите A1:C13 (без прибыли!) → [[Вставка → График → «График с маркерами»|Вставка → Диаграмма → Тип: Линейный график; точки: Настройки → Серии → Размер точки]].", "Название диаграммы: «Доходы и расходы, тыс. тг» — [[щёлкните по заголовку и впишите|Редактор → Дополнительные → Названия диаграмм и осей]].", "Введите числа в «Проверку». Сделайте скриншот листа с диаграммой и загрузите его ниже."], "hints": ["Наибольшую прибыль ищите в столбце D: можно формулой =МАКС(D2:D13).", "Если на графике три линии — вы выделили и столбец «Прибыль». Выделите только A1:C13."], "checks": [{"l": "Итого доходы (B14)", "a": 6840}, {"l": "Итого расходы (C14)", "a": 5430}, {"l": "Итого прибыль (D14)", "a": 1410}, {"l": "Наибольшая прибыль за месяц", "a": 190}], "crit": ["Формулы прибыли", "Две линии", "Название"]}, {"id": "d3", "title": "Линия тренда и прогноз", "min": 5, "ex": "t3", "steps": ["Работаем на диаграмме «Доходы и расходы» из задания 2.", "[[Правой кнопкой по линии «Доходы» → Добавить линию тренда|Редактор → Дополнительные → Серии: выберите «Доходы» → галочка «Линия тренда»]].", "Тип: «Линейная».", "[[Внизу панели: Прогноз → Вперёд на 2 периода. Закройте панель.|Прогноза вперёд в Google Таблицах нет — достаточно линейной линии тренда.]]", "Ответьте на вопрос в «Проверке». Сделайте скриншот листа с диаграммой и загрузите его ниже."], "hints": ["Линия тренда — пунктирная прямая через «облако» точек: она показывает общее направление.", "[[Если пункта нет в меню — щёлкните точно по линии «Доходы», а не по фону.|Если галочки нет — в «Серии» сначала выберите «Доходы», а не «Все серии».]]"], "checks": [{"l": "Куда идёт линия тренда доходов?", "opts": ["Вверх", "Вниз", "Горизонтально"], "c": 0}], "crit": ["Пунктирная линия тренда", "Прогноз на 2 периода (Excel)"]}, {"id": "d4", "title": "Круговая и кольцевая", "min": 11, "ex": "t4", "table": {"head": ["Статья", "Сумма", "Доля"], "rows": [["Зарплата", 240, ""], ["Аренда", 60, ""], ["Сырьё", 150, ""], ["Реклама", 30, ""], ["Налоги", 50, ""], ["Прочее", 20, ""], ["Итого", "", ""]]}, "steps": ["Создайте лист «Расходы» (кнопка «+» внизу, переименовать — двойной щелчок) и вставьте таблицу: кнопка «Скопировать таблицу» → ячейка A1 → Вставить.", "B8: =СУММ(B2:B7).", "C2: =B2/$B$8 → протяните до C7 → [[кнопка «%» → «Увеличить разрядность» один раз|кнопка «%» → «Увеличить число десятичных знаков» один раз]].", "Выделите A1:B7 (без «Итого»!) → [[Вставка → Круговая → первая|Вставка → Диаграмма → Тип: Круговая]].", "Подписи: [[правой кнопкой по кругу → Добавить подписи данных → Формат подписей: «Доли» и «Имя категории», убрать «Значение»|Настройки → Круговая диаграмма → Ярлык среза: «Процент»]]. Название: «Структура расходов».", "Копия диаграммы: [[Ctrl+C, Ctrl+V → у копии правой кнопкой → Изменить тип диаграммы → Кольцевая|⋮ на диаграмме → Копировать, Ctrl+V → у копии Настройки → Круговая → «Кольцевая диаграмма» (дыра 50%)]].", "Введите числа в «Проверку». Сделайте скриншот листа с диаграммой и загрузите его ниже."], "hints": ["Знак $ в $B$8 «закрепляет» ячейку: при протягивании все доли делятся на одно и то же Итого.", "Сумма всех долей должна быть 100%.", "Доли можно вводить как 43,6 или 0,436 — засчитается."], "checks": [{"l": "Итого (B8)", "a": 550}, {"l": "Доля зарплаты, %", "a": 43.6, "tol": 0.06, "pct": true}, {"l": "Доля рекламы, %", "a": 5.5, "tol": 0.06, "pct": true}], "crit": ["Абсолютная ссылка $B$8", "Круг + кольцо", "Подписи долей"]}, {"id": "d5", "title": "Линейчатая с сортировкой", "min": 8, "ex": "t5", "table": {"head": ["Филиал", "Продажи"], "rows": [["Шымкент", 610], ["Алматы", 950], ["Актобе", 430], ["Астана", 820], ["Павлодар", 380], ["Караганда", 540], ["Итого", ""]]}, "steps": ["Создайте лист «Филиалы» (кнопка «+» внизу, переименовать — двойной щелчок) и вставьте таблицу: кнопка «Скопировать таблицу» → ячейка A1 → Вставить. Порядок строк — ровно как в таблице.", "B8: =СУММ(B2:B7).", "Выделите A1:B7 → [[Данные → Сортировка → Сортировать по «Продажи» → По возрастанию → ОК|Данные → Сортировать диапазон → Расширенные → «Данные со строкой заголовка» → Продажи, Я → А (по убыванию)]].", "Выделите A1:B7 → [[Вставка → Гистограмма → Линейчатая|Вставка → Диаграмма → Тип: Линейчатая диаграмма]].", "Название: «Продажи филиалов, тыс. тг», подписи данных. Цвет: [[щёлкните по полосе → Формат → Заливка фигуры → зелёный|Настройки → Серии → Цвет заливки → зелёный]].", "Ответьте в «Проверке». Сделайте скриншот листа с диаграммой и загрузите его ниже."], "hints": ["[[В Excel линейчатая рисует строки снизу вверх, поэтому сортировка «по возрастанию» ставит самый большой филиал наверх.|В Google Таблицах строки идут сверху вниз, поэтому сортируйте по убыванию (Я → А), чтобы самый большой был сверху.]]", "Не выделяйте строку «Итого» при сортировке, иначе она уедет вверх."], "checks": [{"l": "Итого (B8)", "a": 3730}, {"l": "Какой филиал на самой верхней полосе?", "opts": ["Павлодар", "Астана", "Алматы", "Шымкент"], "c": 2}], "crit": ["Сортировка", "Линейчатая, зелёная", "Подписи"]}, {"id": "d6", "title": "Гистограмма с группировкой", "min": 10, "ex": "", "table": {"head": ["Товар", "1 кв", "2 кв", "3 кв", "4 кв", "За год"], "rows": [["Бумага", 120, 130, 150, 170, ""], ["Канцтовары", 80, 90, 85, 110, ""], ["Техника", 200, 180, 220, 260, ""], ["Итого", "", "", "", "", ""]]}, "steps": ["Создайте лист «Кварталы» (кнопка «+» внизу, переименовать — двойной щелчок) и вставьте таблицу: кнопка «Скопировать таблицу» → ячейка A1 → Вставить.", "F2: =СУММ(B2:E2) → протяните до F4.", "B5: =СУММ(B2:B4) → протяните вправо до F5.", "Выделите A1:E4 → [[Вставка → Гистограмма → «Гистограмма с группировкой»|Вставка → Диаграмма → Тип: Гистограмма]].", "Если внизу товары, а не кварталы: [[Конструктор → Строка/столбец|Настройки → галочка «Поменять строки и столбцы»]].", "Название диаграммы: «Продажи по кварталам, тыс. тг» — [[щёлкните по заголовку и впишите|Редактор → Дополнительные → Названия диаграмм и осей]].", "Введите числа в «Проверку». Сделайте скриншот листа с диаграммой и загрузите его ниже."], "hints": ["Внизу диаграммы должны быть 4 группы — «1 кв … 4 кв», в каждой по 3 столбика.", "F5 = сумма всего (итог итогов) — должно совпасть и по строкам, и по столбцам."], "checks": [{"l": "Бумага за год (F2)", "a": 570}, {"l": "Техника за год (F4)", "a": 860}, {"l": "Всего (F5)", "a": 1795}], "crit": ["Формулы СУММ", "Группировка по кварталам", "Название"]}, {"id": "d7", "title": "Гистограмма с накоплением", "min": 5, "ex": "t7", "steps": ["Скопируйте диаграмму из задания 6.", "У копии: [[правой кнопкой → Изменить тип диаграммы → «Гистограмма с накоплением»|Редактор → Тип: Гистограмма с накоплением]].", "Название: «Продажи всего магазина по кварталам».", "Ответьте в «Проверке». Сделайте скриншот листа с диаграммой и загрузите его ниже."], "hints": ["Столбец с накоплением — «этажи»: высота = сумма трёх товаров за квартал (строка «Итого»)."], "checks": [{"l": "Какой квартал самый высокий?", "opts": ["1 кв", "2 кв", "3 кв", "4 кв"], "c": 3}, {"l": "Высота самого высокого столбца", "a": 540}], "crit": ["Столбцы-«этажи»", "Новое название"]}, {"id": "d8", "title": "Оформление", "min": 8, "ex": "", "shot": true, "steps": ["Лист «Выручка»: [[щёлкните по диаграмме → Конструктор → выберите любой готовый стиль|Редактор → Настройки → Стиль диаграммы: цвет фона, шрифт, граница]].", "Лист «Выручка»: подпись вертикальной оси «тыс. тг» — [[кнопка «+» справа от диаграммы → Названия осей (Excel 2010: Макет → Названия осей)|Дополнительные → Названия диаграмм и осей → Название вертикальной оси]].", "Лист «Доходы»: [[Конструктор → Изменить цвета|Настройки → Серии → другой цвет линий]].", "Лист «Расходы»: круговую [[Конструктор → Переместить диаграмму → На отдельном листе → ОК|⋮ на диаграмме → «Переместить на отдельный лист»]].", "[[Файл → Печать: посмотрите лист «Кварталы»; если не помещается — Параметры → «Вписать лист в одну страницу»|Файл → Печать: Масштаб → «По ширине»]].", "Скриншот листа с круговой диаграммой на отдельном листе — загрузите ниже."], "hints": ["Отдельный лист с диаграммой появится внизу рядом с ярлыками листов.", "[[Кнопки «+», кисточки и воронки появляются справа от диаграммы, когда она выделена.|Редактор диаграмм открывается двойным щелчком по диаграмме.]]"], "checks": [], "crit": ["Стиль", "Подпись оси", "Диаграмма на отдельном листе"]}, {"id": "d9", "title": "Свои диаграммы", "min": 16, "ex": "", "steps": ["Новый лист «Моя». Придумайте таблицу на 6–12 строк. Темы: мои расходы за месяц; цена хлеба/бензина/курс доллара по месяцам; зарплаты профессий; своя тема.", "Посчитайте Итого (СУММ) и Максимум (МАКС).", "Постройте ДВЕ диаграммы разных типов, у каждой — название.", "Ниже таблицы — вывод одним-двумя предложениями. Например: «Больше всего денег я трачу на еду — почти половину».", "Загрузите скриншот: таблица + две диаграммы + вывод."], "hints": ["Расходы по статьям → круговая + линейчатая. Изменение по месяцам → график + гистограмма. Сравнение профессий → гистограмма + линейчатая.", "Числа у каждого свои — списывать не получится."], "checks": [], "crit": ["Своя тема и числа", "2 разных типа", "Названия", "Вывод"]}], "defaults": ["d1", "d2", "d3", "d4", "d5", "d6", "d7", "d8", "d9"]};
+/* ===================== НАСТРОЙКИ ===================== */
+/* COURSE = {ns, title, tool:{name,url}, quiz:[...], tasks:[...]} задаётся на странице */
+const SETS = {
+  quiz: {name: () => "Квиз · 5 минут", short: "Квиз", quick: true},
+  practice: {name: n => "Практика · " + n + " заданий", short: "Практика", quick: false}
+};
+/* [[орысша|english]] → таңдалған интерфейс тілі */
+const L = (s, lang) => String(s == null ? "" : s).replace(/\[\[([^|\]]*)\|([^\]]*)\]\]/g, (m, ru, en) => lang === "en" ? en : ru);
+const RU = COURSE.ui === "ru";
+const t_ = (kk, ru) => RU ? ru : kk;
+const LANGS = COURSE.langs || [["ru", "Орысша"], ["en", "English"]];
+const LANG_LABEL = COURSE.langLabel || "Интерфейс:";
+const exUrl = ex => !ex ? "" : /^https?:\/\//.test(ex) ? ex : "ex/" + ex + ".jpg";
+const fromBank = id => { const b = COURSE.bank.find(x => x.id === id); return b ? JSON.parse(JSON.stringify(Object.assign({uid: rid(6)}, b))) : null; };
+const defaultPlan = () => COURSE.defaults.map(fromBank).filter(Boolean);
+const toRound = (t, i) => ({type: "task", t: Math.max(1, +t.min || 5) * 60, k: (i + 1) + "-е задание · " + (+t.min || 5) + " мин", title: t.title, steps: t.steps || [], crit: t.crit || [], ex: t.ex || "", table: t.table || null, hints: t.hints || [], checks: t.checks || [], shot: t.shot !== false});
+const checkOk = (c, v) => { if (c.opts) return (v | 0) === c.c && v !== "" && v != null; const x = parseFloat(String(v == null ? "" : v).replace(/[\s\u00a0]/g, "").replace("%", "").replace(",", ".")); if (!isFinite(x)) return false; const tol = c.tol != null ? c.tol : Math.max(0.5, Math.abs(c.a) * 0.002); return Math.abs(x - c.a) <= tol || (c.pct && Math.abs(x * 100 - c.a) <= tol); };
+const NS = COURSE.ns;
+const TITLE = COURSE.title;
+const BROKERS = ["wss://broker.emqx.io:8084/mqtt", "wss://broker.hivemq.com:8884/mqtt", "wss://test.mosquitto.org:8081"];
+const PARAMS = new URLSearchParams(location.search);
+const IS_HOST = PARAMS.has("host");
+const IMG_MAX = 1000, IMG_Q = 0.78;
+const isTask = r => r && r.type === "task";
+
+/* ===================== УТИЛИТЫ ===================== */
+const $ = s => document.querySelector(s);
+const app = $("#app");
+const esc = s => String(s == null ? "" : s).replace(/[&<>"']/g, c => ({"&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"}[c]));
+const rid = (n, abc) => { abc = abc || "abcdefghijkmnpqrstuvwxyz23456789"; let s = ""; const a = new Uint32Array(n); crypto.getRandomValues(a); for (const x of a) s += abc[x % abc.length]; return s; };
+const store = {
+  get(k) { try { return JSON.parse(localStorage.getItem(NS + k)); } catch (e) { return null; } },
+  set(k, v) { try { localStorage.setItem(NS + k, JSON.stringify(v)); } catch (e) {} },
+  del(k) { try { localStorage.removeItem(NS + k); } catch (e) {} }
+};
+const SHAPES = [
+  '<svg class="shape" viewBox="0 0 28 28"><path d="M14 4 25 23H3z" fill="currentColor"/></svg>',
+  '<svg class="shape" viewBox="0 0 28 28"><path d="M14 2.5 25.5 14 14 25.5 2.5 14z" fill="currentColor"/></svg>',
+  '<svg class="shape" viewBox="0 0 28 28"><circle cx="14" cy="14" r="11" fill="currentColor"/></svg>',
+  '<svg class="shape" viewBox="0 0 28 28"><rect x="4" y="4" width="20" height="20" rx="2" fill="currentColor"/></svg>'
+];
+const ICON = {
+  fr: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 2v20M3.3 7l17.4 10M20.7 7 3.3 17M9 4l3 2 3-2M9 20l3-2 3 2"/></svg>',
+  x2: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 8l6 8M10 8l-6 8M14 9.5a2.5 2.5 0 0 1 5 0c0 2.5-5 4-5 6.5h5"/></svg>',
+  ff: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3" y="4" width="7" height="7" rx="1.5"/><rect x="14" y="13" width="7" height="7" rx="1.5"/><path d="M14 5l7 5M21 5l-7 5M3 14l7 5M10 14l-7 5" opacity=".5"/></svg>',
+  sh: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M12 3l8 3v6c0 4.5-3.4 8-8 9-4.6-1-8-4.5-8-9V6z"/></svg>',
+  up: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 16V4M6 10l6-6 6 6M4 20h16"/></svg>',
+  ext: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 4h6v6M20 4l-9 9M18 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h5"/></svg>'
+};
+const GRADE = {ok: {t: "Принято", c: "var(--ok)"}, best: {t: "Лучшая работа", c: "var(--a2)"}, redo: {t: "Доработать", c: "var(--bad)"}};
+function vibrate(p) { try { navigator.vibrate && navigator.vibrate(p); } catch (e) {} }
+function toast(t) { const old = $(".toast"); if (old) old.remove(); const d = document.createElement("div"); d.className = "toast"; d.textContent = t; document.body.appendChild(d); setTimeout(() => d.remove(), 2800); }
+function setNet(on, text) { const n = $("#net"); n.classList.toggle("on", !!on); n.querySelector("span").textContent = on ? "Подключено" : (text || "Подключение…"); }
+function confetti() {
+  const c = $("#cf"); c.classList.remove("hidden"); const ctx = c.getContext("2d");
+  const W = c.width = innerWidth * devicePixelRatio, H = c.height = innerHeight * devicePixelRatio;
+  const cols = ["#E5484D", "#3E7BFA", "#F5A524", "#2FB36D", "#F3F4F6"];
+  const ps = Array.from({length: 90}, () => ({x: W / 2 + (Math.random() - .5) * W * .3, y: H * .45, vx: (Math.random() - .5) * W * .03, vy: -Math.random() * H * .03 - H * .008, r: Math.random() * Math.PI, s: (6 + Math.random() * 8) * devicePixelRatio, c: cols[Math.random() * 5 | 0]}));
+  const t0 = performance.now();
+  (function f(t) { const k = (t - t0) / 1400; ctx.clearRect(0, 0, W, H);
+    for (const p of ps) { p.x += p.vx; p.y += p.vy; p.vy += H * .0011; p.r += .2; ctx.save(); ctx.translate(p.x, p.y); ctx.rotate(p.r); ctx.globalAlpha = Math.max(0, 1 - k); ctx.fillStyle = p.c; ctx.fillRect(-p.s / 2, -p.s / 4, p.s, p.s / 2); ctx.restore(); }
+    if (k < 1) requestAnimationFrame(f); else { ctx.clearRect(0, 0, W, H); c.classList.add("hidden"); } })(t0);
+}
+function brokerUrl(i) { return PARAMS.get("broker") || BROKERS[i % BROKERS.length]; }
+function connect(bi, onConnect, onMsg) {
+  setNet(false);
+  const c = mqtt.connect(brokerUrl(bi), {clientId: NS + "_" + rid(12), keepalive: 30, reconnectPeriod: 2000, connectTimeout: 8000, clean: true});
+  c.on("connect", () => { setNet(true); onConnect(c); });
+  c.on("reconnect", () => setNet(false, "Переподключение…"));
+  c.on("offline", () => setNet(false, "Нет связи"));
+  c.on("error", () => {});
+  c.on("message", (t, buf) => { let m; try { m = JSON.parse(buf.toString()); } catch (e) { return; } try { onMsg(t, m); } catch (e) { console.error(e); } });
+  return c;
+}
+const T = room => NS + "/" + room + "/";
+const fmtTime = s => s >= 60 ? Math.floor(s / 60) + ":" + String(s % 60).padStart(2, "0") : String(s);
+/* Сурет → JPEG dataURL (ақ фонмен, ең үлкен жағы IMG_MAX) */
+function compressImage(file) {
+  return new Promise((res, rej) => {
+    const url = URL.createObjectURL(file), img = new Image();
+    img.onload = () => {
+      try {
+        let w = img.naturalWidth || img.width || 1000, h = img.naturalHeight || img.height || 1000;
+        const k = Math.min(1, IMG_MAX / Math.max(w, h)); w = Math.max(1, Math.round(w * k)); h = Math.max(1, Math.round(h * k));
+        const c = document.createElement("canvas"); c.width = w; c.height = h; const ctx = c.getContext("2d");
+        ctx.fillStyle = "#ffffff"; ctx.fillRect(0, 0, w, h); ctx.drawImage(img, 0, 0, w, h);
+        let q = IMG_Q, d = c.toDataURL("image/jpeg", q);
+        while (d.length > 260000 && q > 0.4) { q -= 0.1; d = c.toDataURL("image/jpeg", q); }
+        URL.revokeObjectURL(url); res(d);
+      } catch (e) { URL.revokeObjectURL(url); rej(e); }
+    };
+    img.onerror = () => { URL.revokeObjectURL(url); rej(new Error("bad image")); };
+    img.src = url;
+  });
+}
+
+
+/* ===================== ТАПСЫРМАЛАР РЕДАКТОРЫ (мұғалім) ===================== */
+function PlanEditor(plan0, onDone) {
+  let plan = JSON.parse(JSON.stringify(plan0));
+  let pvLang = "ru";
+  const w = document.createElement("div"); w.className = "ed"; w.id = "ed"; document.body.appendChild(w);
+  const totalMin = () => plan.reduce((a, t) => a + (+t.min || 0), 0);
+  function draw() {
+    const inPlan = new Set(plan.map(t => t.id));
+    w.innerHTML = `<div class="edtop"><div><div class="kicker">Практика</div><h2 class="disp" style="margin:0;font-size:32px">Задания: ${plan.length} · ${totalMin()} мин</h2></div>
+        <div style="display:flex;gap:10px;flex-wrap:wrap"><button class="btn ghost" id="edadd">+ Своё задание</button><button class="btn ghost" id="eddef">Вернуть по умолчанию</button><button class="btn" id="edok">Готово</button></div></div>
+      <div class="edcols">
+        <div class="edlist"><div class="edh">На паре (по порядку)</div>
+          ${plan.map((t, i) => `<div class="edrow">
+              <span class="n">${i + 1}</span>${t.ex ? `<img src="${esc(exUrl(t.ex))}" alt="" onerror="this.style.visibility='hidden'">` : `<span class="noimg"></span>`}
+              <div class="tt"><b>${esc(t.title)}</b><span class="mut">${t.id && t.id.indexOf("custom") === 0 ? "своё задание" : t.edited ? "изменено" : "из банка"} · ${(t.steps || []).length} шагов</span></div>
+              <div class="mins"><button data-a="minus" data-i="${i}" aria-label="Меньше">−</button><span>${t.min} мин</span><button data-a="plus" data-i="${i}" aria-label="Больше">+</button></div>
+              <button class="ib" data-a="up" data-i="${i}" ${i === 0 ? "disabled" : ""} aria-label="Вверх">↑</button><button class="ib" data-a="down" data-i="${i}" ${i === plan.length - 1 ? "disabled" : ""} aria-label="Вниз">↓</button>
+              <button class="ib" data-a="edit" data-i="${i}" aria-label="Изменить">✎</button><button class="ib del" data-a="del" data-i="${i}" aria-label="Удалить">✕</button>
+            </div>`).join("") || `<p class="mut">Заданий нет. Добавьте из банка справа.</p>`}
+        </div>
+        <div class="edbank"><div class="edh">Банк заданий · ${COURSE.bank.length}</div><div class="bgrid">
+          ${COURSE.bank.map(b => `<div class="bcard ${inPlan.has(b.id) ? "on" : ""}">${b.ex ? `<img src="${esc(exUrl(b.ex))}" alt="${esc(b.title)}">` : `<div class="noimg2">${esc(b.title)}</div>`}<div class="bt"><b>${esc(b.title)}</b><span class="mut">${b.min} мин</span></div>
+            <button class="btn ${inPlan.has(b.id) ? "ghost" : ""}" data-add="${b.id}" ${inPlan.has(b.id) ? "disabled" : ""}>${inPlan.has(b.id) ? "✓ Добавлено" : "+ Добавить"}</button></div>`).join("")}
+        </div></div>
+      </div>`;
+    $("#edok").onclick = () => { if (!plan.length) { toast("Выберите хотя бы 1 задание"); return; } onDone(plan); w.remove(); };
+    $("#eddef").onclick = () => { plan = defaultPlan(); draw(); };
+    $("#edadd").onclick = () => edit(-1);
+    w.querySelectorAll("[data-add]").forEach(b => b.onclick = () => { const t = fromBank(b.dataset.add); if (t) { plan.push(t); draw(); } });
+    w.querySelectorAll("[data-a]").forEach(b => b.onclick = () => {
+      const i = +b.dataset.i, a = b.dataset.a;
+      if (a === "minus") plan[i].min = Math.max(1, (+plan[i].min || 5) - 1);
+      if (a === "plus") plan[i].min = Math.min(60, (+plan[i].min || 5) + 1);
+      if (a === "up" && i > 0) [plan[i - 1], plan[i]] = [plan[i], plan[i - 1]];
+      if (a === "down" && i < plan.length - 1) [plan[i + 1], plan[i]] = [plan[i], plan[i + 1]];
+      if (a === "del") plan.splice(i, 1);
+      if (a === "edit") return edit(i);
+      draw();
+    });
+  }
+  function edit(i) {
+    const t = i >= 0 ? plan[i] : {uid: rid(6), id: "custom-" + rid(5), title: "", min: 6, steps: [], crit: [], ex: ""};
+    const m = document.createElement("div"); m.className = "edm"; w.appendChild(m);
+    const bankItem = COURSE.bank.find(b => b.id === t.id);
+    m.innerHTML = `<div class="edbox">
+      <div class="edtop" style="margin:0"><h3 class="disp" style="margin:0;font-size:26px">${i >= 0 ? "Изменить задание" : "Новое задание"}</h3><button class="btn ghost" id="mx">Отмена</button></div>
+      <div class="edform">
+        <div class="ff"><label>Название</label><input id="f-title" value="${esc(t.title)}" maxlength="80" placeholder="Например: Диаграмма продаж"></div>
+        <div class="ff" style="max-width:160px"><label>Время, мин</label><input id="f-min" type="number" min="1" max="60" value="${+t.min || 6}"></div>
+        <div class="ff wide"><label>Шаги — по одному на строку</label><textarea id="f-steps" rows="8">${esc((t.steps || []).join("\n"))}</textarea>
+          <div class="hint">Два варианта меню: <code>[[Файл → Создать|File → New]]</code> — студент увидит вариант для своей программы.</div></div>
+        <div class="ff"><label>Критерии — по одному на строку</label><textarea id="f-crit" rows="3">${esc((t.crit || []).join("\n"))}</textarea></div>
+        <div class="ff"><label>Образец</label><select id="f-exsel"><option value="">Нет</option>${COURSE.bank.filter(b => b.ex).map(b => `<option value="${b.ex}" ${t.ex === b.ex ? "selected" : ""}>Из банка: ${esc(b.title)}</option>`).join("")}<option value="__url" ${/^https?:/.test(t.ex) ? "selected" : ""}>Ссылка (URL)…</option></select>
+          <input id="f-exurl" placeholder="https://…/surat.jpg" value="${/^https?:/.test(t.ex) ? esc(t.ex) : ""}" style="margin-top:8px;${/^https?:/.test(t.ex) ? "" : "display:none"}"></div>
+        <div class="ff wide"><div class="pvh"><label>Предпросмотр</label><div class="mode" style="margin:0">${LANGS.map(([k, x]) => `<button data-pv="${k}" class="${pvLang === k ? "on" : ""}">${x}</button>`).join("")}</div></div><ol class="pv" id="pv"></ol></div>
+      </div>
+      <div class="edtop" style="margin:0;justify-content:flex-end">${bankItem && i >= 0 ? `<button class="btn ghost" id="mreset">Вернуть версию из банка</button>` : ""}<button class="btn" id="msave">Сохранить</button></div></div>`;
+    const pv = () => { $("#pv").innerHTML = $("#f-steps").value.split("\n").map(x => x.trim()).filter(Boolean).map(x => `<li>${esc(L(x, pvLang))}</li>`).join("") || `<li class="mut">Шагов нет</li>`; };
+    $("#f-steps").oninput = pv; pv();
+    m.querySelectorAll("[data-pv]").forEach(b => b.onclick = () => { pvLang = b.dataset.pv; m.querySelectorAll("[data-pv]").forEach(x => x.classList.toggle("on", x === b)); pv(); });
+    $("#f-exsel").onchange = () => { $("#f-exurl").style.display = $("#f-exsel").value === "__url" ? "" : "none"; };
+    $("#mx").onclick = () => m.remove();
+    const rs = $("#mreset"); if (rs) rs.onclick = () => { const f = fromBank(t.id); f.uid = t.uid; plan[i] = f; m.remove(); draw(); };
+    $("#msave").onclick = () => {
+      const title = $("#f-title").value.trim(), steps = $("#f-steps").value.split("\n").map(x => x.trim()).filter(Boolean);
+      if (!title) { toast("Напишите название"); return; }
+      if (!steps.length) { toast("Напишите хотя бы один шаг"); return; }
+      const sel = $("#f-exsel").value, url = $("#f-exurl").value.trim();
+      if (sel === "__url" && url && !/^https?:\/\//.test(url)) { toast("Ссылка должна начинаться с https://"); return; }
+      const nt = Object.assign({}, t, {title, min: Math.min(60, Math.max(1, +$("#f-min").value || 6)), steps, crit: $("#f-crit").value.split("\n").map(x => x.trim()).filter(Boolean), ex: sel === "__url" ? url : sel, edited: !!bankItem});
+      if (i >= 0) plan[i] = nt; else plan.push(nt);
+      m.remove(); draw();
+    };
+  }
+  draw();
+}
+
+/* ===================== ЖҮРГІЗУШІ (мұғалім) ===================== */
+function Host() {
+  let H = store.get("host");
+  const fresh = () => ({room: rid(5, "ABCDEFGHJKLMNPQRSTUVWXYZ23456789"), b: +(PARAMS.get("b") || 0), lang: store.get("lang") || "ru", plan: store.get("plan") || defaultPlan(), set: "quiz", phase: "lobby", qi: -1, players: {}, ans: {}, counts: [0, 0, 0, 0], qEnd: 0, feed: [], prevRank: {}, subs: {}, grades: {}, rates: {}, chk: {}});
+  if (!H || !H.room || !SETS[H.set]) H = fresh();
+  if (!Array.isArray(H.plan) || !H.plan.length) H.plan = store.get("plan") || defaultPlan();
+  if (!H.lang) H.lang = "ru";
+  const IMG = {}; /* pid -> dataURL (ағымдағы тапсырма) */
+  let client = null, tick = null, pubTimer = null, connectedOnce = false, lb = null;
+  const save = () => store.set("host", H);
+  const RS = () => H.set === "quiz" ? COURSE.quiz : H.plan.map(toRound), total = () => RS().length, R = () => RS()[H.qi];
+  const setName = k => SETS[k].name(k === "quiz" ? COURSE.quiz.length : H.plan.length);
+  const rk = () => H.set + ":" + H.qi;
+  const pids = () => Object.keys(H.players);
+  const leftMs = () => H.paused ? (H.pauseLeft || 0) : Math.max(0, H.qEnd - Date.now());
+  const joinUrl = () => { const u = new URL(location.href); u.search = ""; u.hash = ""; u.searchParams.set("r", H.room); if (H.b) u.searchParams.set("b", H.b); if (PARAMS.get("broker")) u.searchParams.set("broker", PARAMS.get("broker")); return u.toString(); };
+  const newPlayer = name => ({name, score: 0, streak: 0, done: 0, pw: {fr: 1, x2: 1, ff: 1, sh: 1}, x2on: false, hide: null, frozen: null, last: null, note: null});
+  const subPids = () => Object.keys(H.subs).filter(id => H.players[id]).sort((a, b) => H.subs[b].left - H.subs[a].left);
+
+  function start() {
+    client && client.end(true);
+    connectedOnce = false;
+    client = connect(H.b, c => { connectedOnce = true; c.subscribe([T(H.room) + "i", T(H.room) + "img/+"], {qos: 1}); pubState(); pids().forEach(pubPlayer); }, onMsg);
+    setTimeout(() => { if (!connectedOnce && H.phase === "lobby") render(); }, 9000);
+    save(); render();
+    clearInterval(tick); tick = setInterval(onTick, 200);
+    clearInterval(pubTimer); pubTimer = setInterval(() => { if (H.phase === "question" || H.phase === "vote") pubState(); }, 1000);
+  }
+  function pub(topic, obj, retain) { if (client && client.connected) client.publish(T(H.room) + topic, JSON.stringify(obj), {qos: 1, retain: !!retain}); }
+  function ranked() { return pids().sort((a, b) => H.players[b].score - H.players[a].score || H.players[a].name.localeCompare(H.players[b].name)); }
+  function addFeed(kind, html) { H.feed.unshift({k: kind, h: html}); H.feed = H.feed.slice(0, 7); }
+  function note(pid, text) { const p = H.players[pid]; if (p) p.note = {id: rid(6), t: text}; }
+  function togglePause() {
+    if (H.phase !== "question") return;
+    if (H.paused) { H.qEnd = Date.now() + (H.pauseLeft || 0); H.paused = false; } else { H.pauseLeft = leftMs(); H.paused = true; }
+    save(); pubState(); render();
+  }
+
+  function pubState() {
+    const st = {v: 3, set: H.set, lang: H.lang, setName: setName(H.set), phase: H.phase, qi: H.qi, total: total(), n: pids().length, answered: isTask(R()) ? Object.keys(H.subs).length : Object.keys(H.ans).length};
+    if (isTask(R()) && H.phase !== "lobby") st.task = R();
+    if (H.phase === "question") { st.endsIn = leftMs(); st.paused = !!H.paused; st.roster = ranked().slice(0, 40).map(id => [id, H.players[id].name]); }
+    if (H.phase === "vote") st.cands = subPids().map(id => [id, H.players[id].name]);
+    pub("s", st, true);
+  }
+  function pubPlayer(pid) {
+    const p = H.players[pid]; if (!p) return;
+    const r = ranked();
+    pub("p/" + pid, {name: p.name, score: p.score, rank: r.indexOf(pid) + 1, of: r.length, streak: p.streak, pw: p.pw, x2on: p.x2on ? rk() : "", hide: p.hide, frozen: p.frozen, last: p.last,
+      locked: H.ans[pid] ? {set: H.set, qi: H.qi, a: H.ans[pid].a} : null,
+      sub: H.subs[pid] ? {k: rk(), left: H.subs[pid].left} : null, chk: H.chk && H.chk[pid] ? Object.assign({k: rk(), place: place(pid)}, H.chk[pid]) : null, grade: H.grades[pid] ? {k: rk(), g: H.grades[pid]} : null, rates: {k: rk(), m: (H.rates || {})[pid] || {}},
+      note: p.note, kicked: !!p.kicked}, true);
+  }
+
+  function onMsg(topic, m) {
+    if (topic.indexOf("/img/") > 0) return onImg(topic.split("/").pop(), m);
+    if (!m || typeof m.pid !== "string" || m.pid.length > 40) return;
+    const pid = m.pid, p = H.players[pid];
+    if (m.t === "join") {
+      const name = String(m.name || "").replace(/\s+/g, " ").trim().slice(0, 18);
+      if (!name) return;
+      if (p) { pubPlayer(pid); pubState(); return; }
+      if (H.phase === "final") return;
+      const taken = new Set(Object.values(H.players).map(x => x.name.toLowerCase()));
+      let nm = name, k = 2; while (taken.has(nm.toLowerCase())) nm = name + " " + (k++);
+      H.players[pid] = newPlayer(nm);
+      save(); pubPlayer(pid); pubState(); render(); return;
+    }
+    if (!p || m.set !== H.set) return;
+    const r = R();
+    if (m.t === "chk") {
+      const r2 = R();
+      if (H.phase !== "question" || m.qi !== H.qi || !isTask(r2) || !r2.checks.length || !Array.isArray(m.vals)) return;
+      if (!H.paused && Date.now() > H.qEnd + 1500) return;
+      H.chk = H.chk || {};
+      const c = H.chk[pid] = H.chk[pid] || {ok: [], tries: 0, wrong: 0};
+      if (c.fin != null) { pubPlayer(pid); return; }
+      c.ok = r2.checks.map((ch, i) => checkOk(ch, m.vals[i]));
+      c.tries++; if (!c.ok.every(Boolean)) c.wrong++;
+      tryFinish(pid, r2);
+      save(); pubPlayer(pid); pubState(); render(); return;
+    }
+    if (m.t === "rate") {
+      const v = m.v | 0;
+      if (H.phase !== "vote" || m.qi !== H.qi || !H.subs[m.to] || m.to === pid || v < 1 || v > 5) return;
+      H.rates = H.rates || {}; (H.rates[pid] = H.rates[pid] || {})[m.to] = v;
+      save(); pubPlayer(pid); pubState(); render(); return;
+    }
+    if (m.t === "ans" && r && r.type === "mc") {
+      if (H.phase !== "question" || m.qi !== H.qi || H.ans[pid]) { pubPlayer(pid); return; }
+      if (!H.paused && Date.now() > H.qEnd + 400) { pubPlayer(pid); return; }
+      const a = m.a | 0; if (a < 0 || a > 3) return;
+      if (p.hide && p.hide.k === rk() && p.hide.idx.includes(a)) return;
+      H.ans[pid] = {a, ok: a === r.c, left: leftMs()}; H.counts[a]++;
+      save(); pubPlayer(pid); pubState();
+      if (Object.keys(H.ans).length >= pids().length) reveal(); else render();
+      return;
+    }
+    if (m.t === "pw" && r && r.type === "mc") {
+      if (H.phase !== "question" || m.qi !== H.qi) return;
+      if (H.ans[pid]) { note(pid, "После ответа бонусы недоступны"); pubPlayer(pid); return; }
+      if (m.k === "x2" && p.pw.x2 > 0 && !p.x2on) { p.pw.x2--; p.x2on = true; addFeed("x2", `<b>${esc(p.name)}</b> играет на двойные очки`); }
+      else if (m.k === "ff" && p.pw.ff > 0 && !(p.hide && p.hide.k === rk())) {
+        const wrong = [0, 1, 2, 3].filter(i => i !== r.c).sort(() => Math.random() - .5).slice(0, 2);
+        p.pw.ff--; p.hide = {k: rk(), idx: wrong}; addFeed("ff", `<b>${esc(p.name)}</b> взял 50/50`);
+      } else if (m.k === "fr" && p.pw.fr > 0) {
+        const tp = H.players[m.target];
+        if (!tp || m.target === pid) return;
+        if (H.ans[m.target]) { note(pid, tp.name + " уже ответил — заморозка сохранена"); pubPlayer(pid); return; }
+        if (tp.frozen && tp.frozen.k === rk()) { note(pid, tp.name + " уже во льду"); pubPlayer(pid); return; }
+        p.pw.fr--;
+        if (tp.pw.sh > 0) { tp.pw.sh--; note(m.target, p.name + " пытался вас заморозить — щит защитил!"); note(pid, tp.name + " защитился щитом"); addFeed("sh", `<b>${esc(tp.name)}</b> отбил щитом заморозку от <b>${esc(p.name)}</b>`); }
+        else { tp.frozen = {id: rid(6), k: rk(), by: p.name}; note(pid, tp.name + " заморожен!"); addFeed("fr", `<b>${esc(p.name)}</b> → <b>${esc(tp.name)}</b> заморозил`); }
+        pubPlayer(m.target);
+      } else return;
+      save(); pubPlayer(pid); render();
+    }
+  }
+  function place(pid) { const c = H.chk && H.chk[pid]; if (!c || c.fin == null) return 0; return 1 + Object.values(H.chk).filter(x => x.fin != null && x.fin > c.fin).length; }
+  function tryFinish(pid, r) {
+    const c = H.chk && H.chk[pid]; if (!c || c.fin != null || !r.checks.length) return;
+    if (!c.ok.length || !c.ok.every(Boolean) || (r.shot && !H.subs[pid])) return;
+    c.fin = leftMs(); const pl = place(pid), p = H.players[pid];
+    addFeed("ok", t_(`<b>${esc(p.name)}</b> ${pl}-орында аяқтады`, `<b>${esc(p.name)}</b> финишировал ${pl}-м`));
+    note(pid, t_(`Дайын! Сіздің орныңыз: ${pl}`, `Готово! Ваше место: ${pl}`));
+  }
+  function onImg(pid, m) {
+    if (!m || typeof m.data !== "string" || m.data.slice(0, 23) !== "data:image/jpeg;base64," || m.data.length > 400000) return;
+    const p = H.players[pid]; if (!p || m.set !== H.set || m.qi !== H.qi || !isTask(R())) return;
+    if (H.subs[pid] && H.subs[pid].id === m.id) { IMG[pid] = m.data; render(); return; } /* қайта жеткізілген (retain) */
+    if (H.phase !== "question") return;
+    if (!H.paused && Date.now() > H.qEnd + 1500) { note(pid, "Время вышло — работа не принята"); pubPlayer(pid); return; }
+    const first = !H.subs[pid];
+    H.subs[pid] = {id: m.id, left: first ? leftMs() : H.subs[pid].left};
+    IMG[pid] = m.data;
+    if (first && !R().checks.length) addFeed("ok", `<b>${esc(p.name)}</b> сдал работу`);
+    tryFinish(pid, R());
+    save(); pubPlayer(pid); pubState(); render();
+  }
+
+  function startQ() {
+    if (H.qi + 1 >= total()) return finish();
+    H.qi++; H.phase = "question"; H.ans = {}; H.counts = [0, 0, 0, 0]; H.feed = []; H.subs = {}; H.grades = {}; H.rates = {}; H.chk = {}; H.paused = false;
+    for (const k in IMG) delete IMG[k];
+    for (const id of pids()) { const p = H.players[id]; p.x2on = false; p.hide = null; p.frozen = null; }
+    H.qEnd = Date.now() + R().t * 1000;
+    save(); pubState(); pids().forEach(pubPlayer); render();
+  }
+  function reveal() {
+    if (H.phase !== "question") return;
+    H.paused = false; lb = null;
+    const r = R();
+    if (isTask(r)) { H.phase = "review"; save(); pubState(); pids().forEach(pubPlayer); render(); return; }
+    const T0 = r.t * 1000;
+    H.prevRank = {}; ranked().forEach((id, i) => H.prevRank[id] = i);
+    for (const id of pids()) {
+      const p = H.players[id], a = H.ans[id];
+      if (a && a.ok) {
+        let pts = Math.round(500 + 500 * Math.min(1, a.left / T0)) + Math.min(p.streak, 3) * 100;
+        if (p.x2on) pts *= 2;
+        p.streak++; p.score += pts; p.last = {k: rk(), ok: true, pts, a: a.a};
+        if (p.streak % 3 === 0) { p.pw.fr++; note(id, p.streak + " верных подряд! +1 заморозка"); }
+      } else { p.streak = 0; p.last = {k: rk(), ok: false, pts: 0, a: a ? a.a : null}; }
+      p.x2on = false;
+    }
+    H.phase = "reveal"; save(); pubState(); pids().forEach(pubPlayer); render();
+  }
+  function stats() { const st = {}; Object.values(H.rates || {}).forEach(m => Object.keys(m).forEach(to => { const x = st[to] = st[to] || {n: 0, sum: 0}; x.n++; x.sum += m[to]; })); Object.values(st).forEach(x => x.avg = Math.round(x.sum / x.n * 10) / 10); return st; }
+  const avgTxt = x => x ? `★ ${String(x.avg).replace(".", ",")} · ${x.n}` : "";
+  function makeThumb(data) {
+    return new Promise(res => { const im = new Image(); im.onload = () => { const k = Math.min(1, 560 / Math.max(im.width, im.height)); const c = document.createElement("canvas"); c.width = Math.round(im.width * k); c.height = Math.round(im.height * k); const x = c.getContext("2d"); x.fillStyle = "#fff"; x.fillRect(0, 0, c.width, c.height); x.drawImage(im, 0, 0, c.width, c.height); res(c.toDataURL("image/jpeg", .72)); }; im.onerror = () => res(null); im.src = data; });
+  }
+  async function startVote() {
+    H.phase = "vote"; H.rates = {}; save(); pubState(); pids().forEach(pubPlayer); render();
+    const k = rk();
+    for (const id of subPids()) { if (!IMG[id]) continue; const t = await makeThumb(IMG[id]); if (t && H.phase === "vote" && rk() === k) pub("th/" + id, {k, name: H.players[id] ? H.players[id].name : "", data: t}, true); }
+  }
+  function finalizeTask() {
+    const r = R(), T0 = r.t * 1000, st = stats(), max = Math.max(0, ...Object.values(st).map(x => x.avg));
+    H.prevRank = {}; ranked().forEach((id, i) => H.prevRank[id] = i);
+    for (const id of pids()) {
+      const p = H.players[id], s = H.subs[id];
+      if (r.checks.length) {
+        const c = (H.chk || {})[id], g = H.grades[id] || "ok", pl = place(id);
+        let pts = 0;
+        if (c && c.fin != null) { pts = Math.round(500 + 500 * Math.min(1, c.fin / T0)) - Math.min(200, 25 * (c.wrong || 0)) + (pl === 1 ? 300 : pl === 2 ? 200 : pl === 3 ? 100 : 0); p.done = (p.done || 0) + 1; }
+        else if (c && c.ok.length && c.ok.every(Boolean)) pts = 300;
+        else if (s || (c && c.ok.some(Boolean))) pts = 150;
+        if (g === "best") pts += 500; if (g === "redo") pts = Math.min(pts, 150);
+        const fav = max > 0 && st[id] && st[id].avg === max; if (fav) pts += 300;
+        if (!s && !c) { p.last = {k: rk(), ok: false, pts: 0, none: true}; continue; }
+        p.score += pts; p.last = {k: rk(), ok: !!(c && c.fin != null), pts, g, place: pl, avg: st[id] ? st[id].avg : 0, fav}; continue;
+      }
+      if (!s) { p.last = {k: rk(), ok: false, pts: 0, none: true}; continue; }
+      const g = H.grades[id] || "ok";
+      let pts = 0;
+      if (g !== "redo") { pts = Math.round(500 + 500 * Math.min(1, s.left / T0)); if (g === "best") pts += 500; p.done = (p.done || 0) + 1; }
+      else pts = 200;
+      const fav = max > 0 && st[id] && st[id].avg === max;
+      if (fav) pts += 300;
+      p.score += pts; p.last = {k: rk(), ok: g !== "redo", pts, g, avg: st[id] ? st[id].avg : 0, fav};
+    }
+    H.phase = "board"; save(); pubState(); pids().forEach(pubPlayer); render();
+  }
+  function board() { H.phase = "board"; save(); pubState(); render(); }
+  function finish() { H.phase = "final"; save(); pubState(); pids().forEach(pubPlayer); render(); }
+  function toSet(set) {
+    H.set = set; H.phase = "lobby"; H.qi = -1; H.ans = {}; H.counts = [0, 0, 0, 0]; H.feed = []; H.prevRank = {}; H.subs = {}; H.grades = {}; H.rates = {}; H.chk = {};
+    for (const id of pids()) { const n = H.players[id].name; H.players[id] = newPlayer(n); }
+    save(); pubState(); pids().forEach(pubPlayer); render();
+  }
+  function next() {
+    if (lb) return;
+    if (H.phase === "lobby") { if (pids().length) startQ(); }
+    else if (H.phase === "question") reveal();
+    else if (H.phase === "reveal") { if (SETS[H.set].quick) (H.qi + 1 >= total() ? board() : startQ()); else board(); }
+    else if (H.phase === "review") finalizeTask();
+    else if (H.phase === "vote") { H.phase = "review"; save(); pubState(); render(); }
+    else if (H.phase === "board") (H.qi + 1 >= total() ? finish() : startQ());
+  }
+  function onTick() {
+    if (H.phase !== "question") return;
+    const left = H.paused ? H.pauseLeft : H.qEnd - Date.now();
+    const t = $("#htime"), b = $("#hbar");
+    if (t) t.textContent = fmtTime(Math.max(0, Math.ceil(left / 1000)));
+    if (b) b.style.transform = `scaleX(${Math.max(0, left / (R().t * 1000))})`;
+    if (!H.paused && left <= 0) reveal();
+  }
+  document.addEventListener("keydown", e => {
+    if (e.target.tagName === "INPUT") return;
+    if (lb) {
+      if (e.code === "Escape") { closeLb(); }
+      else if (e.code === "ArrowRight") { e.preventDefault(); stepLb(1); }
+      else if (e.code === "ArrowLeft") { e.preventDefault(); stepLb(-1); }
+      else if (e.code === "Digit1") grade("ok"); else if (e.code === "Digit2") grade("best"); else if (e.code === "Digit3") grade("redo");
+      return;
+    }
+    if (e.target.tagName === "BUTTON") return;
+    if (e.code === "Space" || e.code === "Enter" || e.code === "ArrowRight") { e.preventDefault(); next(); }
+    if (e.code === "KeyP") { e.preventDefault(); togglePause(); }
+  });
+
+  /* ---- галерея / лайтбокс ---- */
+  function openLb(id) { lb = id; drawLb(); }
+  function closeLb() { lb = null; const d = $("#lb"); if (d) d.remove(); render(); }
+  function stepLb(dir) { const L = subPids(); if (!L.length) return; const i = L.indexOf(lb); lb = L[(i + dir + L.length) % L.length]; drawLb(); }
+  function grade(g) { if (!lb) return; H.grades[lb] = g; save(); pubPlayer(lb); drawLb(); }
+  function drawLb() {
+    let d = $("#lb"); if (!d) { d = document.createElement("div"); d.id = "lb"; d.className = "lb"; document.body.appendChild(d); }
+    const p = H.players[lb], L = subPids(), i = L.indexOf(lb), g = H.grades[lb], st = stats();
+    d.innerHTML = `<div class="lbtop"><span class="lbn">${esc(p ? p.name : "")}</span><span class="mut">${i + 1} / ${L.length}${st[lb] ? ` · ${avgTxt(st[lb])} оценок` : ""}</span><button class="btn ghost" id="lbx">Закрыть · Esc</button></div>
+      <div class="lbimg">${IMG[lb] ? `<img src="${IMG[lb]}" alt="${esc(p ? p.name : "")} — работа">` : `<div class="mut">Загружается…</div>`}</div>
+      <div class="lbbar"><button class="btn ghost" id="lbp">←</button>
+        <div style="display:flex;gap:10px">${Object.keys(GRADE).map((k, j) => `<button class="btn grade ${g === k || (!g && k === "ok") ? "on" : ""}" data-g="${k}" style="--gc:${GRADE[k].c}">${j + 1} · ${k === "ok" ? "✓ " : k === "best" ? "★ " : "↺ "}${GRADE[k].t}</button>`).join("")}</div>
+        <button class="btn ghost" id="lbn">→</button></div>`;
+    $("#lbx").onclick = closeLb; $("#lbp").onclick = () => stepLb(-1); $("#lbn").onclick = () => stepLb(1);
+    d.querySelectorAll(".grade").forEach(b => b.onclick = () => grade(b.dataset.g));
+  }
+
+  function ctlBar(primary, extra, left) {
+    return `<div class="hctl"><div style="display:flex;gap:10px;align-items:center"><button class="btn ghost" id="reset">Новая игра</button>${left || ""}</div><div style="display:flex;gap:10px">${extra || ""}${primary ? `<button class="btn" id="next">${primary}</button>` : ""}</div></div>`;
+  }
+  function bind() {
+    const n = $("#next"); if (n) n.onclick = next;
+    const r = $("#reset"); if (r) r.onclick = () => {
+      if (r.dataset.c !== "1") { r.dataset.c = "1"; r.textContent = "Точно? Код и участники сбросятся"; setTimeout(() => { r.dataset.c = ""; r.textContent = "Новая игра"; }, 3000); return; }
+      pub("s", {v: 3, phase: "closed"}, true); H = fresh(); start();
+    };
+    const tp = $("#topractice"); if (tp) tp.onclick = () => toSet("practice");
+    const pz = $("#pause"); if (pz) pz.onclick = togglePause;
+    const vt = $("#vote"); if (vt) vt.onclick = startVote;
+    const en = $("#endnow"); if (en) en.onclick = () => { if (en.dataset.c !== "1") { en.dataset.c = "1"; en.textContent = "Точно?"; setTimeout(() => { en.dataset.c = ""; en.textContent = "Завершить"; }, 3000); return; } finish(); };
+    document.querySelectorAll(".thumb[data-p]").forEach(t => t.onclick = () => openLb(t.dataset.p));
+  }
+  function side(done, n) {
+    return `<div class="side"><div><div class="big">${done}<span class="mut" style="font-size:24px"> / ${n}</span></div><div class="mut" style="font-size:15px;margin-top:6px">ответили</div></div>
+      <div class="feed">${H.feed.map(e => `<div class="ev ${e.k}">${e.h}</div>`).join("") || `<div class="mut" style="font-size:14px">Заморозки, 50/50 и ×2 появятся здесь</div>`}</div></div>`;
+  }
+  function race(r) {
+    const C = H.chk || {}, ids = pids().sort((a, b) => { const A = C[a] || {}, B = C[b] || {};
+      if ((A.fin != null) !== (B.fin != null)) return A.fin != null ? -1 : 1;
+      if (A.fin != null) return B.fin - A.fin;
+      return ((B.ok || []).filter(Boolean).length + (H.subs[b] ? 1 : 0)) - ((A.ok || []).filter(Boolean).length + (H.subs[a] ? 1 : 0)); });
+    const T0 = r.t * 1000;
+    return `<div class="race">${ids.map(id => { const c = C[id] || {}, pl = place(id);
+      return `<div class="rrow ${c.fin != null ? "fin" : ""}"><span class="rp">${pl || ""}</span><span class="rn">${esc(H.players[id].name)}</span>
+        <span class="rd">${r.checks.map((x, i) => `<i class="${c.ok && c.ok[i] ? "g" : c.ok && c.ok.length ? "b" : ""}"></i>`).join("")}${r.shot ? `<i class="cam ${H.subs[id] ? "g" : ""}">▣</i>` : ""}</span>
+        <span class="rt">${c.fin != null ? (x => Math.floor(x / 60) + ":" + String(x % 60).padStart(2, "0"))(Math.round((T0 - c.fin) / 1000)) : c.tries ? c.tries + "×" : ""}</span></div>`; }).join("")}</div>`;
+  }
+  function gallery(big) {
+    const L = subPids(), st = stats();
+    if (!L.length) return `<div class="mut" style="font-size:18px;padding:30px 0">Пока работ нет…</div>`;
+    return `<div class="gal ${big ? "big" : ""}">${L.map(id => { const g = H.grades[id];
+      return `<button class="thumb" data-p="${id}">${IMG[id] ? `<img src="${IMG[id]}" alt="${esc(H.players[id].name)}">` : `<span class="ph">…</span>`}
+        <span class="cap"><span>${esc(H.players[id].name)}</span>${st[id] ? `<b>${avgTxt(st[id])}</b>` : ""}${g && g !== "ok" ? `<i style="background:${GRADE[g].c}">${g === "best" ? "★" : "↺"}</i>` : ""}</span></button>`; }).join("")}</div>`;
+  }
+  function render() {
+    if (lb) { drawLb(); return; }
+    const head = `<div class="htop"><span class="tag">${TITLE} · ${SETS[H.set].short}</span><span class="tag">${H.phase === "lobby" || H.phase === "final" ? "" : `${H.qi + 1} / ${total()}`}</span></div>`;
+    if (H.phase === "lobby") {
+      const ps = pids();
+      app.innerHTML = `<div class="host">${head}<div class="hbody"><div class="lobby">
+        <div class="up">
+          <h1 class="disp">Подключайтесь с телефона</h1>
+          <p class="mut" style="font-size:20px;margin:0;max-width:560px">Откройте ссылку из чата Discord или введите код. Задания делаете в Excel или ${esc(COURSE.tool.name)}.</p>
+          <div class="joinbox"><div class="lbl">Код игры</div><div class="code">${H.room}</div>
+            <div class="lbl" style="margin-top:16px">Ссылка</div><div class="url">${esc(joinUrl().replace(/^https?:\/\//, ""))}</div>
+            <div style="display:flex;gap:10px;margin-top:18px;flex-wrap:wrap"><button class="btn ghost" id="copy">Скопировать ссылку</button>
+            ${!connectedOnce ? `<button class="btn ghost" id="srv">Другой сервер (${H.b + 1}/${BROKERS.length})</button>` : ""}</div></div>
+        </div>
+        <div><div class="setrow" style="margin:0 0 14px"><span class="mut">${LANG_LABEL}</span><div class="mode" style="margin:0">${LANGS.map(([k, t]) => `<button data-lang="${k}" class="${H.lang === k ? "on" : ""}">${t}</button>`).join("")}</div>
+            <button class="btn ghost" id="plan" style="height:40px;font-size:14px;margin-left:auto">✎ Задания (${H.plan.length})</button></div>
+        <div class="plbox"><div class="count">${ps.length} участников</div>
+          <div class="pl">${ps.map(id => `<button class="chip" data-k="${id}" title="Удалить из игры">${esc(H.players[id].name)}</button>`).join("") || `<span class="mut" style="font-size:18px">Ждём участников…</span>`}</div></div></div>
+        </div></div>${ctlBar(ps.length ? "Начать: " + SETS[H.set].short : "", "", `<div class="mode" style="margin:0">${Object.keys(SETS).map(k => `<button data-set="${k}" class="${H.set === k ? "on" : ""}">${setName(k)}</button>`).join("")}</div>`)}</div>`;
+      $("#copy").onclick = () => { navigator.clipboard && navigator.clipboard.writeText(joinUrl()).then(() => toast("Скопировано — вставьте в чат Discord"), () => toast("Не удалось скопировать")); };
+      const srv = $("#srv"); if (srv) srv.onclick = () => { H.b = (H.b + 1) % BROKERS.length; start(); };
+      document.querySelectorAll(".mode button[data-set]").forEach(b => b.onclick = () => { if (H.set !== b.dataset.set) { H.set = b.dataset.set; save(); pubState(); render(); } });
+      document.querySelectorAll(".mode button[data-lang]").forEach(b => b.onclick = () => { H.lang = b.dataset.lang; store.set("lang", H.lang); save(); pubState(); render(); });
+      $("#plan").onclick = () => PlanEditor(H.plan, plan => { H.plan = plan; store.set("plan", plan); save(); pubState(); render(); });
+      document.querySelectorAll(".chip[data-k]").forEach(b => b.onclick = () => {
+        const id = b.dataset.k; if (b.dataset.c !== "1") { b.dataset.c = "1"; b.textContent = "Удалить?"; setTimeout(render, 2500); return; }
+        H.players[id].kicked = true; pubPlayer(id); delete H.players[id]; save(); pubState(); render(); });
+    } else if ((H.phase === "question" || H.phase === "reveal") && !isTask(R())) {
+      const r = R(), rv = H.phase === "reveal", n = pids().length, done = Object.keys(H.ans).length, left = leftMs();
+      const max = Math.max(1, ...H.counts);
+      const nextLbl = rv ? (H.qi + 1 >= total() ? "Итоги" : "Следующий вопрос") : "Показать ответ";
+      app.innerHTML = `<div class="host">${head}<div class="hbody">
+        <div class="qhead"><div style="flex:1"><h2 class="qtext">${esc(L(r.q, H.lang))}</h2></div><div style="text-align:right">${!rv && H.paused ? `<div class="kicker" style="color:var(--a2)">Пауза</div>` : ""}<div class="timer" id="htime" style="${!rv && H.paused ? "color:var(--a2)" : ""}">${rv ? "" : fmtTime(Math.ceil(left / 1000))}</div></div></div>
+        <div class="bar"><i id="hbar" style="transform:scaleX(${rv ? 0 : left / (r.t * 1000)})"></i></div>
+        <div class="hgrid"><div class="tiles">${r.a.map((a, i) => `<div class="tile t${i} ${rv ? (i === r.c ? "win" : "off") : ""}">${SHAPES[i]}<span>${esc(L(a, H.lang))}</span>${rv ? `<span class="cnt">${H.counts[i]}</span><span class="fill" style="width:${H.counts[i] / max * 100}%"></span>` : ""}</div>`).join("")}</div>${side(done, n)}</div>
+        </div>${ctlBar(nextLbl, rv ? "" : `<button class="btn ghost" id="pause">${H.paused ? "▶ Продолжить" : "❚❚ Пауза"}</button>`)}</div>`;
+    } else if (H.phase === "question") {
+      const r = R(), left = leftMs(), n = pids().length, done = Object.keys(H.subs).length;
+      app.innerHTML = `<div class="host">${head}<div class="hbody" style="justify-content:flex-start">
+        <div class="qhead"><div style="flex:1"><div class="kicker">${esc(r.k)}</div><h2 class="qtext">${esc(r.title)}</h2></div><div style="text-align:right">${H.paused ? `<div class="kicker" style="color:var(--a2)">Пауза</div>` : ""}<div class="timer" id="htime" style="${H.paused ? "color:var(--a2)" : ""}">${fmtTime(Math.ceil(left / 1000))}</div></div></div>
+        <div class="bar"><i id="hbar" style="transform:scaleX(${left / (r.t * 1000)})"></i></div>
+        <div class="tgrid">
+          <div class="steps">${r.ex ? `<img class="exh" src="${esc(exUrl(r.ex))}" alt="Образец" onerror="this.remove()">` : ""}<ol>${r.steps.map(s => `<li>${esc(L(s, H.lang))}</li>`).join("")}</ol>${r.crit && r.crit.length ? `<div class="crit">${r.crit.map(c => `<span>${esc(c)}</span>`).join("")}</div>` : ""}</div>
+          <div>${r.checks.length ? race(r) : ""}<div class="count">${done} / ${n} сдали</div>${gallery(false)}</div>
+        </div></div>${ctlBar("Закончить время", `<button class="btn ghost" id="pause">${H.paused ? "▶ Продолжить" : "❚❚ Пауза"}</button>`)}</div>`;
+    } else if (H.phase === "review" || H.phase === "vote") {
+      const r = R(), n = pids().length, L = subPids(), vote = H.phase === "vote", nv = Object.keys(H.rates || {}).length;
+      app.innerHTML = `<div class="host">${head}<div class="hbody" style="justify-content:flex-start">
+        <div class="qhead"><div style="flex:1"><div class="kicker">${esc(r.k)} · ${vote ? "взаимная оценка" : "просмотр работ"}</div><h2 class="qtext" style="font-size:clamp(26px,2.6vw,38px)">${vote ? "Оцените каждую работу с телефона: 1–5 звёзд" : `${L.length} / ${n} работ. Нажмите, чтобы открыть`}</h2></div>${vote ? `<div class="timer" style="font-size:44px">${nv}<span class="mut" style="font-size:20px"> оценили</span></div>` : ""}</div>
+        <div style="margin-top:18px">${gallery(true)}</div>
+        <p class="mut" style="font-size:14px;margin:14px 0 0">Оценка: откройте работу, 1 — принято, 2 — лучшая, 3 — доработать. Без отметки считается «принято».</p>
+        </div>${ctlBar(vote ? "Закрыть оценку" : "Начислить очки", vote || !L.length ? "" : `<button class="btn ghost" id="vote">★ Взаимная оценка</button>`)}</div>`;
+    } else if (H.phase === "board") {
+      const rr = ranked().slice(0, 5), last = H.qi + 1 >= total(), task = isTask(R());
+      app.innerHTML = `<div class="host">${head}<div class="hbody"><h2 class="h2">Лидеры</h2><div class="board">
+        ${rr.map((id, i) => { const p = H.players[id]; const up = H.qi > 0 && H.prevRank[id] != null && H.prevRank[id] > i;
+          return `<div class="row ${i === 0 ? "first" : ""}" style="animation-delay:${i * .07}s"><span class="n">${i + 1}</span><span>${esc(p.name)}${p.last && p.last.pts ? `<span class="d">+${p.last.pts}</span>` : ""}${p.last && p.last.fav ? `<span class="d">★ выбор группы</span>` : ""}${up ? `<span class="d">▲</span>` : ""}</span><span class="sc">${p.score}</span></div>`; }).join("")}
+        </div></div>${ctlBar(last ? "Итоги" : (task ? "Следующее задание" : "Дальше"), last ? "" : `<button class="btn ghost" id="endnow">Завершить</button>`)}</div>`;
+    } else if (H.phase === "final") {
+      const rr = ranked(); const ord = [1, 0, 2], hs = [190, 260, 140];
+      const isQuiz = H.set === "quiz";
+      app.innerHTML = `<div class="host">${head}<div class="hbody"><h2 class="h2">${isQuiz ? "Квиз окончен" : "Победители практики"}</h2>
+        <div class="podium">${ord.map((k, j) => rr[k] ? `<div class="pod"><div class="nm" style="animation-delay:${.6 + j * .15}s">${esc(H.players[rr[k]].name)}</div><div class="blk ${k === 0 ? "pl1" : ""}" style="height:${hs[j]}px;animation-delay:${j * .15}s"><span class="place">${k + 1}</span><span class="pts">${H.players[rr[k]].score} очков</span></div></div>` : "").join("")}</div>
+        ${isQuiz ? "" : `<div class="board">${rr.map((id, i) => `<div class="row" style="font-size:20px;padding:10px 20px;animation-delay:${i * .03}s"><span class="n">${i + 1}</span><span>${esc(H.players[id].name)}</span><span class="sc">${H.players[id].done || 0} / ${total()} · ${H.players[id].score}</span></div>`).join("")}</div>`}
+        </div>${ctlBar("", isQuiz ? `<button class="btn" id="topractice">Перейти к практике</button>` : "")}</div>`;
+    }
+    bind();
+    if (document.activeElement && document.activeElement.blur) document.activeElement.blur();
+  }
+  start();
+}
+
+/* ===================== ОЙЫНШЫ (студент) ===================== */
+function Player() {
+  let room = (PARAMS.get("r") || store.get("room") || "").toUpperCase().replace(/[^A-Z0-9]/g, "").slice(0, 6);
+  const bi = +(PARAMS.get("b") || 0);
+  let pid = store.get("pid"); if (!pid) { pid = rid(14); store.set("pid", pid); }
+  let name = store.get("name") || "";
+  let joined = !!(name && room && store.get("joinedRoom") === room);
+  let client = null, S = null, P = null, lastScreen = "", myLock = null, raf = 0, deadline = 0;
+  let draft = {k: "", data: null}, sending = false, sentLocal = {k: "", data: null};
+  const seen = {note: null, frozen: null, res: null};
+  let iceTimer = null, thSub = false, viewer = null;
+  const THUMBS = {}, myRates = {}, chkVals = {};
+  const RR = () => !S || S.qi < 0 || !SETS[S.set] ? null : S.set === "quiz" ? COURSE.quiz[S.qi] : S.task || null;
+  const lang = () => store.get("lang") || (S && S.lang) || "ru";
+  const qkey = () => S ? S.set + ":" + S.qi : "";
+
+  function send(o) { o.pid = pid; if (S) o.set = S.set; if (client && client.connected) { client.publish(T(room) + "i", JSON.stringify(o), {qos: 1}); return true; } return false; }
+  function go() {
+    client && client.end(true);
+    thSub = false;
+    client = connect(bi, c => { thSub = false; c.subscribe([T(room) + "s", T(room) + "p/" + pid], {qos: 1}); if (joined) send({t: "join", name}); },
+      (topic, m) => {
+        if (topic.indexOf("/th/") > 0) { onThumb(topic.split("/").pop(), m); return; }
+        if (topic.endsWith("/s")) { S = m; if (S.phase === "question") deadline = performance.now() + (S.endsIn || 0); if (S.phase === "vote" && !thSub && client.connected) { thSub = true; client.subscribe(T(room) + "th/+", {qos: 1}); } }
+        else { P = m; onPlayerMsg(); }
+        render();
+      });
+  }
+  const locked = () => S && ((myLock && myLock.k === qkey()) || (P && P.locked && P.locked.set === S.set && P.locked.qi === S.qi));
+  const mySub = () => P && P.sub && P.sub.k === qkey();
+  function onPlayerMsg() {
+    if (P.kicked) { joined = false; store.del("joinedRoom"); return; }
+    if (P.name && P.name !== name) { name = P.name; store.set("name", name); }
+    if (P.note && P.note.id !== seen.note) { const first = seen.note === null && lastScreen === ""; seen.note = P.note.id; if (!first) toast(P.note.t); }
+    if (P.frozen && P.frozen.id !== seen.frozen && S && S.phase === "question" && P.frozen.k === qkey() && !locked()) { seen.frozen = P.frozen.id; freeze(P.frozen.by); }
+  }
+  function onThumb(id, m) {
+    if (!m || typeof m.data !== "string" || m.data.slice(0, 11) !== "data:image/") return;
+    THUMBS[id] = m;
+    const img = document.querySelector(`.vcard[data-p="${CSS.escape(id)}"] .vimg`);
+    if (img && m.k === qkey()) img.innerHTML = `<img src="${m.data}" alt="${esc(m.name)} — работа">`;
+    if (viewer === id) drawViewer();
+  }
+  const rated = to => (myRates[qkey()] || {})[to] || (P && P.rates && P.rates.k === qkey() && P.rates.m[to]) || 0;
+  const starRow = (to, big) => `<div class="stars ${big ? "big" : ""}" data-to="${esc(to)}">${[1, 2, 3, 4, 5].map(v => `<button data-v="${v}" class="${rated(to) >= v ? "on" : ""}" aria-label="${v} звёзд">★</button>`).join("")}</div>`;
+  function rate(to, v) {
+    if (!send({t: "rate", qi: S.qi, to, v})) { toast("Нет связи — нажмите ещё раз"); return; }
+    (myRates[qkey()] = myRates[qkey()] || {})[to] = v; vibrate(15);
+    document.querySelectorAll(`.stars[data-to="${CSS.escape(to)}"] button`).forEach(b => b.classList.toggle("on", +b.dataset.v <= v));
+  }
+  function bindStars(root) { root.querySelectorAll(".stars button").forEach(b => b.onclick = e => { e.stopPropagation(); rate(b.parentNode.dataset.to, +b.dataset.v); }); }
+  function drawViewer() {
+    const cands = (S && S.cands) || [], i = cands.findIndex(c => c[0] === viewer);
+    if (i < 0) { closeViewer(); return; }
+    let d = $("#pv"); if (!d) { d = document.createElement("div"); d.id = "pv"; d.className = "pview"; document.body.appendChild(d); }
+    const c = cands[i], th = THUMBS[c[0]], own = c[0] === pid;
+    d.innerHTML = `<div class="pvtop"><b>${esc(c[1])}</b><span class="mut">${i + 1} / ${cands.length}</span><button class="btn ghost" id="pvx">Закрыть</button></div>
+      <div class="pvimg">${th && th.k === qkey() ? `<img src="${th.data}" alt="${esc(c[1])} — работа">` : `<div class="mut">Загружается…</div>`}</div>
+      <div class="pvbar"><button class="btn ghost" id="pvp">←</button>${own ? `<span class="mut">Ваша работа</span>` : starRow(c[0], true)}<button class="btn ghost" id="pvn">→</button></div>`;
+    $("#pvx").onclick = closeViewer;
+    $("#pvp").onclick = () => { viewer = cands[(i - 1 + cands.length) % cands.length][0]; drawViewer(); };
+    $("#pvn").onclick = () => { viewer = cands[(i + 1) % cands.length][0]; drawViewer(); };
+    bindStars(d);
+  }
+  function closeViewer() { viewer = null; const d = $("#pv"); if (d) d.remove(); }
+  function freeze(by) {
+    unfreeze(true); closeSheet(); vibrate([80, 40, 120]);
+    const d = document.createElement("div"); d.id = "ice";
+    const cracks = ["M50 50 L32 30 L20 34 L6 18", "M50 50 L70 26 L84 30 L96 10", "M50 50 L28 66 L14 64 L4 84", "M50 50 L68 72 L86 70 L96 92", "M50 50 L48 20 L54 4", "M50 50 L52 82 L44 98"];
+    d.innerHTML = `<svg class="frost" viewBox="0 0 100 100" preserveAspectRatio="none"><defs><radialGradient id="g" cx="50%" cy="50%" r="70%"><stop offset="55%" stop-color="#fff" stop-opacity="0"/><stop offset="100%" stop-color="#fff" stop-opacity=".85"/></radialGradient></defs><rect width="100" height="100" fill="url(#g)"/>
+      ${cracks.map((p, i) => `<path class="crack" data-i="${i}" d="${p}" vector-effect="non-scaling-stroke"/>`).join("")}</svg>
+      ${[[8, 12, 54], [78, 8, 40], [14, 72, 46], [80, 70, 60], [44, 88, 30], [60, 28, 26]].map(f => `<span class="flake" style="left:${f[0]}%;top:${f[1]}%;width:${f[2]}px;height:${f[2]}px">${ICON.fr}</span>`).join("")}
+      <div class="it1">Вы заморожены!</div><div class="it2">${esc(by)} заморозил вас</div><div class="taps" id="taps">6</div><div class="it2">Стучите, чтобы разбить лёд</div>`;
+    document.body.appendChild(d);
+    let left = 6;
+    d.addEventListener("pointerdown", e => { e.preventDefault(); left--; vibrate(25); d.classList.remove("hit"); void d.offsetWidth; d.classList.add("hit");
+      const c = d.querySelector(`.crack[data-i="${5 - left}"]`); if (c) c.style.opacity = 1;
+      const t = $("#taps"); if (t) t.textContent = Math.max(0, left); if (left <= 0) unfreeze(); });
+    iceTimer = setTimeout(unfreeze, 4500);
+  }
+  function unfreeze(instant) { clearTimeout(iceTimer); const d = $("#ice"); if (!d) return; if (instant) { d.remove(); return; } d.classList.add("melt"); setTimeout(() => d.remove(), 480); }
+  function openSheet() {
+    if (!S || !S.roster) return;
+    const others = S.roster.filter(r => r[0] !== pid);
+    if (!others.length) { toast("Некого замораживать"); return; }
+    const d = document.createElement("div"); d.className = "sheet"; d.id = "sheet";
+    d.innerHTML = `<div class="in"><h3>Кого заморозить?</h3><div class="mut" style="font-size:14px">Его экран покроется льдом на 4,5 с. Если у него щит — он защитится.</div>
+      ${others.map((r, i) => `<button class="tg" data-t="${esc(r[0])}"><span>${esc(r[1])}</span><span class="mut">${i + 1} место</span></button>`).join("")}
+      <button class="btn ghost" id="cancel" style="width:100%;margin-top:14px">Отмена</button></div>`;
+    document.body.appendChild(d);
+    d.onclick = e => { if (e.target === d) closeSheet(); };
+    $("#cancel").onclick = closeSheet;
+    d.querySelectorAll(".tg").forEach(b => b.onclick = () => { send({t: "pw", k: "fr", target: b.dataset.t, qi: S.qi}); closeSheet(); });
+  }
+  function closeSheet() { const s = $("#sheet"); if (s) s.remove(); }
+
+  function screenKey() {
+    if (!joined) return "join";
+    if (!S || S.phase === "closed" || !SETS[S.set]) return "wait0";
+    if (P && P.kicked) return "kicked";
+    if (S.phase === "lobby") return "lobby" + S.set;
+    const r = RR();
+    if (S.phase === "question") {
+      if (isTask(r)) return "task" + qkey() + lang();
+      return (locked() ? "locked" : "q") + qkey();
+    }
+    if (S.phase === "reveal") return "rv" + qkey() + (P && P.last ? P.last.k : "");
+    if (S.phase === "review") return "review" + qkey() + (P && P.grade ? P.grade.k + P.grade.g : "") + (mySub() ? "s" : "");
+    if (S.phase === "vote") return "vote" + qkey() + (S.cands ? S.cands.length : 0);
+    if (S.phase === "board") return "board" + qkey() + (P && P.last ? P.last.k + P.last.pts : "");
+    return S.phase + qkey();
+  }
+  const top = () => `<div class="pbar"><span class="me">${esc(name)}</span><span>${P ? P.score + " очков" : ""}${S && S.qi >= 0 && S.total ? ` · ${S.qi + 1}/${S.total}` : ""}</span></div>`;
+  function sendMc(a) {
+    if ($("#ice") || locked()) return;
+    if (!send({t: "ans", qi: S.qi, a})) { toast("Нет связи — нажмите ещё раз"); return; }
+    myLock = {k: qkey(), a}; vibrate(30); render();
+  }
+  function taskUpload(force) {
+    const r = RR(), k = qkey(), box = $("#upbox"); if (!box) return;
+    const sent = mySub(), have = draft.k === k && draft.data;
+    const sentImg = sentLocal.k === k ? sentLocal.data : null;
+    const sig = [k, !!sent, have ? draft.data.length : 0, sending, sentImg ? sentImg.length : 0].join("|");
+    if (!force && sig === upSig && box.childElementCount) return; upSig = sig;
+    box.innerHTML = have ? `<img class="prev" src="${draft.data}" alt="Выбранная картинка">
+        <div class="ansrow"><label class="btn ghost" for="file" style="flex:1">Выбрать другую</label><button class="btn" id="sendimg" ${sending ? "disabled" : ""}>${sending ? "Отправка…" : "Отправить"}</button></div>`
+      : sent ? `${sentImg ? `<img class="prev" src="${sentImg}" alt="Отправленная работа">` : ""}<div class="okline">✓ Скриншот отправлен. До конца времени можно заменить.</div>
+        <label class="btn ghost" for="file" style="width:100%">Заменить</label>`
+      : `<label class="drop" for="file">${ICON.up}<b>Загрузить скриншот</b><span>Скриншот экрана или картинка JPG/PNG</span></label>`;
+    const sb = $("#sendimg");
+    if (sb) sb.onclick = () => {
+      if (!client || !client.connected) { toast("Нет связи — нажмите ещё раз"); return; }
+      sending = true; taskUpload();
+      const id = rid(8);
+      client.publish(T(room) + "img/" + pid, JSON.stringify({set: S.set, qi: S.qi, id, data: draft.data}), {qos: 1, retain: true}, err => {
+        sending = false;
+        if (err) { toast("Не отправилось — нажмите ещё раз"); taskUpload(); return; }
+        sentLocal = {k, data: draft.data}; draft = {k: "", data: null}; vibrate(40); toast("Отправлено!"); taskUpload();
+      });
+    };
+  }
+  let upSig = "";
+  function dataTable(tb) {
+    const cols = tb.head.length, L0 = "ABCDEFGHIJ";
+    return `<div class="dt"><div class="edh" style="margin:0">${t_("Енгізетін кесте", "Таблица для ввода")}</div><div class="dtw"><table><tr><th></th>${tb.head.map((h, i) => `<th>${L0[i]}</th>`).join("")}</tr>
+      <tr><th>1</th>${tb.head.map(h => `<td><b>${esc(h)}</b></td>`).join("")}</tr>
+      ${tb.rows.map((r, i) => `<tr><th>${i + 2}</th>${Array.from({length: cols}, (_, j) => `<td class="${j && r[j] !== "" && !isNaN(+r[j]) ? "num" : ""}">${esc(r[j] == null ? "" : r[j])}</td>`).join("")}</tr>`).join("")}</table></div>
+      <button class="btn ghost" id="copytbl" style="width:100%;height:44px;font-size:15px">${t_("Кестені көшіру", "Скопировать таблицу")}</button>
+      <div class="mut" style="font-size:12px">${t_("A1 ұяшығына қойыңыз (Ctrl+V немесе ұзақ басу → Қою).", "Вставьте в ячейку A1 (Ctrl+V или долгое нажатие → Вставить).")}</div></div>`;
+  }
+  function copyText(t) {
+    const ok = () => toast(t_("Көшірілді — A1-ге қойыңыз", "Скопировано — вставьте в A1"));
+    const fb = () => { const a = document.createElement("textarea"); a.value = t; a.style.position = "fixed"; a.style.opacity = "0"; document.body.appendChild(a); a.select(); try { document.execCommand("copy"); ok(); } catch (e) { toast(t_("Не удалось скопировать", "Не удалось скопировать")); } a.remove(); };
+    if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(t).then(ok, fb); else fb();
+  }
+  function checkForm(r) {
+    const v = chkVals[qkey()] || [];
+    return `<div class="chkbox" id="chkbox"><div class="edh" style="margin:0">${t_("Тексеру: нәтижені енгізіңіз", "Проверка: введите результаты")}</div>
+      ${r.checks.map((c, i) => `<div class="chf" data-i="${i}"><label>${esc(L(c.l, lang()))}</label>
+        ${c.opts ? `<div class="chopts">${c.opts.map((o, j) => `<button data-o="${j}" class="${String(v[i]) === String(j) ? "on" : ""}">${esc(o)}</button>`).join("")}</div>`
+          : `<input inputmode="decimal" autocomplete="off" value="${esc(v[i] == null ? "" : v[i])}" placeholder="${c.pct ? "%" : t_("сан", "число")}">`}<span class="chs"></span></div>`).join("")}
+      <button class="btn" id="chkgo" style="width:100%">${t_("Тексеру", "Проверить")}</button><div id="chkst" class="chkst"></div></div>`;
+  }
+  function bindChecks(r) {
+    const box = $("#chkbox"); if (!box) return;
+    const k = qkey(); chkVals[k] = chkVals[k] || [];
+    box.querySelectorAll(".chf").forEach(f => {
+      const i = +f.dataset.i, inp = f.querySelector("input");
+      if (inp) inp.oninput = () => { chkVals[k][i] = inp.value; };
+      f.querySelectorAll(".chopts button").forEach(b => b.onclick = () => { chkVals[k][i] = +b.dataset.o; f.querySelectorAll(".chopts button").forEach(x => x.classList.toggle("on", x === b)); });
+    });
+    $("#chkgo").onclick = () => {
+      const vals = r.checks.map((c, i) => chkVals[k][i] == null ? "" : chkVals[k][i]);
+      if (vals.some(x => x === "")) { toast(t_("Барлық өрістерді толтырыңыз", "Заполните все поля")); return; }
+      if (!send({t: "chk", qi: S.qi, vals})) { toast(t_("Нет связи — нажмите ещё раз", "Нет связи — нажмите ещё раз")); return; }
+      vibrate(20); const st = $("#chkst"); if (st) st.textContent = t_("Тексерілуде…", "Проверяем…");
+    };
+  }
+  let lastChk = "";
+  function updateChecks() {
+    const box = $("#chkbox"); if (!box) return;
+    const c = P && P.chk && P.chk.k === qkey() ? P.chk : null;
+    const sig = c ? JSON.stringify([c.ok, c.tries, c.fin, c.place]) : "";
+    if (sig === lastChk && box.dataset.done === sig) return; lastChk = sig; box.dataset.done = sig;
+    const r = RR();
+    box.querySelectorAll(".chf").forEach(f => { const i = +f.dataset.i, s = f.querySelector(".chs");
+      f.classList.toggle("good", !!(c && c.ok[i])); f.classList.toggle("bad", !!(c && c.ok.length && !c.ok[i]));
+      s.textContent = c && c.ok.length ? (c.ok[i] ? "✓" : "✗") : ""; const inp = f.querySelector("input"); if (inp) inp.disabled = !!(c && c.ok[i]); });
+    const st = $("#chkst"), allOk = c && c.ok.length && c.ok.every(Boolean);
+    if (st) st.innerHTML = !c ? "" : c.fin != null ? `<b class="okc">${t_("Дайын!", "Готово!")} ${t_("Орныңыз", "Ваше место")}: ${c.place}</b>`
+      : allOk ? (r && r.shot ? `<b class="okc">${t_("Сандар дұрыс ✓", "Числа верны ✓")}</b> ${t_("Енді скриншот жіберіңіз.", "Теперь отправьте скриншот.")}` : "")
+      : `<span class="badc">${t_("Қатесі бар — ✗ белгіленген өрістерді тексеріңіз.", "Есть ошибки — проверьте поля с ✗.")}</span>`;
+    const go = $("#chkgo"); if (go) go.disabled = !!allOk;
+    if (c && c.fin != null && seen.res !== qkey() + "fin") { seen.res = qkey() + "fin"; confetti(); vibrate(60); }
+  }
+  function render() {
+    const key = screenKey();
+    if (key.startsWith("q")) updatePw();
+    if (key === lastScreen) { if (key.startsWith("task")) { taskUpload(); updateChecks(); } return; }
+    const prev = lastScreen; lastScreen = key;
+    if (!key.startsWith("q")) closeSheet();
+    if (!key.startsWith("vote")) closeViewer();
+    if (!(key.startsWith("q") || key.startsWith("locked"))) unfreeze(true);
+    cancelAnimationFrame(raf);
+    const r = RR();
+
+    if (key === "join") {
+      app.innerHTML = `<div class="ply"><div class="pc up">
+        <h1>${esc(COURSE.joinTitle)}</h1>
+        <p class="mut" style="margin:0 0 6px;font-size:16px">Напишите имя и фамилию — преподаватель увидит их на экране.</p>
+        <input class="field codef" id="room" placeholder="КОД" maxlength="6" value="${esc(room)}" autocomplete="off" ${PARAMS.get("r") ? "readonly" : ""}>
+        <input class="field" id="name" placeholder="Имя Фамилия" maxlength="18" value="${esc(name)}" autocomplete="off">
+        <button class="btn" id="go" style="height:58px;font-size:18px">Войти</button></div></div>`;
+      const go2 = () => {
+        const rr = $("#room").value.toUpperCase().replace(/[^A-Z0-9]/g, ""), n = $("#name").value.replace(/\s+/g, " ").trim().slice(0, 18);
+        if (rr.length < 4) return toast("Введите код игры");
+        if (!n) return toast("Напишите имя");
+        const changed = rr !== room; room = rr; name = n; joined = true;
+        store.set("room", room); store.set("name", name); store.set("joinedRoom", room);
+        lastScreen = ""; if (changed || !client) go(); else send({t: "join", name}); render();
+      };
+      $("#go").onclick = go2; $("#name").onkeydown = e => { if (e.key === "Enter") go2(); };
+      return;
+    }
+    if (key === "wait0" || key.startsWith("lobby") || key === "kicked") {
+      const kicked = key === "kicked", lobby = key.startsWith("lobby");
+      app.innerHTML = `<div class="ply">${top()}<div class="pc"><div class="wait up">${kicked ? "" : `<div class="ring"></div>`}
+        <h1>${kicked ? "Вас удалили из игры" : !lobby ? "Ищем игру…" : "Вы в игре!"}</h1>
+        <p class="mut" style="margin:0;font-size:17px">${kicked ? "Исправьте имя и войдите снова." : !lobby ? "Код верный? " + esc(room) : "Дальше: " + esc(S.setName || SETS[S.set].short) + ". Ждём, пока преподаватель начнёт."}</p>
+        ${lobby && S.set === "practice" ? `<a class="btn ghost" href="${COURSE.tool.url}" target="_blank" rel="noopener">${ICON.ext}<span>${esc(COURSE.tool.name)} — открыть заранее</span></a>` : ""}
+        ${kicked || !lobby ? `<button class="btn ghost" id="back">Изменить код или имя</button>` : ""}</div></div></div>`;
+      const b = $("#back"); if (b) b.onclick = () => { joined = false; store.del("joinedRoom"); if (kicked) { pid = rid(14); store.set("pid", pid); go(); } lastScreen = ""; render(); };
+      return;
+    }
+    if (key.startsWith("task")) {
+      app.innerHTML = `<div class="ply"><div class="pw-wrap">${top()}<div class="ptimer"><i id="pt"></i></div><div id="pzl" class="hidden pzl">Пауза — время остановлено</div>
+        <div class="pk">${esc(r.k)} · <span id="ptt"></span></div><div class="pq up">${esc(r.title)}</div>
+        <div class="langsw"><span class="mut">${LANG_LABEL}</span>${LANGS.map(([k, t]) => `<button data-l="${k}" class="${lang() === k ? "on" : ""}">${t}</button>`).join("")}</div>
+        <ol class="psteps">${r.steps.map(s => `<li>${esc(L(s, lang()))}</li>`).join("")}</ol>
+        ${r.crit && r.crit.length ? `<div class="crit">${r.crit.map(c => `<span>${esc(c)}</span>`).join("")}</div>` : ""}
+        ${r.table ? dataTable(r.table) : ""}
+        ${r.hints && r.hints.length ? `<details class="exd"><summary>${t_("Кеңестер", "Подсказки")} (${r.hints.length})</summary><ul class="hints">${r.hints.map(h => `<li>${esc(L(h, lang()))}</li>`).join("")}</ul></details>` : ""}
+        ${r.ex ? `<details class="exd"><summary>${t_("Мысалды көру", "Посмотреть образец")}</summary><img src="${esc(exUrl(r.ex))}" alt="Образец" onerror="this.parentNode.remove()"></details>` : ""}
+        ${r.checks && r.checks.length ? checkForm(r) : ""}
+        <a class="btn ghost" href="${COURSE.tool.url}" target="_blank" rel="noopener" style="width:100%;margin:12px 0">${ICON.ext}<span>${esc(COURSE.tool.name)} — открыть</span></a>
+        <input type="file" id="file" accept="image/*" class="hidden">
+        ${r.shot === false ? "" : `${r.checks && r.checks.length ? `<div class="edh" style="margin-top:6px">${t_("Скриншот", "Скриншот диаграммы")}</div>` : ""}<div id="upbox" class="upbox"></div>`}
+        <p class="mut" style="font-size:13px;margin:10px 0 0">Делаете на ноутбуке в Excel? Сделайте скриншот и загрузите его здесь (в браузере ноутбука или с телефона).</p>
+        </div></div>`;
+      document.querySelectorAll(".langsw button").forEach(b => b.onclick = () => { store.set("lang", b.dataset.l); lastScreen = ""; render(); });
+      $("#file").onchange = async e => {
+        const f = e.target.files && e.target.files[0]; e.target.value = ""; if (!f) return;
+        try { draft = {k: qkey(), data: await compressImage(f)}; taskUpload(); }
+        catch (err) { toast("Не удалось открыть файл. Выберите JPG/PNG или скриншот"); }
+      };
+      upSig = ""; taskUpload(); bindChecks(r); updateChecks();
+      const cp = $("#copytbl"); if (cp) cp.onclick = () => copyText(r.table.head.join("\t") + "\n" + r.table.rows.map(x => x.join("\t")).join("\n"));
+      const loop = () => { const el = $("#pt"); if (!el) return; const ms = S.paused ? (S.endsIn || 0) : deadline - performance.now(); el.style.transform = `scaleX(${Math.max(0, Math.min(1, ms / (r.t * 1000)))})`; el.style.background = S.paused ? "var(--a2)" : "";
+        const pl = $("#pzl"); if (pl) pl.classList.toggle("hidden", !S.paused); const tt = $("#ptt"); if (tt) tt.textContent = fmtTime(Math.max(0, Math.ceil(ms / 1000))); raf = requestAnimationFrame(loop); };
+      loop();
+      return;
+    }
+    if (key.startsWith("q")) {
+      app.innerHTML = `<div class="ply"><div class="pw-wrap">${top()}<div class="ptimer"><i id="pt"></i></div><div id="pzl" class="hidden pzl">Пауза — время остановлено</div>
+        <div class="pq up">${esc(L(r.q, lang()))}</div>
+        <div class="answers">${r.a.map((a, i) => `<button class="ans t${i}" data-a="${i}">${SHAPES[i]}<span>${esc(L(a, lang()))}</span></button>`).join("")}</div>
+        <div class="pw"><button class="pwb" id="pwfr">${ICON.fr}<span>Заморозка</span><span class="k" id="kfr"></span></button><button class="pwb" id="pwx2">${ICON.x2}<span>×2 очки</span><span class="k" id="kx2"></span></button><button class="pwb" id="pwff">${ICON.ff}<span>50/50</span><span class="k" id="kff"></span></button></div>
+        <div class="shld" id="shld">${ICON.sh}<span></span></div></div></div>`;
+      document.querySelectorAll(".ans").forEach(b => b.onclick = () => sendMc(+b.dataset.a));
+      $("#pwfr").onclick = openSheet;
+      $("#pwx2").onclick = () => send({t: "pw", k: "x2", qi: S.qi});
+      $("#pwff").onclick = () => send({t: "pw", k: "ff", qi: S.qi});
+      updatePw();
+      const loop = () => { const el = $("#pt"); if (!el) return; const ms = S.paused ? (S.endsIn || 0) : deadline - performance.now(); el.style.transform = `scaleX(${Math.max(0, Math.min(1, ms / (r.t * 1000)))})`; el.style.background = S.paused ? "var(--a2)" : ""; const pl = $("#pzl"); if (pl) pl.classList.toggle("hidden", !S.paused); raf = requestAnimationFrame(loop); };
+      loop();
+      if (P && P.frozen && P.frozen.k === qkey() && P.frozen.id !== seen.frozen) { seen.frozen = P.frozen.id; freeze(P.frozen.by); }
+      return;
+    }
+    if (key.startsWith("locked")) {
+      const lk = (myLock && myLock.k === qkey()) ? myLock : P.locked;
+      app.innerHTML = `<div class="ply">${top()}<div class="pc"><div class="wait up"><div class="ans t${lk.a}" style="width:96px;height:96px;justify-content:center;border-radius:20px;min-height:0">${SHAPES[lk.a].replace('class="shape"', 'class="shape" style="width:44px;height:44px"')}</div><h1>Ответ принят</h1><p class="mut" style="margin:0;font-size:17px">Ждём остальных…</p></div></div></div>`;
+      return;
+    }
+    if (key.startsWith("rv")) {
+      const L = P && P.last && P.last.k === qkey() ? P.last : null, ok = L && L.ok, none = !L || L.a == null;
+      app.innerHTML = `<div class="ply">${top()}<div class="res ${ok ? "good" : none ? "none" : "bad"} up">
+        <div class="big disp">${ok ? "Верно!" : none ? "Время вышло" : "Неверно"}</div>${ok ? `<div class="pts">+${L.pts}</div>` : ""}
+        ${ok && P.streak > 1 ? `<div class="rk">${P.streak} подряд</div>` : ""}${!ok ? `<div class="rk">Правильно: ${esc(L(r.a[r.c], lang()))}</div>` : ""}
+        ${P ? `<div class="rk">${P.rank} место из ${P.of}</div>` : ""}</div></div>`;
+      if (seen.res !== qkey()) { seen.res = qkey(); if (ok) { confetti(); vibrate(60); } else if (!none) vibrate([60, 60, 60]); }
+      return;
+    }
+    if (key.startsWith("review")) {
+      const g = P && P.grade && P.grade.k === qkey() ? P.grade.g : null, sent = mySub(), img = sentLocal.k === qkey() ? sentLocal.data : null;
+      app.innerHTML = `<div class="ply">${top()}<div class="pc"><div class="wait up">
+        ${img ? `<img class="prev" src="${img}" alt="Ваша работа" style="max-height:38vh">` : ""}
+        <h1 style="font-size:28px">${sent ? "Преподаватель смотрит работы" : "Работа не сдана"}</h1>
+        ${g ? `<div class="gbadge" style="background:${GRADE[g].c}">${GRADE[g].t}</div>` : sent ? `<p class="mut" style="margin:0;font-size:17px">Смотрите на экран</p>` : `<p class="mut" style="margin:0;font-size:17px">Успейте в следующем задании!</p>`}
+      </div></div></div>`;
+      if (g === "best" && seen.res !== qkey() + "best") { seen.res = qkey() + "best"; confetti(); vibrate(60); }
+      return;
+    }
+    if (key.startsWith("vote")) {
+      const cands = S.cands || [];
+      app.innerHTML = `<div class="ply">${top()}<div class="pw-wrap"><div class="pq up" style="margin-top:14px">Оцените работы одногруппников</div>
+        <p class="mut" style="margin:0 0 12px;font-size:14px">Поставьте каждой работе 1–5 звёзд. Нажмите на картинку, чтобы увеличить. Себя оценить нельзя.</p>
+        <div class="vgrid">${cands.map(c => { const th = THUMBS[c[0]], own = c[0] === pid;
+          return `<div class="vcard ${own ? "own" : ""}" data-p="${esc(c[0])}"><button class="vimg" aria-label="${esc(c[1])} — открыть работу">${th && th.k === qkey() ? `<img src="${th.data}" alt="${esc(c[1])} — работа">` : `<span class="mut">Загружается…</span>`}</button>
+            <div class="vname">${esc(c[1])}${own ? " · вы" : ""}</div>${own ? "" : starRow(c[0])}</div>`; }).join("") || `<p class="mut">Работ для оценки нет</p>`}</div>
+      </div></div>`;
+      document.querySelectorAll(".vcard .vimg").forEach(b => b.onclick = () => { viewer = b.parentNode.dataset.p; drawViewer(); });
+      bindStars(app);
+      return;
+    }
+    if (S.phase === "board" || S.phase === "final") {
+      const fin = S.phase === "final", L = P && P.last && P.last.k === qkey() ? P.last : null;
+      const taskLine = L && isTask(r) ? (L.place ? t_("Орын", "Место") + ": " + L.place + " · +" + L.pts + (RU ? " очков" : " очк.") : L.none ? "Работа не сдана" : `+${L.pts} очков${L.g === "best" ? " · лучшая работа" : L.g === "redo" ? " · доработать" : ""}${L.avg ? " · оценка группы ★ " + String(L.avg).replace(".", ",") : ""}${L.fav ? " · выбор группы" : ""}`) : "";
+      app.innerHTML = `<div class="ply">${top()}<div class="pc"><div class="wait up">
+        <div class="big disp" style="font-size:88px">${P ? P.rank : "–"}</div><div class="mut" style="font-size:17px;margin-top:-6px">${P ? `место из ${P.of}` : ""}</div>
+        ${taskLine ? `<div class="gbadge" style="background:var(--s2);color:var(--tx)">${esc(taskLine)}</div>` : ""}
+        <h1 style="font-size:28px">${fin ? (S.set === "quiz" ? "Квиз окончен" : "Практика окончена") : "Смотрите на экран"}</h1>
+        <p class="mut" style="margin:0;font-size:17px">${P ? P.score + " очков" : ""}${fin && S.set === "quiz" ? " · дальше — практика" : fin ? " · Спасибо!" : ""}</p></div></div></div>`;
+      if (fin && P && P.rank <= 3 && prev !== key) confetti();
+    }
+  }
+  function updatePw() {
+    if (!P || !S) return;
+    const pw = P.pw || {fr: 0, x2: 0, ff: 0, sh: 0};
+    const hid = P.hide && P.hide.k === qkey() ? P.hide.idx : [];
+    document.querySelectorAll(".ans").forEach(b => b.classList.toggle("gone", hid.includes(+b.dataset.a)));
+    const set = (id, n, on) => { const b = $("#pw" + id), k = $("#k" + id); if (!b) return; k.textContent = n > 0 ? "×" + n : ""; b.disabled = !(n > 0) || on; b.classList.toggle("on", !!on); if (on) b.style.opacity = 1; };
+    set("fr", pw.fr, false); set("x2", pw.x2, P.x2on === qkey()); set("ff", pw.ff, hid.length > 0);
+    const sh = $("#shld"); if (sh) sh.querySelector("span").textContent = pw.sh > 0 ? "Щит активен: защитит от одной заморозки" : "Щита нет";
+  }
+  if (room) go();
+  render();
+}
+
+if (typeof mqtt === "undefined") app.innerHTML = '<div class="ply"><div class="pc"><h1>Не загрузилось</h1><p class="mut">Обновите страницу.</p></div></div>';
+else if (IS_HOST) Host(); else Player();
+
+</script>
+</body>
+</html>
