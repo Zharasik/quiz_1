@@ -258,6 +258,53 @@ a.btn{text-decoration:none}
 a.btn svg{width:18px;height:18px}
 .tg.on{background:var(--tx);color:var(--bg)}
 @media (max-width:900px){.tgrid{grid-template-columns:1fr}}
+.setrow{display:flex;align-items:center;gap:12px;margin-top:16px;flex-wrap:wrap;font-size:15px}
+.setrow .mode button{height:40px;font-size:14px;padding:0 14px}
+.langsw{display:flex;align-items:center;gap:6px;margin:4px 0 10px;font-size:13px}
+.langsw button{height:30px;padding:0 12px;border-radius:999px;background:var(--s2);border:1px solid var(--line);font-size:13px;font-weight:700;color:var(--mut)}
+.langsw button.on{background:var(--tx);color:var(--bg);border-color:var(--tx)}
+.exd{margin:10px 0 0;background:var(--s1);border:1px solid var(--line);border-radius:12px;padding:10px 12px}
+.exd summary{font-weight:700;font-size:15px;cursor:pointer}
+.exd img{width:100%;border-radius:8px;margin-top:10px;display:block}
+.exh{width:100%;max-height:150px;object-fit:contain;background:#fff;border-radius:10px;margin-bottom:14px;display:block}
+.ed{position:fixed;inset:0;z-index:80;background:var(--bg);overflow:auto;padding:24px 32px}
+.edtop{display:flex;align-items:center;justify-content:space-between;gap:16px;margin-bottom:18px;flex-wrap:wrap}
+.edcols{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.1fr);gap:24px;align-items:start}
+.edh{font-size:14px;font-weight:700;color:var(--mut);text-transform:uppercase;letter-spacing:.05em;margin-bottom:10px}
+.edlist{display:flex;flex-direction:column;gap:8px}
+.edrow{display:flex;align-items:center;gap:10px;background:var(--s1);border:1px solid var(--line);border-radius:12px;padding:8px 10px}
+.edrow .n{font-family:var(--disp);font-weight:800;width:22px;text-align:center;color:var(--mut)}
+.edrow img,.edrow .noimg{width:64px;height:44px;object-fit:cover;border-radius:6px;background:var(--s2);flex:none}
+.edrow .tt{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}
+.edrow .tt b{font-size:15px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.edrow .tt span{font-size:12px}
+.mins{display:flex;align-items:center;gap:4px;font-size:14px;font-weight:700;white-space:nowrap}
+.mins button,.ib{width:32px;height:32px;border-radius:8px;background:var(--s2);border:1px solid var(--line);font-weight:700;font-size:15px}
+.ib[disabled]{opacity:.3}
+.ib.del:hover{border-color:var(--bad);color:var(--bad)}
+.bgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:12px}
+.bcard{display:flex;flex-direction:column;background:var(--s1);border:1px solid var(--line);border-radius:12px;overflow:hidden}
+.bcard.on{border-color:var(--ok)}
+.bcard img{width:100%;aspect-ratio:16/10;object-fit:cover;background:#fff}
+.bcard .bt{display:flex;flex-direction:column;gap:2px;padding:10px 12px;flex:1}
+.bcard .bt b{font-size:14px;line-height:1.3}
+.bcard .bt span{font-size:12px}
+.bcard .btn{height:40px;font-size:14px;margin:0 12px 12px;border-radius:10px}
+.edm{position:fixed;inset:0;z-index:90;background:rgba(0,0,0,.6);display:flex;align-items:flex-start;justify-content:center;overflow:auto;padding:30px 16px}
+.edbox{width:100%;max-width:980px;background:var(--s1);border:1px solid var(--line);border-radius:18px;padding:22px;display:flex;flex-direction:column;gap:16px}
+.edform{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.ff{display:flex;flex-direction:column;gap:6px}
+.ff.wide{grid-column:1 / -1}
+.ff label{font-size:13px;font-weight:700;color:var(--mut)}
+.ff input,.ff textarea,.ff select{background:var(--bg);color:var(--tx);border:1px solid var(--line);border-radius:10px;padding:10px 12px;font:inherit;font-size:15px;outline:none}
+.ff textarea{resize:vertical;line-height:1.45}
+.ff input:focus,.ff textarea:focus{border-color:var(--mut)}
+.hint{font-size:13px;color:var(--mut)}
+.hint code{background:var(--s2);padding:2px 6px;border-radius:6px;color:var(--tx)}
+.pvh{display:flex;align-items:center;justify-content:space-between}
+.pvh .mode button{height:34px;font-size:13px;padding:0 12px}
+.pv{margin:0;padding:12px 12px 12px 32px;background:var(--bg);border-radius:10px;display:flex;flex-direction:column;gap:6px;font-size:15px;line-height:1.4}
+@media (max-width:900px){.edcols,.edform{grid-template-columns:1fr}}
 </style>
 </head>
 <body>
@@ -267,13 +314,19 @@ a.btn svg{width:18px;height:18px}
 <script src="../mqtt.min.js"></script>
 <script>
 "use strict";
-const COURSE = {"ns": "aiq1", "title": "СОӨЖ · ОН 2.2 · Adobe Illustrator", "joinTitle": "Illustrator практикасы", "tool": {"name": "Vectorpea", "url": "https://www.vectorpea.com"}, "quiz": [{"type": "mc", "t": 18, "q": "Векторлық графиканың басты артықшылығы?", "a": ["Фотоға ыңғайлы", "Сапасын жоғалтпай масштабталады", "Файлы әрқашан үлкен", "Тек басып шығаруға"], "c": 1}, {"type": "mc", "t": 15, "q": "Калам (Pen Tool) құралының пернесі?", "a": ["V", "T", "P", "B"], "c": 2}, {"type": "mc", "t": 15, "q": "Тікелей таңдау (Direct Selection) пернесі?", "a": ["A", "V", "M", "L"], "c": 0}, {"type": "mc", "t": 18, "q": "Мәтінді контурға айналдыру (Create Outlines)?", "a": ["Ctrl+G", "Shift+Ctrl+O", "Ctrl+T", "Ctrl+E"], "c": 1}, {"type": "mc", "t": 18, "q": "Фигураларды біріктіріп жаңа пішін жасайтын құрал?", "a": ["Eyedropper", "Hand", "Shape Builder (Shift+M)", "Zoom"], "c": 2}, {"type": "mc", "t": 18, "q": "Сайтқа логотипті қай форматта береміз?", "a": ["SVG", "JPG", "PSD", "BMP"], "c": 0}, {"type": "mc", "t": 18, "q": "Артборд деген не?", "a": ["Қабат", "Қаріп", "Түстер палитрасы", "Жұмыс парағы (кенеп)"], "c": 3}, {"type": "mc", "t": 18, "q": "Баспаханаға (басып шығаруға) түс моделі?", "a": ["RGB", "HEX", "CMYK", "HSB"], "c": 2}], "tasks": [{"type": "task", "t": 360, "k": "1-тапсырма · 6 мин", "title": "Геометриялық иконка", "steps": ["Артборд: 512×512 px.", "Тек шеңбер (L), тіктөртбұрыш (M) және көпбұрыш құралдарын қолданыңыз.", "Фигуралардан иконка құрастырыңыз: үй, ракета, бұлт немесе кофе кесесі.", "2–3 түс, контурсыз (flat стиль).", "Экспорт: PNG / SVG немесе скриншот, жіберіңіз."], "crit": ["Тек геометриялық фигуралар", "2–3 түс", "Не екені танылады"]}, {"type": "task", "t": 360, "k": "2-тапсырма · 6 мин", "title": "Калам құралы: жапырақ", "steps": ["Артборд: 600×600 px.", "Калам құралымен (P) жапырақ пішінін салыңыз: 2–4 тірек нүкте, тұтқаларды созып қисық жасаңыз.", "Ортасына тамыр сызығын салыңыз (P).", "Толтыру — жасыл, тамыр — ақшыл түс.", "Экспорттап жіберіңіз."], "crit": ["Тегіс қисықтар", "Аз тірек нүкте", "Тұйық контур"]}, {"type": "task", "t": 480, "k": "3-тапсырма · 8 мин", "title": "Монограмма логотип", "steps": ["Артборд: 800×800 px.", "Аты-жөніңіздің 2 бас әрпін жазыңыз (T).", "Мәтінді контурға айналдырыңыз: Type → Create Outlines (Shift+Ctrl+O).", "Әріптерді шеңбер немесе алтыбұрыш ішіне орналастырыңыз, ортаға туралаңыз (Align).", "1 негізгі түс + ақ немесе қара.", "Экспорттап жіберіңіз."], "crit": ["2 әріп", "Контурға айналдырылған", "Ортаға тураланған"]}, {"type": "task", "t": 480, "k": "4-тапсырма · 8 мин", "title": "Визитка", "steps": ["Артборд: 90×50 мм (немесе 1050×600 px).", "Аты-жөні, мамандығы «веб-дизайнер», телефон немесе почта (ойдан).", "3-тапсырмадағы монограмманы қосыңыз.", "Қаріп иерархиясы: аты — ірі, қалғаны — кіші.", "Шетінен 5 мм шегініс қалдырыңыз, экспорттап жіберіңіз."], "crit": ["Иерархия", "Шегіністер", "Логотип бар"]}]};
+const COURSE = {"ns": "aiq1", "title": "СОӨЖ · ОН 2.2 · Adobe Illustrator", "joinTitle": "Illustrator практикасы", "tool": {"name": "Vectorpea", "url": "https://www.vectorpea.com"}, "quiz": [{"type": "mc", "t": 18, "q": "Векторлық графиканың басты артықшылығы?", "a": ["Фотоға ыңғайлы", "Сапасын жоғалтпай масштабталады", "Файлы әрқашан үлкен", "Тек басып шығаруға"], "c": 1}, {"type": "mc", "t": 15, "q": "[[«Перо»|Pen Tool]] құралының пернесі?", "a": ["V", "T", "P", "B"], "c": 2}, {"type": "mc", "t": 15, "q": "[[«Прямое выделение»|Direct Selection]] пернесі?", "a": ["A", "V", "M", "L"], "c": 0}, {"type": "mc", "t": 18, "q": "[[Преобразовать в кривые|Create Outlines]] пернелері?", "a": ["Ctrl+G", "Shift+Ctrl+O", "Ctrl+T", "Ctrl+E"], "c": 1}, {"type": "mc", "t": 18, "q": "Фигураларды біріктіріп жаңа пішін жасайтын құрал?", "a": ["Eyedropper / Пипетка", "Hand / Рука", "[[«Создание фигур»|Shape Builder]] (Shift+M)", "Zoom / Масштаб"], "c": 2}, {"type": "mc", "t": 18, "q": "Сайтқа логотипті қай форматта береміз?", "a": ["SVG", "JPG", "PSD", "BMP"], "c": 0}, {"type": "mc", "t": 18, "q": "[[Монтажная область|Artboard]] деген не?", "a": ["Қабат", "Қаріп", "Түстер палитрасы", "Жұмыс парағы (кенеп)"], "c": 3}, {"type": "mc", "t": 18, "q": "Баспаханаға (басып шығаруға) түс моделі?", "a": ["RGB", "HEX", "CMYK", "HSB"], "c": 2}], "bank": [{"id": "ai-geo", "title": "Геометриялық иконка", "min": 6, "ex": "geo", "steps": ["Монтажды аймақ (артборд): 512×512 px — [[Файл → Новый|File → New]].", "Тек [[«Эллипс» (L)|Ellipse Tool (L)]], [[«Прямоугольник» (M)|Rectangle Tool (M)]], [[«Многоугольник»|Polygon Tool]] құралдары.", "Фигуралардан иконка құрастырыңыз: үй, ракета, бұлт немесе кофе кесесі.", "2–3 түс, контурсыз (flat).", "Экспорт: [[Файл → Экспорт → Экспорт для экранов|File → Export → Export for Screens]] (PNG), немесе скриншот. Жіберіңіз."], "crit": ["Тек геометрия", "2–3 түс", "Танылады"]}, {"id": "ai-leaf", "title": "Перо құралы: жапырақ", "min": 6, "ex": "leaf", "steps": ["Монтажды аймақ (артборд): 600×600 px — [[Файл → Новый|File → New]].", "[[«Перо» (P)|Pen Tool (P)]]: 2–4 тірек нүкте, тұтқаларды созып қисық жасаңыз.", "Ортасына тамыр сызығы.", "Толтыру — жасыл, тамыр — ақшыл түс.", "Экспорт: [[Файл → Экспорт → Экспорт для экранов|File → Export → Export for Screens]] (PNG), немесе скриншот. Жіберіңіз."], "crit": ["Тегіс қисық", "Аз нүкте", "Тұйық контур"]}, {"id": "ai-mono", "title": "Монограмма логотип", "min": 8, "ex": "mono", "steps": ["Монтажды аймақ (артборд): 800×800 px — [[Файл → Новый|File → New]].", "Аты-жөніңіздің 2 бас әрпі: [[«Текст» (T)|Type Tool (T)]].", "[[Текст → Преобразовать в кривые|Type → Create Outlines]] (Shift+Ctrl+O).", "Шеңбер немесе алтыбұрыш ішіне, ортаға: [[Окно → Выравнивание|Window → Align]].", "1 негізгі түс + ақ немесе қара.", "Экспорт: [[Файл → Экспорт → Экспорт для экранов|File → Export → Export for Screens]] (PNG), немесе скриншот. Жіберіңіз."], "crit": ["2 әріп", "Қисыққа айналдырылған", "Ортада"]}, {"id": "ai-card", "title": "Визитка", "min": 8, "ex": "bcard", "steps": ["Монтажды аймақ (артборд): 90×50 мм — [[Файл → Новый|File → New]].", "Аты-жөні, «веб-дизайнер», телефон немесе почта (ойдан).", "Логотип немесе монограмма.", "Иерархия: аты — ірі, қалғаны — кіші. Шеттен 5 мм шегініс.", "Экспорт: [[Файл → Экспорт → Экспорт для экранов|File → Export → Export for Screens]] (PNG), немесе скриншот. Жіберіңіз."], "crit": ["Иерархия", "Шегіністер", "Логотип бар"]}, {"id": "ai-landscape", "title": "Flat пейзаж: тау мен күн", "min": 8, "ex": "landscape", "steps": ["Монтажды аймақ (артборд): 800×600 px — [[Файл → Новый|File → New]].", "Аспан: тіктөртбұрыш + градиент.", "Таулар: [[«Многоугольник»|Polygon Tool]] немесе [[«Перо» (P)|Pen Tool (P)]], 2–3 қабат, әр түрлі реңк.", "Күн: шеңбер. Бұлттар: шеңберлерді біріктіріңіз.", "Барлығы 4–5 түстен аспасын.", "Экспорт: [[Файл → Экспорт → Экспорт для экранов|File → Export → Export for Screens]] (PNG), немесе скриншот. Жіберіңіз."], "crit": ["Тереңдік (жоспарлар)", "Шектеулі палитра"]}, {"id": "ai-iconset", "title": "4 иконка жинағы (сызықтық)", "min": 10, "ex": "iconset", "steps": ["Монтажды аймақ (артборд): 800×200 px — [[Файл → Новый|File → New]].", "Тор: әр иконка 48×48 px, арасы бірдей.", "Үй, іздеу, пайдаланушы, параметрлер иконкалары.", "Барлығында бірдей сызық қалыңдығы 2 px: [[панель «Обводка»|Stroke panel]], ұштары дөңгеленген.", "Толтырусыз, бір түс.", "Экспорт: [[Файл → Экспорт → Экспорт для экранов|File → Export → Export for Screens]] (PNG), немесе скриншот. Жіберіңіз."], "crit": ["Бірдей стиль", "Бірдей өлшем", "Тураланған"]}, {"id": "ai-pattern", "title": "Қайталанатын өрнек (паттерн)", "min": 8, "ex": "pattern", "steps": ["Бір элемент жасаңыз: гүл, жапырақ немесе геометрия.", "Элементті белгілеп: [[Объект → Узор → Создать|Object → Pattern → Make]].", "[[Тип фрагмента: Кирпич|Tile Type: Brick]] немесе тор, аралықты реттеңіз.", "800×800 тіктөртбұрышты осы өрнекпен толтырыңыз.", "Экспорт: [[Файл → Экспорт → Экспорт для экранов|File → Export → Export for Screens]] (PNG), немесе скриншот. Жіберіңіз."], "crit": ["Тігістер көрінбейді", "Ырғақ бар"]}, {"id": "ai-iso", "title": "Изометриялық текше", "min": 8, "ex": "iso", "steps": ["Монтажды аймақ (артборд): 600×600 px — [[Файл → Новый|File → New]].", "[[Вид → Показать сетку|View → Show Grid]] немесе ромбтардан текшенің 3 жағын салыңыз.", "Немесе шаршыны: [[Объект → Трансформировать → Масштабирование / Наклон / Поворот|Object → Transform → Scale / Shear / Rotate]].", "3 жақ — бір түстің 3 реңкі (жарық, орта, қою).", "Үстіне иконка немесе әріп қойыңыз.", "Экспорт: [[Файл → Экспорт → Экспорт для экранов|File → Export → Export for Screens]] (PNG), немесе скриншот. Жіберіңіз."], "crit": ["Дұрыс бұрыштар", "Жарық-көлеңке"]}, {"id": "ai-emblem", "title": "Дөңгелек эмблема (мәтін контур бойымен)", "min": 8, "ex": "emblem", "steps": ["Монтажды аймақ (артборд): 600×600 px — [[Файл → Новый|File → New]].", "Екі шеңбер: сыртқы және ішкі.", "Мәтінді шеңбер бойымен: [[«Текст по контуру»|Type on a Path Tool]].", "Ортасына белгіше (жұлдыз, кесе, тау).", "Жыл немесе қала атауы астында.", "Экспорт: [[Файл → Экспорт → Экспорт для экранов|File → Export → Export for Screens]] (PNG), немесе скриншот. Жіберіңіз."], "crit": ["Мәтін тегіс иілген", "Симметрия"]}, {"id": "ai-infographic", "title": "Инфографика: 3 баған", "min": 8, "ex": "infographic", "steps": ["Монтажды аймақ (артборд): 800×600 px — [[Файл → Новый|File → New]].", "[[Инструмент «Гистограмма» (J)|Column Graph Tool (J)]] немесе тіктөртбұрыштар.", "Мәндер: 45%, 70%, 90% — әр бағанның үстінде сан.", "Әр бағанның астында иконка және атауы.", "Тақырып және дереккөз жолы.", "Экспорт: [[Файл → Экспорт → Экспорт для экранов|File → Export → Export for Screens]] (PNG), немесе скриншот. Жіберіңіз."], "crit": ["Сандар оқылады", "Бірдей стиль"]}, {"id": "ai-sticker", "title": "«NEW» стикері", "min": 5, "ex": "sticker", "steps": ["Монтажды аймақ (артборд): 500×500 px — [[Файл → Новый|File → New]].", "[[«Звезда»|Star Tool]]: 12–16 сәуле, ішкі радиус үлкен (тісті шеңбер).", "Ортасына «NEW» немесе «−20%», жуан қаріп.", "Ақ контур + аздап бұру (10–15°).", "Экспорт: [[Файл → Экспорт → Экспорт для экранов|File → Export → Export for Screens]] (PNG), немесе скриншот. Жіберіңіз."], "crit": ["Көзге түседі", "Мәтін ортада"]}, {"id": "ai-recolor", "title": "Бір иконка — 3 палитра", "min": 6, "ex": "recolor", "steps": ["Кез келген иконкаңызды (немесе 1-тапсырманы) 3 рет көшіріңіз.", "Әр көшірмені қайта бояңыз: [[Правка → Редактировать цвета → Перекрасить графический объект|Edit → Edit Colors → Recolor Artwork]].", "Палитралар: жылы, суық, монохром.", "Үшеуін қатар туралаңыз.", "Экспорт: [[Файл → Экспорт → Экспорт для экранов|File → Export → Export for Screens]] (PNG), немесе скриншот. Жіберіңіз."], "crit": ["3 түрлі көңіл-күй", "Контраст сақталған"]}, {"id": "ai-cloud", "title": "Shape Builder: бұлт", "min": 5, "ex": "cloud", "steps": ["Монтажды аймақ (артборд): 600×400 px — [[Файл → Новый|File → New]].", "3–4 шеңбер және төменде тіктөртбұрыш салыңыз, бір-біріне кіргізіңіз.", "Барлығын белгілеп: [[«Создание фигур» (Shift+M)|Shape Builder Tool (Shift+M)]] — тартып біріктіріңіз.", "Бір пішін шықты. Түс және жұмсақ көлеңке қосыңыз.", "Экспорт: [[Файл → Экспорт → Экспорт для экранов|File → Export → Export for Screens]] (PNG), немесе скриншот. Жіберіңіз."], "crit": ["Бір тұтас пішін", "Артық нүкте жоқ"]}, {"id": "ai-logo", "title": "Кофехана логотипі", "min": 10, "ex": "logo", "steps": ["Монтажды аймақ (артборд): 800×600 px — [[Файл → Новый|File → New]].", "Символ: кесе, дән немесе бу — қарапайым фигуралардан.", "Атауы: «Dala Coffee» немесе өз атауыңыз, қаріп жұбы.", "2 нұсқа: көлденең және тік.", "1–2 түс, ақ фонда да, қою фонда да оқылады.", "Экспорт: [[Файл → Экспорт → Экспорт для экранов|File → Export → Export for Screens]] (PNG), немесе скриншот. Жіберіңіз."], "crit": ["Қарапайым", "2 нұсқа", "Масштабта оқылады"]}, {"id": "ai-oyu", "title": "Қазақ ою-өрнегі: қошқар мүйіз", "min": 10, "ex": "oyu", "steps": ["Монтажды аймақ (артборд): 600×600 px — [[Файл → Новый|File → New]].", "[[«Перо» (P)|Pen Tool (P)]]: мүйіздің бір бұйрасын (спираль) салыңыз.", "Көшіріп айналы бейнелеңіз: [[«Зеркальное отражение» (O)|Reflect Tool (O)]].", "Екеуін біріктіріп элемент жасаңыз, оны 4 жаққа айналдырып көшіріңіз (Rotate 90°).", "Ұлттық түстер: көк, алтын, қызыл.", "Экспорт: [[Файл → Экспорт → Экспорт для экранов|File → Export → Export for Screens]] (PNG), немесе скриншот. Жіберіңіз."], "crit": ["Симметрия", "Тегіс қисықтар"]}, {"id": "ai-pin", "title": "Карта белгісі (pin) иконкасы", "min": 5, "ex": "pin", "steps": ["Монтажды аймақ (артборд): 400×400 px — [[Файл → Новый|File → New]].", "Шеңбер + төмен қараған үшбұрыш → біріктіріңіз (Shape Builder немесе Pathfinder).", "Ортасында ақ шеңбер — тесік: Pathfinder → Minus Front.", "Градиент толтыру және астына сопақ көлеңке.", "Экспорт: [[Файл → Экспорт → Экспорт для экранов|File → Export → Export for Screens]] (PNG), немесе скриншот. Жіберіңіз."], "crit": ["Бір пішін", "Ортасы тесік"]}], "defaults": ["ai-geo", "ai-leaf", "ai-mono", "ai-card"]};
 /* ===================== НАСТРОЙКИ ===================== */
 /* COURSE = {ns, title, tool:{name,url}, quiz:[...], tasks:[...]} задаётся на странице */
 const SETS = {
-  quiz: {name: "Квиз · 5 минут", short: "Квиз", rounds: COURSE.quiz, quick: true},
-  practice: {name: "Практика · " + COURSE.tasks.length + " тапсырма", short: "Практика", rounds: COURSE.tasks, quick: false}
+  quiz: {name: () => "Квиз · 5 минут", short: "Квиз", quick: true},
+  practice: {name: n => "Практика · " + n + " тапсырма", short: "Практика", quick: false}
 };
+/* [[орысша|english]] → таңдалған интерфейс тілі */
+const L = (s, lang) => String(s == null ? "" : s).replace(/\[\[([^|\]]*)\|([^\]]*)\]\]/g, (m, ru, en) => lang === "en" ? en : ru);
+const exUrl = ex => !ex ? "" : /^https?:\/\//.test(ex) ? ex : "ex/" + ex + ".jpg";
+const fromBank = id => { const b = COURSE.bank.find(x => x.id === id); return b ? JSON.parse(JSON.stringify(Object.assign({uid: rid(6)}, b))) : null; };
+const defaultPlan = () => COURSE.defaults.map(fromBank).filter(Boolean);
+const toRound = (t, i) => ({type: "task", t: Math.max(1, +t.min || 5) * 60, k: (i + 1) + "-тапсырма · " + (+t.min || 5) + " мин", title: t.title, steps: t.steps || [], crit: t.crit || [], ex: t.ex || ""});
 const NS = COURSE.ns;
 const TITLE = COURSE.title;
 const BROKERS = ["wss://broker.emqx.io:8084/mqtt", "wss://broker.hivemq.com:8884/mqtt", "wss://test.mosquitto.org:8081"];
@@ -353,15 +406,96 @@ function compressImage(file) {
   });
 }
 
+
+/* ===================== ТАПСЫРМАЛАР РЕДАКТОРЫ (мұғалім) ===================== */
+function PlanEditor(plan0, onDone) {
+  let plan = JSON.parse(JSON.stringify(plan0));
+  let pvLang = "ru";
+  const w = document.createElement("div"); w.className = "ed"; w.id = "ed"; document.body.appendChild(w);
+  const totalMin = () => plan.reduce((a, t) => a + (+t.min || 0), 0);
+  function draw() {
+    const inPlan = new Set(plan.map(t => t.id));
+    w.innerHTML = `<div class="edtop"><div><div class="kicker">Практика</div><h2 class="disp" style="margin:0;font-size:32px">Тапсырмалар: ${plan.length} · ${totalMin()} мин</h2></div>
+        <div style="display:flex;gap:10px;flex-wrap:wrap"><button class="btn ghost" id="edadd">+ Өз тапсырмаңыз</button><button class="btn ghost" id="eddef">Әдепкіге қайтару</button><button class="btn" id="edok">Дайын</button></div></div>
+      <div class="edcols">
+        <div class="edlist"><div class="edh">Сабақта (реті бойынша)</div>
+          ${plan.map((t, i) => `<div class="edrow">
+              <span class="n">${i + 1}</span>${t.ex ? `<img src="${esc(exUrl(t.ex))}" alt="" onerror="this.style.visibility='hidden'">` : `<span class="noimg"></span>`}
+              <div class="tt"><b>${esc(t.title)}</b><span class="mut">${t.id && t.id.indexOf("custom") === 0 ? "өз тапсырмаңыз" : t.edited ? "өзгертілген" : "банктен"} · ${(t.steps || []).length} қадам</span></div>
+              <div class="mins"><button data-a="minus" data-i="${i}" aria-label="Азайту">−</button><span>${t.min} мин</span><button data-a="plus" data-i="${i}" aria-label="Көбейту">+</button></div>
+              <button class="ib" data-a="up" data-i="${i}" ${i === 0 ? "disabled" : ""} aria-label="Жоғары">↑</button><button class="ib" data-a="down" data-i="${i}" ${i === plan.length - 1 ? "disabled" : ""} aria-label="Төмен">↓</button>
+              <button class="ib" data-a="edit" data-i="${i}" aria-label="Өңдеу">✎</button><button class="ib del" data-a="del" data-i="${i}" aria-label="Өшіру">✕</button>
+            </div>`).join("") || `<p class="mut">Тапсырма таңдалмаған. Оң жақтағы банктен қосыңыз.</p>`}
+        </div>
+        <div class="edbank"><div class="edh">Тапсырмалар банкі · ${COURSE.bank.length}</div><div class="bgrid">
+          ${COURSE.bank.map(b => `<div class="bcard ${inPlan.has(b.id) ? "on" : ""}"><img src="${esc(exUrl(b.ex))}" alt="${esc(b.title)}"><div class="bt"><b>${esc(b.title)}</b><span class="mut">${b.min} мин</span></div>
+            <button class="btn ${inPlan.has(b.id) ? "ghost" : ""}" data-add="${b.id}" ${inPlan.has(b.id) ? "disabled" : ""}>${inPlan.has(b.id) ? "✓ Қосылған" : "+ Қосу"}</button></div>`).join("")}
+        </div></div>
+      </div>`;
+    $("#edok").onclick = () => { if (!plan.length) { toast("Кемінде 1 тапсырма таңдаңыз"); return; } onDone(plan); w.remove(); };
+    $("#eddef").onclick = () => { plan = defaultPlan(); draw(); };
+    $("#edadd").onclick = () => edit(-1);
+    w.querySelectorAll("[data-add]").forEach(b => b.onclick = () => { const t = fromBank(b.dataset.add); if (t) { plan.push(t); draw(); } });
+    w.querySelectorAll("[data-a]").forEach(b => b.onclick = () => {
+      const i = +b.dataset.i, a = b.dataset.a;
+      if (a === "minus") plan[i].min = Math.max(1, (+plan[i].min || 5) - 1);
+      if (a === "plus") plan[i].min = Math.min(60, (+plan[i].min || 5) + 1);
+      if (a === "up" && i > 0) [plan[i - 1], plan[i]] = [plan[i], plan[i - 1]];
+      if (a === "down" && i < plan.length - 1) [plan[i + 1], plan[i]] = [plan[i], plan[i + 1]];
+      if (a === "del") plan.splice(i, 1);
+      if (a === "edit") return edit(i);
+      draw();
+    });
+  }
+  function edit(i) {
+    const t = i >= 0 ? plan[i] : {uid: rid(6), id: "custom-" + rid(5), title: "", min: 6, steps: [], crit: [], ex: ""};
+    const m = document.createElement("div"); m.className = "edm"; w.appendChild(m);
+    const bankItem = COURSE.bank.find(b => b.id === t.id);
+    m.innerHTML = `<div class="edbox">
+      <div class="edtop" style="margin:0"><h3 class="disp" style="margin:0;font-size:26px">${i >= 0 ? "Тапсырманы өңдеу" : "Жаңа тапсырма"}</h3><button class="btn ghost" id="mx">Болдырмау</button></div>
+      <div class="edform">
+        <div class="ff"><label>Атауы</label><input id="f-title" value="${esc(t.title)}" maxlength="80" placeholder="Мысалы: Мерекелік постер"></div>
+        <div class="ff" style="max-width:160px"><label>Уақыты, мин</label><input id="f-min" type="number" min="1" max="60" value="${+t.min || 6}"></div>
+        <div class="ff wide"><label>Қадамдар — әр жолға бір қадам</label><textarea id="f-steps" rows="8">${esc((t.steps || []).join("\n"))}</textarea>
+          <div class="hint">Мәзір атауын екі тілде жазу: <code>[[Файл → Создать|File → New]]</code> — студент таңдаған интерфейс тіліне қарай біреуі көрінеді.</div></div>
+        <div class="ff"><label>Бағалау критерийлері — әр жолға біреу</label><textarea id="f-crit" rows="3">${esc((t.crit || []).join("\n"))}</textarea></div>
+        <div class="ff"><label>Мысал сурет</label><select id="f-exsel"><option value="">Жоқ</option>${COURSE.bank.map(b => `<option value="${b.ex}" ${t.ex === b.ex ? "selected" : ""}>Банктен: ${esc(b.title)}</option>`).join("")}<option value="__url" ${/^https?:/.test(t.ex) ? "selected" : ""}>Сілтеме (URL)…</option></select>
+          <input id="f-exurl" placeholder="https://…/surat.jpg" value="${/^https?:/.test(t.ex) ? esc(t.ex) : ""}" style="margin-top:8px;${/^https?:/.test(t.ex) ? "" : "display:none"}"></div>
+        <div class="ff wide"><div class="pvh"><label>Алдын ала қарау</label><div class="mode" style="margin:0">${[["ru", "Орысша"], ["en", "English"]].map(([k, x]) => `<button data-pv="${k}" class="${pvLang === k ? "on" : ""}">${x}</button>`).join("")}</div></div><ol class="pv" id="pv"></ol></div>
+      </div>
+      <div class="edtop" style="margin:0;justify-content:flex-end">${bankItem && i >= 0 ? `<button class="btn ghost" id="mreset">Банктегі нұсқаға қайтару</button>` : ""}<button class="btn" id="msave">Сақтау</button></div></div>`;
+    const pv = () => { $("#pv").innerHTML = $("#f-steps").value.split("\n").map(x => x.trim()).filter(Boolean).map(x => `<li>${esc(L(x, pvLang))}</li>`).join("") || `<li class="mut">Қадамдар жоқ</li>`; };
+    $("#f-steps").oninput = pv; pv();
+    m.querySelectorAll("[data-pv]").forEach(b => b.onclick = () => { pvLang = b.dataset.pv; m.querySelectorAll("[data-pv]").forEach(x => x.classList.toggle("on", x === b)); pv(); });
+    $("#f-exsel").onchange = () => { $("#f-exurl").style.display = $("#f-exsel").value === "__url" ? "" : "none"; };
+    $("#mx").onclick = () => m.remove();
+    const rs = $("#mreset"); if (rs) rs.onclick = () => { const f = fromBank(t.id); f.uid = t.uid; plan[i] = f; m.remove(); draw(); };
+    $("#msave").onclick = () => {
+      const title = $("#f-title").value.trim(), steps = $("#f-steps").value.split("\n").map(x => x.trim()).filter(Boolean);
+      if (!title) { toast("Атауын жазыңыз"); return; }
+      if (!steps.length) { toast("Кемінде бір қадам жазыңыз"); return; }
+      const sel = $("#f-exsel").value, url = $("#f-exurl").value.trim();
+      if (sel === "__url" && url && !/^https?:\/\//.test(url)) { toast("Сілтеме https:// деп басталуы керек"); return; }
+      const nt = Object.assign({}, t, {title, min: Math.min(60, Math.max(1, +$("#f-min").value || 6)), steps, crit: $("#f-crit").value.split("\n").map(x => x.trim()).filter(Boolean), ex: sel === "__url" ? url : sel, edited: !!bankItem});
+      if (i >= 0) plan[i] = nt; else plan.push(nt);
+      m.remove(); draw();
+    };
+  }
+  draw();
+}
+
 /* ===================== ЖҮРГІЗУШІ (мұғалім) ===================== */
 function Host() {
   let H = store.get("host");
-  const fresh = () => ({room: rid(5, "ABCDEFGHJKLMNPQRSTUVWXYZ23456789"), b: +(PARAMS.get("b") || 0), set: "quiz", phase: "lobby", qi: -1, players: {}, ans: {}, counts: [0, 0, 0, 0], qEnd: 0, feed: [], prevRank: {}, subs: {}, grades: {}, votes: {}});
+  const fresh = () => ({room: rid(5, "ABCDEFGHJKLMNPQRSTUVWXYZ23456789"), b: +(PARAMS.get("b") || 0), lang: store.get("lang") || "ru", plan: store.get("plan") || defaultPlan(), set: "quiz", phase: "lobby", qi: -1, players: {}, ans: {}, counts: [0, 0, 0, 0], qEnd: 0, feed: [], prevRank: {}, subs: {}, grades: {}, votes: {}});
   if (!H || !H.room || !SETS[H.set]) H = fresh();
+  if (!Array.isArray(H.plan) || !H.plan.length) H.plan = store.get("plan") || defaultPlan();
+  if (!H.lang) H.lang = "ru";
   const IMG = {}; /* pid -> dataURL (ағымдағы тапсырма) */
   let client = null, tick = null, pubTimer = null, connectedOnce = false, lb = null;
   const save = () => store.set("host", H);
-  const RS = () => SETS[H.set].rounds, total = () => RS().length, R = () => RS()[H.qi];
+  const RS = () => H.set === "quiz" ? COURSE.quiz : H.plan.map(toRound), total = () => RS().length, R = () => RS()[H.qi];
+  const setName = k => SETS[k].name(k === "quiz" ? COURSE.quiz.length : H.plan.length);
   const rk = () => H.set + ":" + H.qi;
   const pids = () => Object.keys(H.players);
   const leftMs = () => H.paused ? (H.pauseLeft || 0) : Math.max(0, H.qEnd - Date.now());
@@ -389,7 +523,8 @@ function Host() {
   }
 
   function pubState() {
-    const st = {v: 3, set: H.set, phase: H.phase, qi: H.qi, total: total(), n: pids().length, answered: isTask(R()) ? Object.keys(H.subs).length : Object.keys(H.ans).length};
+    const st = {v: 3, set: H.set, lang: H.lang, setName: setName(H.set), phase: H.phase, qi: H.qi, total: total(), n: pids().length, answered: isTask(R()) ? Object.keys(H.subs).length : Object.keys(H.ans).length};
+    if (isTask(R()) && H.phase !== "lobby") st.task = R();
     if (H.phase === "question") { st.endsIn = leftMs(); st.paused = !!H.paused; st.roster = ranked().slice(0, 40).map(id => [id, H.players[id].name]); }
     if (H.phase === "vote") st.cands = subPids().map(id => [id, H.players[id].name]);
     pub("s", st, true);
@@ -605,12 +740,16 @@ function Host() {
             <div style="display:flex;gap:10px;margin-top:18px;flex-wrap:wrap"><button class="btn ghost" id="copy">Сілтемені көшіру</button>
             ${!connectedOnce ? `<button class="btn ghost" id="srv">Басқа сервер (${H.b + 1}/${BROKERS.length})</button>` : ""}</div></div>
         </div>
+        <div><div class="setrow" style="margin:0 0 14px"><span class="mut">Интерфейс:</span><div class="mode" style="margin:0">${[["ru", "Орысша"], ["en", "English"]].map(([k, t]) => `<button data-lang="${k}" class="${H.lang === k ? "on" : ""}">${t}</button>`).join("")}</div>
+            <button class="btn ghost" id="plan" style="height:40px;font-size:14px;margin-left:auto">✎ Тапсырмалар (${H.plan.length})</button></div>
         <div class="plbox"><div class="count">${ps.length} ойыншы</div>
-          <div class="pl">${ps.map(id => `<button class="chip" data-k="${id}" title="Ойыннан шығару">${esc(H.players[id].name)}</button>`).join("") || `<span class="mut" style="font-size:18px">Ойыншыларды күтудеміз…</span>`}</div></div>
-        </div></div>${ctlBar(ps.length ? "Бастау: " + SETS[H.set].short : "", "", `<div class="mode" style="margin:0">${Object.keys(SETS).map(k => `<button data-set="${k}" class="${H.set === k ? "on" : ""}">${SETS[k].name}</button>`).join("")}</div>`)}</div>`;
+          <div class="pl">${ps.map(id => `<button class="chip" data-k="${id}" title="Ойыннан шығару">${esc(H.players[id].name)}</button>`).join("") || `<span class="mut" style="font-size:18px">Ойыншыларды күтудеміз…</span>`}</div></div></div>
+        </div></div>${ctlBar(ps.length ? "Бастау: " + SETS[H.set].short : "", "", `<div class="mode" style="margin:0">${Object.keys(SETS).map(k => `<button data-set="${k}" class="${H.set === k ? "on" : ""}">${setName(k)}</button>`).join("")}</div>`)}</div>`;
       $("#copy").onclick = () => { navigator.clipboard && navigator.clipboard.writeText(joinUrl()).then(() => toast("Көшірілді — Discord чатқа қойыңыз"), () => toast("Көшіру мүмкін болмады")); };
       const srv = $("#srv"); if (srv) srv.onclick = () => { H.b = (H.b + 1) % BROKERS.length; start(); };
-      document.querySelectorAll(".mode button").forEach(b => b.onclick = () => { if (H.set !== b.dataset.set) { H.set = b.dataset.set; save(); pubState(); render(); } });
+      document.querySelectorAll(".mode button[data-set]").forEach(b => b.onclick = () => { if (H.set !== b.dataset.set) { H.set = b.dataset.set; save(); pubState(); render(); } });
+      document.querySelectorAll(".mode button[data-lang]").forEach(b => b.onclick = () => { H.lang = b.dataset.lang; store.set("lang", H.lang); save(); pubState(); render(); });
+      $("#plan").onclick = () => PlanEditor(H.plan, plan => { H.plan = plan; store.set("plan", plan); save(); pubState(); render(); });
       document.querySelectorAll(".chip[data-k]").forEach(b => b.onclick = () => {
         const id = b.dataset.k; if (b.dataset.c !== "1") { b.dataset.c = "1"; b.textContent = "Шығару?"; setTimeout(render, 2500); return; }
         H.players[id].kicked = true; pubPlayer(id); delete H.players[id]; save(); pubState(); render(); });
@@ -619,9 +758,9 @@ function Host() {
       const max = Math.max(1, ...H.counts);
       const nextLbl = rv ? (H.qi + 1 >= total() ? "Нәтиже" : "Келесі сұрақ") : "Жауапты көрсету";
       app.innerHTML = `<div class="host">${head}<div class="hbody">
-        <div class="qhead"><div style="flex:1"><h2 class="qtext">${esc(r.q)}</h2></div><div style="text-align:right">${!rv && H.paused ? `<div class="kicker" style="color:var(--a2)">Кідірту</div>` : ""}<div class="timer" id="htime" style="${!rv && H.paused ? "color:var(--a2)" : ""}">${rv ? "" : fmtTime(Math.ceil(left / 1000))}</div></div></div>
+        <div class="qhead"><div style="flex:1"><h2 class="qtext">${esc(L(r.q, H.lang))}</h2></div><div style="text-align:right">${!rv && H.paused ? `<div class="kicker" style="color:var(--a2)">Кідірту</div>` : ""}<div class="timer" id="htime" style="${!rv && H.paused ? "color:var(--a2)" : ""}">${rv ? "" : fmtTime(Math.ceil(left / 1000))}</div></div></div>
         <div class="bar"><i id="hbar" style="transform:scaleX(${rv ? 0 : left / (r.t * 1000)})"></i></div>
-        <div class="hgrid"><div class="tiles">${r.a.map((a, i) => `<div class="tile t${i} ${rv ? (i === r.c ? "win" : "off") : ""}">${SHAPES[i]}<span>${esc(a)}</span>${rv ? `<span class="cnt">${H.counts[i]}</span><span class="fill" style="width:${H.counts[i] / max * 100}%"></span>` : ""}</div>`).join("")}</div>${side(done, n)}</div>
+        <div class="hgrid"><div class="tiles">${r.a.map((a, i) => `<div class="tile t${i} ${rv ? (i === r.c ? "win" : "off") : ""}">${SHAPES[i]}<span>${esc(L(a, H.lang))}</span>${rv ? `<span class="cnt">${H.counts[i]}</span><span class="fill" style="width:${H.counts[i] / max * 100}%"></span>` : ""}</div>`).join("")}</div>${side(done, n)}</div>
         </div>${ctlBar(nextLbl, rv ? "" : `<button class="btn ghost" id="pause">${H.paused ? "▶ Жалғастыру" : "❚❚ Кідірту"}</button>`)}</div>`;
     } else if (H.phase === "question") {
       const r = R(), left = leftMs(), n = pids().length, done = Object.keys(H.subs).length;
@@ -629,7 +768,7 @@ function Host() {
         <div class="qhead"><div style="flex:1"><div class="kicker">${esc(r.k)}</div><h2 class="qtext">${esc(r.title)}</h2></div><div style="text-align:right">${H.paused ? `<div class="kicker" style="color:var(--a2)">Кідірту</div>` : ""}<div class="timer" id="htime" style="${H.paused ? "color:var(--a2)" : ""}">${fmtTime(Math.ceil(left / 1000))}</div></div></div>
         <div class="bar"><i id="hbar" style="transform:scaleX(${left / (r.t * 1000)})"></i></div>
         <div class="tgrid">
-          <div class="steps"><ol>${r.steps.map(s => `<li>${esc(s)}</li>`).join("")}</ol>${r.crit ? `<div class="crit">${r.crit.map(c => `<span>${esc(c)}</span>`).join("")}</div>` : ""}</div>
+          <div class="steps">${r.ex ? `<img class="exh" src="${esc(exUrl(r.ex))}" alt="Мысал" onerror="this.remove()">` : ""}<ol>${r.steps.map(s => `<li>${esc(L(s, H.lang))}</li>`).join("")}</ol>${r.crit && r.crit.length ? `<div class="crit">${r.crit.map(c => `<span>${esc(c)}</span>`).join("")}</div>` : ""}</div>
           <div><div class="count">${done} / ${n} жіберді</div>${gallery(false)}</div>
         </div></div>${ctlBar("Уақытты аяқтау", `<button class="btn ghost" id="pause">${H.paused ? "▶ Жалғастыру" : "❚❚ Кідірту"}</button>`)}</div>`;
     } else if (H.phase === "review" || H.phase === "vote") {
@@ -670,7 +809,8 @@ function Player() {
   let draft = {k: "", data: null}, sending = false, sentLocal = {k: "", data: null};
   const seen = {note: null, frozen: null, res: null};
   let iceTimer = null;
-  const RR = () => S && S.qi >= 0 && SETS[S.set] ? SETS[S.set].rounds[S.qi] : null;
+  const RR = () => !S || S.qi < 0 || !SETS[S.set] ? null : S.set === "quiz" ? COURSE.quiz[S.qi] : S.task || null;
+  const lang = () => store.get("lang") || (S && S.lang) || "ru";
   const qkey = () => S ? S.set + ":" + S.qi : "";
 
   function send(o) { o.pid = pid; if (S) o.set = S.set; if (client && client.connected) { client.publish(T(room) + "i", JSON.stringify(o), {qos: 1}); return true; } return false; }
@@ -725,7 +865,7 @@ function Player() {
     if (S.phase === "lobby") return "lobby" + S.set;
     const r = RR();
     if (S.phase === "question") {
-      if (isTask(r)) return "task" + qkey();
+      if (isTask(r)) return "task" + qkey() + lang();
       return (locked() ? "locked" : "q") + qkey();
     }
     if (S.phase === "reveal") return "rv" + qkey() + (P && P.last ? P.last.k : "");
@@ -796,7 +936,7 @@ function Player() {
       const kicked = key === "kicked", lobby = key.startsWith("lobby");
       app.innerHTML = `<div class="ply">${top()}<div class="pc"><div class="wait up">${kicked ? "" : `<div class="ring"></div>`}
         <h1>${kicked ? "Сіз ойыннан шығарылдыңыз" : !lobby ? "Ойынды іздеудеміз…" : "Сіз ойындасыз!"}</h1>
-        <p class="mut" style="margin:0;font-size:17px">${kicked ? "Атыңызды өзгертіп, қайта кіріңіз." : !lobby ? "Код дұрыс па? " + esc(room) : "Келесі: " + esc(SETS[S.set].name) + ". Мұғалім бастағанша күтіңіз."}</p>
+        <p class="mut" style="margin:0;font-size:17px">${kicked ? "Атыңызды өзгертіп, қайта кіріңіз." : !lobby ? "Код дұрыс па? " + esc(room) : "Келесі: " + esc(S.setName || SETS[S.set].short) + ". Мұғалім бастағанша күтіңіз."}</p>
         ${lobby && S.set === "practice" ? `<a class="btn ghost" href="${COURSE.tool.url}" target="_blank" rel="noopener">${ICON.ext}<span>${esc(COURSE.tool.name)} алдын ала ашу</span></a>` : ""}
         ${kicked || !lobby ? `<button class="btn ghost" id="back">Кодты/атты өзгерту</button>` : ""}</div></div></div>`;
       const b = $("#back"); if (b) b.onclick = () => { joined = false; store.del("joinedRoom"); if (kicked) { pid = rid(14); store.set("pid", pid); go(); } lastScreen = ""; render(); };
@@ -805,13 +945,16 @@ function Player() {
     if (key.startsWith("task")) {
       app.innerHTML = `<div class="ply"><div class="pw-wrap">${top()}<div class="ptimer"><i id="pt"></i></div><div id="pzl" class="hidden pzl">Кідірту — уақыт тоқтатылды</div>
         <div class="pk">${esc(r.k)} · <span id="ptt"></span></div><div class="pq up">${esc(r.title)}</div>
-        <ol class="psteps">${r.steps.map(s => `<li>${esc(s)}</li>`).join("")}</ol>
-        ${r.crit ? `<div class="crit">${r.crit.map(c => `<span>${esc(c)}</span>`).join("")}</div>` : ""}
+        <div class="langsw"><span class="mut">Интерфейс:</span>${[["ru", "Орысша"], ["en", "English"]].map(([k, t]) => `<button data-l="${k}" class="${lang() === k ? "on" : ""}">${t}</button>`).join("")}</div>
+        <ol class="psteps">${r.steps.map(s => `<li>${esc(L(s, lang()))}</li>`).join("")}</ol>
+        ${r.crit && r.crit.length ? `<div class="crit">${r.crit.map(c => `<span>${esc(c)}</span>`).join("")}</div>` : ""}
+        ${r.ex ? `<details class="exd"><summary>Мысалды көру</summary><img src="${esc(exUrl(r.ex))}" alt="Мысал" onerror="this.parentNode.remove()"></details>` : ""}
         <a class="btn ghost" href="${COURSE.tool.url}" target="_blank" rel="noopener" style="width:100%;margin:12px 0">${ICON.ext}<span>${esc(COURSE.tool.name)} ашу</span></a>
         <input type="file" id="file" accept="image/*" class="hidden">
         <div id="upbox" class="upbox"></div>
         <p class="mut" style="font-size:13px;margin:10px 0 0">Ноутбукта Adobe бағдарламасында жұмыс істесеңіз — экспорттап, файлды осы бетке (браузерде) жүктеңіз.</p>
         </div></div>`;
+      document.querySelectorAll(".langsw button").forEach(b => b.onclick = () => { store.set("lang", b.dataset.l); lastScreen = ""; render(); });
       $("#file").onchange = async e => {
         const f = e.target.files && e.target.files[0]; e.target.value = ""; if (!f) return;
         try { draft = {k: qkey(), data: await compressImage(f)}; taskUpload(); }
@@ -825,8 +968,8 @@ function Player() {
     }
     if (key.startsWith("q")) {
       app.innerHTML = `<div class="ply"><div class="pw-wrap">${top()}<div class="ptimer"><i id="pt"></i></div><div id="pzl" class="hidden pzl">Кідірту — уақыт тоқтатылды</div>
-        <div class="pq up">${esc(r.q)}</div>
-        <div class="answers">${r.a.map((a, i) => `<button class="ans t${i}" data-a="${i}">${SHAPES[i]}<span>${esc(a)}</span></button>`).join("")}</div>
+        <div class="pq up">${esc(L(r.q, lang()))}</div>
+        <div class="answers">${r.a.map((a, i) => `<button class="ans t${i}" data-a="${i}">${SHAPES[i]}<span>${esc(L(a, lang()))}</span></button>`).join("")}</div>
         <div class="pw"><button class="pwb" id="pwfr">${ICON.fr}<span>Мұздату</span><span class="k" id="kfr"></span></button><button class="pwb" id="pwx2">${ICON.x2}<span>Екі есе</span><span class="k" id="kx2"></span></button><button class="pwb" id="pwff">${ICON.ff}<span>50/50</span><span class="k" id="kff"></span></button></div>
         <div class="shld" id="shld">${ICON.sh}<span></span></div></div></div>`;
       document.querySelectorAll(".ans").forEach(b => b.onclick = () => sendMc(+b.dataset.a));
@@ -848,7 +991,7 @@ function Player() {
       const L = P && P.last && P.last.k === qkey() ? P.last : null, ok = L && L.ok, none = !L || L.a == null;
       app.innerHTML = `<div class="ply">${top()}<div class="res ${ok ? "good" : none ? "none" : "bad"} up">
         <div class="big disp">${ok ? "Дұрыс!" : none ? "Уақыт бітті" : "Қате"}</div>${ok ? `<div class="pts">+${L.pts}</div>` : ""}
-        ${ok && P.streak > 1 ? `<div class="rk">${P.streak} рет қатарынан</div>` : ""}${!ok ? `<div class="rk">Дұрыс жауап: ${esc(r.a[r.c])}</div>` : ""}
+        ${ok && P.streak > 1 ? `<div class="rk">${P.streak} рет қатарынан</div>` : ""}${!ok ? `<div class="rk">Дұрыс жауап: ${esc(L(r.a[r.c], lang()))}</div>` : ""}
         ${P ? `<div class="rk">${P.rank}-орын · ${P.of} ойыншы</div>` : ""}</div></div>`;
       if (seen.res !== qkey()) { seen.res = qkey(); if (ok) { confetti(); vibrate(60); } else if (!none) vibrate([60, 60, 60]); }
       return;
