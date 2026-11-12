@@ -2,7 +2,7 @@
 Each page = shared engine (engine/practice.css + engine/practice.js) + its own COURSE data (tools/courses/*.json)."""
 import json, os, sys
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-V = "3"
+V = "4"
 TPL = """<!DOCTYPE html>
 <html lang="kk">
 <head>
