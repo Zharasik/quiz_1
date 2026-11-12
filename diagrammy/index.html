@@ -420,7 +420,7 @@ a.btn svg{width:18px;height:18px}
 .fbpop .fbx{font-size:12px;opacity:.55;margin-top:6px}
 @keyframes fbin{from{transform:translateY(-30px);opacity:0}to{transform:none;opacity:1}}
 .itl{display:flex;flex-direction:column;gap:6px;max-height:52vh;overflow:auto;margin:4px 0}
-.iti{display:grid;grid-template-columns:1fr auto auto;align-items:center;gap:10px;padding:10px 12px;border:1px solid var(--line);border-radius:12px;cursor:pointer;font-size:15px}
+.iti{display:grid;grid-template-columns:1fr auto auto auto;align-items:center;gap:10px;padding:10px 12px;border:1px solid var(--line);border-radius:12px;cursor:pointer;font-size:15px}
 .iti input{width:18px;height:18px;accent-color:var(--a3)}
 .iti.off{opacity:.5}.iti.off span{text-decoration:line-through}.iti.off{opacity:.6}
 .itb{padding:6px 12px;font-size:13px;min-height:0}.itb.del{color:var(--bad)}
@@ -433,6 +433,7 @@ a.btn svg{width:18px;height:18px}
 .tipai{border-color:rgba(124,92,255,.45)}.tipvp{border-color:rgba(46,196,140,.45)}
 .hints a{color:var(--a2);word-break:break-all}
 .bcard{position:relative}.aib{position:absolute;top:8px;left:8px;z-index:2;background:#1B1530;color:#fff;font-size:12px;font-weight:700;padding:3px 8px;border-radius:999px}
+.fm th.thed{cursor:pointer}.fm th.thed:hover{color:var(--a2)}
 </style>
 </head>
 <body>
@@ -551,10 +552,48 @@ function compressImage(file) {
 
 
 /* ===================== ТАПСЫРМАЛАР РЕДАКТОРЫ (мұғалім) ===================== */
+let TD_LANG = "ru";
+function TaskDialog(t, parent, o) {
+  const m = document.createElement("div"); m.className = "edm"; parent.appendChild(m);
+  const bankItem = COURSE.bank.find(b => b.id === t.id);
+  const ta = (id, lab, arr, rows, hint) => `<div class="ff wide"><label>${lab}</label><textarea id="${id}" rows="${rows}">${esc((arr || []).join("\n"))}</textarea>${hint ? `<div class="hint">${hint}</div>` : ""}</div>`;
+  m.innerHTML = `<div class="edbox">
+    <div class="edtop" style="margin:0"><h3 class="disp" style="margin:0;font-size:26px">${o.head || (o.isNew ? "Жаңа тапсырма" : "Тапсырманы өңдеу")}</h3><button class="btn ghost" id="mx">Отмена</button></div>
+    ${o.note ? `<div class="hint" style="margin:0">${o.note}</div>` : ""}
+    <div class="edform">
+      <div class="ff"><label>Название</label><input id="f-title" value="${esc(t.title)}" maxlength="80" placeholder="Например: Диаграмма продаж"></div>
+      <div class="ff" style="max-width:160px"><label>Время, мин</label><input id="f-min" type="number" min="1" max="60" value="${+t.min || 6}"></div>
+      <div class="ff wide"><label>Шаги — по одному на строку</label><textarea id="f-steps" rows="8">${esc((t.steps || []).join("\n"))}</textarea>
+        <div class="hint">Два варианта меню: <code>[[Файл → Создать|File → New]]</code> — студент увидит вариант для своей программы.</div></div>
+      <div class="ff"><label>Критерии — по одному на строку</label><textarea id="f-crit" rows="3">${esc((t.crit || []).join("\n"))}</textarea></div>
+      <div class="ff"><label>Образец</label><select id="f-exsel"><option value="">Нет</option>${COURSE.bank.filter(b => b.ex).map(b => `<option value="${b.ex}" ${t.ex === b.ex ? "selected" : ""}>Из банка: ${esc(b.title)}</option>`).join("")}<option value="__url" ${/^https?:/.test(t.ex) ? "selected" : ""}>Ссылка (URL)…</option></select>
+        <input id="f-exurl" placeholder="https://…/surat.jpg" value="${/^https?:/.test(t.ex) ? esc(t.ex) : ""}" style="margin-top:8px;${/^https?:/.test(t.ex) ? "" : "display:none"}"></div>
+      ${ta("f-hints", t_("Кеңестер — әр жолға біреу (міндетті емес)", "Подсказки — по одной в строке (необязательно)"), t.hints, 3)}
+      ${ta("f-ai", "🤖 " + t_("ЖИ көмекшісі — әр жолға біреу (міндетті емес)", "ИИ-помощник — по одной в строке (необязательно)"), t.ai, 3, t_("Сілтемелер (https://…) студентте басылатын болады.", "Ссылки (https://…) у студента будут кликабельными."))}
+      ${ta("f-vp", "🌐 " + t_("Vectorpea / Photopea кеңестері (міндетті емес)", "Подсказки для Vectorpea / Photopea (необязательно)"), t.vp, 2)}
+      <div class="ff wide"><div class="pvh"><label>Предпросмотр</label><div class="mode" style="margin:0">${LANGS.map(([k, x]) => `<button data-pv="${k}" class="${TD_LANG === k ? "on" : ""}">${x}</button>`).join("")}</div></div><ol class="pv" id="pv"></ol></div>
+    </div>
+    <div class="edtop" style="margin:0;justify-content:flex-end">${bankItem && o.canReset ? `<button class="btn ghost" id="mreset">Вернуть версию из банка</button>` : ""}<button class="btn" id="msave">${o.saveLabel || "Сақтау"}</button></div></div>`;
+  const pv = () => { $("#pv").innerHTML = $("#f-steps").value.split("\n").map(x => x.trim()).filter(Boolean).map(x => `<li>${esc(L(x, TD_LANG))}</li>`).join("") || `<li class="mut">Шагов нет</li>`; };
+  $("#f-steps").oninput = pv; pv();
+  m.querySelectorAll("[data-pv]").forEach(b => b.onclick = () => { TD_LANG = b.dataset.pv; m.querySelectorAll("[data-pv]").forEach(x => x.classList.toggle("on", x === b)); pv(); });
+  $("#f-exsel").onchange = () => { $("#f-exurl").style.display = $("#f-exsel").value === "__url" ? "" : "none"; };
+  $("#mx").onclick = () => m.remove();
+  const rs = $("#mreset"); if (rs) rs.onclick = () => { m.remove(); o.onReset && o.onReset(); };
+  const lines = id => $(id).value.split("\n").map(x => x.trim()).filter(Boolean);
+  $("#msave").onclick = () => {
+    const title = $("#f-title").value.trim(), steps = lines("#f-steps");
+    if (!title) { toast("Напишите название"); return; }
+    if (!steps.length) { toast("Напишите хотя бы один шаг"); return; }
+    const sel = $("#f-exsel").value, url = $("#f-exurl").value.trim();
+    if (sel === "__url" && url && !/^https?:\/\//.test(url)) { toast("Ссылка должна начинаться с https://"); return; }
+    const nt = Object.assign({}, t, {title, min: Math.min(60, Math.max(1, +$("#f-min").value || 6)), steps, crit: lines("#f-crit"), hints: lines("#f-hints"), ai: lines("#f-ai"), vp: lines("#f-vp"), ex: sel === "__url" ? url : sel, edited: !!bankItem});
+    m.remove(); o.onSave(nt);
+  };
+}
 function PlanEditor(plan0, onDone, opts) {
   opts = opts || {}; const used = new Set(opts.used || []);
   let plan = JSON.parse(JSON.stringify(plan0));
-  let pvLang = "ru";
   const w = document.createElement("div"); w.className = "ed"; w.id = "ed"; document.body.appendChild(w);
   const totalMin = () => plan.reduce((a, t) => a + (+t.min || 0), 0);
   function draw() {
@@ -594,37 +633,9 @@ function PlanEditor(plan0, onDone, opts) {
   }
   function edit(i) {
     const t = i >= 0 ? plan[i] : {uid: rid(6), id: "custom-" + rid(5), title: "", min: 6, steps: [], crit: [], ex: ""};
-    const m = document.createElement("div"); m.className = "edm"; w.appendChild(m);
-    const bankItem = COURSE.bank.find(b => b.id === t.id);
-    m.innerHTML = `<div class="edbox">
-      <div class="edtop" style="margin:0"><h3 class="disp" style="margin:0;font-size:26px">${i >= 0 ? "Изменить задание" : "Новое задание"}</h3><button class="btn ghost" id="mx">Отмена</button></div>
-      <div class="edform">
-        <div class="ff"><label>Название</label><input id="f-title" value="${esc(t.title)}" maxlength="80" placeholder="Например: Диаграмма продаж"></div>
-        <div class="ff" style="max-width:160px"><label>Время, мин</label><input id="f-min" type="number" min="1" max="60" value="${+t.min || 6}"></div>
-        <div class="ff wide"><label>Шаги — по одному на строку</label><textarea id="f-steps" rows="8">${esc((t.steps || []).join("\n"))}</textarea>
-          <div class="hint">Два варианта меню: <code>[[Файл → Создать|File → New]]</code> — студент увидит вариант для своей программы.</div></div>
-        <div class="ff"><label>Критерии — по одному на строку</label><textarea id="f-crit" rows="3">${esc((t.crit || []).join("\n"))}</textarea></div>
-        <div class="ff"><label>Образец</label><select id="f-exsel"><option value="">Нет</option>${COURSE.bank.filter(b => b.ex).map(b => `<option value="${b.ex}" ${t.ex === b.ex ? "selected" : ""}>Из банка: ${esc(b.title)}</option>`).join("")}<option value="__url" ${/^https?:/.test(t.ex) ? "selected" : ""}>Ссылка (URL)…</option></select>
-          <input id="f-exurl" placeholder="https://…/surat.jpg" value="${/^https?:/.test(t.ex) ? esc(t.ex) : ""}" style="margin-top:8px;${/^https?:/.test(t.ex) ? "" : "display:none"}"></div>
-        <div class="ff wide"><div class="pvh"><label>Предпросмотр</label><div class="mode" style="margin:0">${LANGS.map(([k, x]) => `<button data-pv="${k}" class="${pvLang === k ? "on" : ""}">${x}</button>`).join("")}</div></div><ol class="pv" id="pv"></ol></div>
-      </div>
-      <div class="edtop" style="margin:0;justify-content:flex-end">${bankItem && i >= 0 ? `<button class="btn ghost" id="mreset">Вернуть версию из банка</button>` : ""}<button class="btn" id="msave">Сохранить</button></div></div>`;
-    const pv = () => { $("#pv").innerHTML = $("#f-steps").value.split("\n").map(x => x.trim()).filter(Boolean).map(x => `<li>${esc(L(x, pvLang))}</li>`).join("") || `<li class="mut">Шагов нет</li>`; };
-    $("#f-steps").oninput = pv; pv();
-    m.querySelectorAll("[data-pv]").forEach(b => b.onclick = () => { pvLang = b.dataset.pv; m.querySelectorAll("[data-pv]").forEach(x => x.classList.toggle("on", x === b)); pv(); });
-    $("#f-exsel").onchange = () => { $("#f-exurl").style.display = $("#f-exsel").value === "__url" ? "" : "none"; };
-    $("#mx").onclick = () => m.remove();
-    const rs = $("#mreset"); if (rs) rs.onclick = () => { const f = fromBank(t.id); f.uid = t.uid; plan[i] = f; m.remove(); draw(); };
-    $("#msave").onclick = () => {
-      const title = $("#f-title").value.trim(), steps = $("#f-steps").value.split("\n").map(x => x.trim()).filter(Boolean);
-      if (!title) { toast("Напишите название"); return; }
-      if (!steps.length) { toast("Напишите хотя бы один шаг"); return; }
-      const sel = $("#f-exsel").value, url = $("#f-exurl").value.trim();
-      if (sel === "__url" && url && !/^https?:\/\//.test(url)) { toast("Ссылка должна начинаться с https://"); return; }
-      const nt = Object.assign({}, t, {title, min: Math.min(60, Math.max(1, +$("#f-min").value || 6)), steps, crit: $("#f-crit").value.split("\n").map(x => x.trim()).filter(Boolean), ex: sel === "__url" ? url : sel, edited: !!bankItem});
-      if (i >= 0) plan[i] = nt; else plan.push(nt);
-      m.remove(); draw();
-    };
+    TaskDialog(t, w, {isNew: i < 0, canReset: i >= 0,
+      onReset: () => { const f = fromBank(t.id); f.uid = t.uid; plan[i] = f; draw(); },
+      onSave: nt => { if (i >= 0) plan[i] = nt; else plan.push(nt); draw(); }});
   }
   draw();
 }
@@ -698,7 +709,7 @@ function Host() {
 
   function pubState() {
     const st = {v: 3, set: H.set, lang: H.lang, setName: setName(H.set), phase: H.phase, qi: H.qi, total: total(), n: pids().length, answered: isTask(R()) ? Object.keys(H.subs).length : Object.keys(H.ans).length};
-    if (isTask(R()) && H.phase !== "lobby" && !FREE()) st.task = R();
+    if (isTask(R()) && H.phase !== "lobby" && !FREE()) { st.task = R(); st.tv = H.tv || 0; }
     if (FREE()) { st.fid = H.fid; st.nItems = (H.items || []).length; }
     if (H.phase === "question") { st.endsIn = leftMs(); st.paused = !!H.paused; st.roster = ranked().slice(0, 40).map(id => [id, H.players[id].name]); }
     if (H.phase === "vote") st.cands = subPids().map(id => [id, H.players[id].name]);
@@ -1011,6 +1022,9 @@ function Host() {
     };
     const tp = $("#topractice"); if (tp) tp.onclick = () => toSet("practice");
     const pz = $("#pause"); if (pz) pz.onclick = togglePause;
+    const te = $("#tedit"); if (te) te.onclick = () => { const t = H.plan[H.qi]; if (!t) return;
+      TaskDialog(t, document.body, {head: t_("Нұсқаулықты өзгерту", "Изменить инструкцию"), note: t_("Сақтағаннан кейін студенттердің экранында бірден жаңарады. Уақыт өзгерсе — келесі тапсырмадан бастап әсер етеді.", "После сохранения инструкция сразу обновится у студентов. Изменение времени не влияет на уже идущий таймер."), saveLabel: t_("Сақтау және жіберу", "Сохранить и отправить"),
+        onSave: nt => { H.plan[H.qi] = nt; H.tv = (H.tv || 0) + 1; save(); pubState(); render(); toast(t_("Нұсқаулық жаңартылды", "Инструкция обновлена")); }}); };
     const vt = $("#vote"); if (vt) vt.onclick = startVote;
     const en = $("#endnow"); if (en) en.onclick = () => { if (en.dataset.c !== "1") { en.dataset.c = "1"; en.textContent = "Точно?"; setTimeout(() => { en.dataset.c = ""; en.textContent = "Завершить"; }, 3000); return; } finish(); };
     document.querySelectorAll(".thumb[data-p]").forEach(t => t.onclick = () => openLb(t.dataset.p));
@@ -1066,7 +1080,7 @@ function Host() {
     const items = H.items || [], hide = H.hideMarks;
     const ids = pids().sort((a, b) => H.players[a].name.localeCompare(H.players[b].name));
     let tn = 0;
-    const heads = items.map((it, i) => it.off ? "" : it.type === "task" ? `<th title="${esc(it.title)}">${++tn}<small>${esc(it.title.slice(0, 14))}</small></th>` : `<th class="q" title="${esc(L(it.q, H.lang))}">⌨</th>`).join("");
+    const heads = items.map((it, i) => it.off ? "" : it.type === "task" ? `<th class="thed" data-ed="${i}" title="${esc(it.title)} — ${t_("басып, нұсқаулықты өзгертіңіз", "нажмите, чтобы изменить инструкцию")}">${++tn}<small>${esc(it.title.slice(0, 14))}</small></th>` : `<th class="q" title="${esc(L(it.q, H.lang))}">⌨</th>`).join("");
     const rows = ids.map(id => { const p = H.players[id], st = H.fs[id] || [], rr = fRow(id);
       const cells = items.map((it, i) => { const x = st[i] || {};
         if (it.off) return "";
@@ -1090,7 +1104,7 @@ function Host() {
       ${items0Off() ? `<div class="offban">${t_("Алынған тапсырмалар", "Убрано заданий/вопросов")}: <b>${items0Off()}</b> — ${t_("олардың скриншоттары мен бағалары кестеде, журналда және ZIP-те көрсетілмейді.", "их скриншоты и оценки не показываются в таблице, журнале и ZIP.")} <button class="btn ghost" id="offall">↩ ${t_("Барлығын қайтару", "Вернуть все")}</button></div>` : ""}
       ${freeTable()}
       ${ctlBar("", fin ? `<button class="btn ghost" id="freopen">${t_("Қайта ашу", "Открыть снова")}</button>` : `<button class="btn" id="fend">${t_("Практиканы аяқтау", "Завершить практику")}</button>`)}</div>`;
-    $("#f100").onclick = P100Settings; $("#fitems").onclick = ItemsEditor; $("#fadd").onclick = AddTasks; const oa = $("#offall"); if (oa) oa.onclick = () => { (H.items || []).forEach(it => delete it.off); save(); pubItems(); pubState(); pids().forEach(pubPlayer); render(); };
+    $("#f100").onclick = P100Settings; $("#fitems").onclick = ItemsEditor; $("#fadd").onclick = AddTasks; document.querySelectorAll("th.thed").forEach(th => th.onclick = () => editItemLive(+th.dataset.ed)); const oa = $("#offall"); if (oa) oa.onclick = () => { (H.items || []).forEach(it => delete it.off); save(); pubItems(); pubState(); pids().forEach(pubPlayer); render(); };
     document.querySelectorAll("td.sum[data-s]").forEach(td => td.onclick = () => OvrEditor(td.dataset.s));
     $("#fhide").onclick = () => { H.hideMarks = !H.hideMarks; save(); pids().forEach(pubPlayer); render(); };
     $("#fzip").onclick = zipAll; $("#fcsv").onclick = () => downloadBlob(new Blob(["﻿" + journalCsv()], {type: "text/csv;charset=utf-8"}), safeName(TITLE) + " — журнал.csv");
@@ -1155,6 +1169,15 @@ function Host() {
   }
 
 
+
+  function editItemLive(i) {
+    const r = (H.items || [])[i]; if (!r || r.type !== "task") return;
+    const t = {id: r.id || "", title: r.title, min: Math.round(r.t / 60), steps: r.steps, crit: r.crit, ex: r.ex, hints: r.hints, ai: r.ai, vp: r.vp};
+    TaskDialog(t, document.body, {head: t_("Нұсқаулықты өзгерту", "Изменить инструкцию"), note: t_("Сақтағаннан кейін студенттердің экранында бірден жаңарады. Уақыт өзгерсе — уақыт бойынша баға жаңа нормамен есептеледі.", "После сохранения инструкция сразу обновится у студентов. Если изменить минуты — оценка по времени будет считаться по новой норме."), saveLabel: t_("Сақтау және жіберу", "Сохранить и отправить"),
+      onSave: nt => { const n = (H.items || []).slice(0, i + 1).filter(x => x.type === "task").length;
+        Object.assign(r, {title: nt.title, t: nt.min * 60, steps: nt.steps, crit: nt.crit, ex: nt.ex, hints: nt.hints, ai: nt.ai, vp: nt.vp, k: t_(n + "-тапсырма", "Задание " + n) + " · " + nt.min + " " + t_("мин", "мин")});
+        save(); pubItems(); render(); const w = document.querySelector(".fset"); if (w && w._draw) w._draw(); toast(t_("Нұсқаулық жаңартылды", "Инструкция обновлена")); }});
+  }
   function AddTasks() {
     PlanEditor([], add => {
       if (!add.length) return;
@@ -1175,9 +1198,10 @@ function Host() {
       w.innerHTML = `<div class="edbox" style="max-width:640px"><h3 class="disp" style="margin:0;font-size:26px">${t_("Тапсырмаларды алып тастау", "Убрать задания и вопросы")}</h3>
         <p class="mut" style="margin:0;font-size:15px">${t_("Алынған тапсырмалар студенттерде жоғалады және бағаға, журналға, ZIP-ке кірмейді. Кез келген уақытта қайтаруға болады.", "Убранные задания и вопросы исчезнут у студентов и не войдут в оценку, журнал и ZIP. Вернуть можно в любой момент — ничего не удаляется насовсем.")}</p>
         <div class="itl">${items.map((it, i) => { const lbl = it.type === "task" ? (++tn) + ". " + esc(it.title) : "⌨ " + esc(L(it.q, H.lang)).slice(0, 70); const n = did(i);
-          return `<div class="iti ${it.off ? "off" : ""}"><span>${lbl}</span><small class="mut">${n ? t_("орындаған", "сделали") + ": " + n : t_("ешкім орындамаған", "никто не делал")}</small>${it.off ? `<button class="btn ghost itb" data-on="${i}">↩ ${t_("Қайтару", "Вернуть")}</button>` : `<button class="btn ghost itb del" data-off="${i}" data-n="${n}">✕ ${t_("Алып тастау", "Убрать")}</button>`}</div>`; }).join("")}</div>
+          return `<div class="iti ${it.off ? "off" : ""}"><span>${lbl}</span><small class="mut">${n ? t_("орындаған", "сделали") + ": " + n : t_("ешкім орындамаған", "никто не делал")}</small>${it.type === "task" ? `<button class="btn ghost itb" data-ed="${i}" title="${t_("Нұсқаулықты өзгерту", "Изменить инструкцию")}">✎</button>` : ""}${it.off ? `<button class="btn ghost itb" data-on="${i}">↩ ${t_("Қайтару", "Вернуть")}</button>` : `<button class="btn ghost itb del" data-off="${i}" data-n="${n}">✕ ${t_("Алып тастау", "Убрать")}</button>`}</div>`; }).join("")}</div>
         <div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn ghost" id="it-unused">${t_("Ешкім жасамағандарды алу", "Убрать то, что никто не делал")}</button><button class="btn ghost" id="it-all">${t_("Барлығын қайтару", "Вернуть все")}</button><span style="flex:1"></span><button class="btn" id="it-ok">${t_("Дайын", "Готово")}</button></div></div>`;
       w.querySelectorAll("[data-on]").forEach(b => b.onclick = () => setOff([+b.dataset.on], false));
+      w.querySelectorAll("[data-ed]").forEach(b => b.onclick = () => editItemLive(+b.dataset.ed));
       w.querySelectorAll("[data-off]").forEach(b => b.onclick = () => {
         if (+b.dataset.n > 0 && b.dataset.c !== "1") { b.dataset.c = "1"; b.textContent = t_(`Сенімдісіз бе? ${b.dataset.n} жұмыс жасырылады`, `Точно? Скроются работы: ${b.dataset.n}`); return; }
         setOff([+b.dataset.off], true); });
@@ -1193,7 +1217,7 @@ function Host() {
       save(); pubItems(); pubState(); pids().forEach(pubPlayer); render(); draw();
     };
     w.onclick = e => { if (e.target === w) w.remove(); };
-    draw();
+    w._draw = draw; draw();
   }
   async function zipAll() {
     if (typeof JSZip === "undefined") { toast(t_("ZIP кітапханасы жүктелмеді", "Не загрузилась библиотека ZIP")); return; }
@@ -1269,7 +1293,7 @@ function Host() {
         <div class="tgrid">
           <div class="steps">${r.ex ? `<img class="exh" src="${esc(exUrl(r.ex))}" alt="Образец" onerror="this.remove()">` : ""}<ol>${r.steps.map(s => `<li>${esc(L(s, H.lang))}</li>`).join("")}</ol>${r.crit && r.crit.length ? `<div class="crit">${r.crit.map(c => `<span>${esc(c)}</span>`).join("")}</div>` : ""}</div>
           <div>${r.checks.length ? race(r) : ""}<div class="count">${done} / ${n} сдали</div>${gallery(false)}</div>
-        </div></div>${ctlBar("Закончить время", `<button class="btn ghost" id="pause">${H.paused ? "▶ Продолжить" : "❚❚ Пауза"}</button>`)}</div>`;
+        </div></div>${ctlBar("Закончить время", `<button class="btn ghost" id="tedit">✎ ${t_("Нұсқаулықты өзгерту", "Изменить инструкцию")}</button><button class="btn ghost" id="pause">${H.paused ? "▶ Продолжить" : "❚❚ Пауза"}</button>`)}</div>`;
     } else if (H.phase === "review" || H.phase === "vote") {
       const r = R(), n = pids().length, L = subPids(), vote = H.phase === "vote", nv = Object.keys(H.rates || {}).length;
       app.innerHTML = `<div class="host">${head}<div class="hbody" style="justify-content:flex-start">
@@ -1436,7 +1460,7 @@ function Player() {
       const it = fItems()[curF]; return "fr" + S.fid + ":" + curF + ":" + onIdx().join(",") + ":" + lang() + (it && it.type === "mc" ? ":" + (fst(curF).a != null) : ""); }
     const r = RR();
     if (S.phase === "question") {
-      if (isTask(r)) return "task" + qkey() + lang();
+      if (isTask(r)) return "task" + qkey() + lang() + ":" + (S.tv || 0);
       return (locked() ? "locked" : "q") + qkey();
     }
     if (S.phase === "reveal") return "rv" + qkey() + (P && P.last ? P.last.k : "");
