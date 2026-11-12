@@ -430,6 +430,9 @@ a.btn svg{width:18px;height:18px}
 .btn.grade.g0{--g0:#e5484d}.btn.grade.g0.on{border-color:#e5484d;color:#e5484d}
 .fbg b.g0{color:#e5484d}
 :root{--g0:#e5484d}
+.tipai{border-color:rgba(124,92,255,.45)}.tipvp{border-color:rgba(46,196,140,.45)}
+.hints a{color:var(--a2);word-break:break-all}
+.bcard{position:relative}.aib{position:absolute;top:8px;left:8px;z-index:2;background:#1B1530;color:#fff;font-size:12px;font-weight:700;padding:3px 8px;border-radius:999px}
 </style>
 </head>
 <body>
@@ -462,7 +465,10 @@ const LANG_LABEL = COURSE.langLabel || "Интерфейс:";
 const exUrl = ex => !ex ? "" : /^https?:\/\//.test(ex) ? ex : "ex/" + ex + ".jpg";
 const fromBank = id => { const b = COURSE.bank.find(x => x.id === id); return b ? JSON.parse(JSON.stringify(Object.assign({uid: rid(6)}, b))) : null; };
 const defaultPlan = () => COURSE.defaults.map(fromBank).filter(Boolean);
-const toRound = (t, i) => ({type: "task", t: Math.max(1, +t.min || 5) * 60, k: (i + 1) + "-тапсырма · " + (+t.min || 5) + " мин", title: t.title, steps: t.steps || [], crit: t.crit || [], ex: t.ex || "", table: t.table || null, hints: t.hints || [], checks: t.checks || [], shot: t.shot !== false});
+const toRound = (t, i) => ({type: "task", t: Math.max(1, +t.min || 5) * 60, k: (i + 1) + "-тапсырма · " + (+t.min || 5) + " мин", title: t.title, steps: t.steps || [], crit: t.crit || [], ex: t.ex || "", table: t.table || null, hints: t.hints || [], checks: t.checks || [], shot: t.shot !== false, ai: t.ai || [], vp: t.vp || []});
+const linkify = x => esc(x).replace(/(https?:\/\/[^\s<,)»]+)/g, u => `<a href="${u}" target="_blank" rel="noopener">${u.replace(/^https?:\/\/(www\.)?/, "").replace(/\/$/, "")}</a>`);
+const extraTips = (r, lg) => (r.ai && r.ai.length ? `<details class="exd tipai"><summary>🤖 ${t_("ЖИ көмекшісі", "ИИ-помощник")}</summary><ul class="hints">${r.ai.map(h => `<li>${linkify(L(h, lg))}</li>`).join("")}</ul></details>` : "")
+  + (r.vp && r.vp.length ? `<details class="exd tipvp"><summary>🌐 ${t_("Illustrator жоқ па? Vectorpea", "Нет Illustrator? Vectorpea")}</summary><ul class="hints">${r.vp.map(h => `<li>${linkify(L(h, lg))}</li>`).join("")}</ul></details>` : "");
 const checkOk = (c, v) => { if (c.opts) return (v | 0) === c.c && v !== "" && v != null; const x = parseFloat(String(v == null ? "" : v).replace(/[\s\u00a0]/g, "").replace("%", "").replace(",", ".")); if (!isFinite(x)) return false; const tol = c.tol != null ? c.tol : Math.max(0.5, Math.abs(c.a) * 0.002); return Math.abs(x - c.a) <= tol || (c.pct && Math.abs(x * 100 - c.a) <= tol); };
 const NS = COURSE.ns;
 const TITLE = COURSE.title;
@@ -566,7 +572,7 @@ function PlanEditor(plan0, onDone, opts) {
             </div>`).join("") || `<p class="mut">Тапсырма таңдалмаған. Оң жақтағы банктен қосыңыз.</p>`}
         </div>
         <div class="edbank"><div class="edh">Тапсырмалар банкі · ${COURSE.bank.length}</div><div class="bgrid">
-          ${COURSE.bank.map(b => `<div class="bcard ${inPlan.has(b.id) ? "on" : ""}">${b.ex ? `<img src="${esc(exUrl(b.ex))}" alt="${esc(b.title)}">` : `<div class="noimg2">${esc(b.title)}</div>`}<div class="bt"><b>${esc(b.title)}</b><span class="mut">${b.min} мин</span></div>
+          ${COURSE.bank.map(b => `<div class="bcard ${inPlan.has(b.id) ? "on" : ""}">${b.ai && b.ai.length ? `<span class="aib">🤖 ЖИ</span>` : ""}${b.ex ? `<img src="${esc(exUrl(b.ex))}" alt="${esc(b.title)}">` : `<div class="noimg2">${esc(b.title)}</div>`}<div class="bt"><b>${esc(b.title)}</b><span class="mut">${b.min} мин</span></div>
             <button class="btn ${inPlan.has(b.id) ? "ghost" : ""}" data-add="${b.id}" ${inPlan.has(b.id) ? "disabled" : ""}>${inPlan.has(b.id) ? "✓ Қосылған" : used.has(b.id) ? "+ " + t_("Тағы бір рет (практикада бар)", "Ещё раз (уже было)") : "+ Қосу"}</button></div>`).join("")}
         </div></div>
       </div>`;
@@ -1567,6 +1573,7 @@ function Player() {
       ${r.crit && r.crit.length ? `<div class="crit">${r.crit.map(c => `<span>${esc(c)}</span>`).join("")}</div>` : ""}
       ${r.table ? dataTable(r.table) : ""}
       ${r.hints && r.hints.length ? `<details class="exd"><summary>${t_("Кеңестер", "Подсказки")} (${r.hints.length})</summary><ul class="hints">${r.hints.map(h => `<li>${esc(L(h, lang()))}</li>`).join("")}</ul></details>` : ""}
+      ${extraTips(r, lang())}
       ${r.ex ? `<details class="exd"><summary>${t_("Мысалды көру", "Посмотреть образец")}</summary><img src="${esc(exUrl(r.ex))}" alt="" onerror="this.parentNode.remove()"></details>` : ""}
       ${r.checks && r.checks.length ? checkForm(r) : ""}
       <a class="btn ghost" href="${COURSE.tool.url}" target="_blank" rel="noopener" style="width:100%;margin:12px 0">${ICON.ext}<span>${esc(COURSE.tool.name)} ашу</span></a>
@@ -1677,7 +1684,8 @@ function Player() {
         ${r.crit && r.crit.length ? `<div class="crit">${r.crit.map(c => `<span>${esc(c)}</span>`).join("")}</div>` : ""}
         ${r.table ? dataTable(r.table) : ""}
         ${r.hints && r.hints.length ? `<details class="exd"><summary>${t_("Кеңестер", "Подсказки")} (${r.hints.length})</summary><ul class="hints">${r.hints.map(h => `<li>${esc(L(h, lang()))}</li>`).join("")}</ul></details>` : ""}
-        ${r.ex ? `<details class="exd"><summary>${t_("Мысалды көру", "Посмотреть образец")}</summary><img src="${esc(exUrl(r.ex))}" alt="Мысал" onerror="this.parentNode.remove()"></details>` : ""}
+        ${extraTips(r, lang())}
+      ${r.ex ? `<details class="exd"><summary>${t_("Мысалды көру", "Посмотреть образец")}</summary><img src="${esc(exUrl(r.ex))}" alt="Мысал" onerror="this.parentNode.remove()"></details>` : ""}
         ${r.checks && r.checks.length ? checkForm(r) : ""}
         <a class="btn ghost" href="${COURSE.tool.url}" target="_blank" rel="noopener" style="width:100%;margin:12px 0">${ICON.ext}<span>${esc(COURSE.tool.name)} ашу</span></a>
         <input type="file" id="file" accept="image/*" class="hidden">
