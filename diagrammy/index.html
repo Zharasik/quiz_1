@@ -401,6 +401,7 @@ a.btn svg{width:18px;height:18px}
 .fm td.sum b{font-size:20px}.fm td.sum b.ovr{text-decoration:underline dotted}.fm td.sum span{font-size:12px;margin-left:4px}
 .p100{display:flex;align-items:baseline;gap:8px;margin:0 0 10px}.p100 b{font-family:var(--disp);font-size:48px;font-weight:800}.p100 span{color:var(--mut);font-weight:700}
 .fm th.sum,.fm td.sum{position:sticky;right:0;background:var(--s1);z-index:1;border-left:1px solid var(--line)}.fm thead th.sum{z-index:3}
+.pmod{position:fixed;inset:0;z-index:95;background:rgba(0,0,0,.6);display:flex;align-items:flex-start;justify-content:center;padding:40px 16px;overflow:auto}.pmbox{width:100%;max-width:560px;background:var(--s1);border:1px solid var(--line);border-radius:18px;padding:20px;display:flex;flex-direction:column;gap:12px}.pmtop{display:flex;justify-content:space-between;align-items:center;gap:12px}.pmtop h3{margin:0;font-family:var(--disp);font-size:24px}.pmnote{margin:0;font-size:14px;color:var(--mut)}.pmlist{display:flex;flex-direction:column;gap:6px;max-height:60vh;overflow:auto}.pmrow{display:flex;justify-content:space-between;align-items:center;gap:10px;background:var(--s2);border-radius:10px;padding:8px 8px 8px 14px;font-weight:600;font-size:16px}.pmrow .btn{height:38px;font-size:14px;padding:0 14px}.pmdel.warn{color:var(--bad);border:1px solid var(--bad)}
 </style>
 </head>
 <body>
@@ -919,10 +920,36 @@ function Host() {
     d.querySelectorAll(".grade").forEach(b => b.onclick = () => grade(b.dataset.g));
   }
 
+
+  function kickPlayer(id) {
+    const p = H.players[id]; if (!p) return;
+    p.kicked = true; pubPlayer(id);
+    for (const k of ["ans", "subs", "chk", "fs", "rates", "grades", "ovr", "votes"]) if (H[k] && typeof H[k] === "object") delete H[k][id];
+    if (H.rates) for (const v of Object.values(H.rates)) if (v && typeof v === "object") delete v[id];
+    if (typeof IMG !== 'undefined') delete IMG[id]; if (typeof IMGF !== 'undefined') delete IMGF[id];
+    delete H.players[id]; save(); pubState(); render();
+  }
+  function PeopleModal() {
+    const old = document.querySelector(".pmod"); if (old) old.remove();
+    const w = document.createElement("div"); w.className = "pmod";
+    const draw = () => {
+      const ids = Object.keys(H.players).sort((a, b) => H.players[a].name.localeCompare(H.players[b].name));
+      w.innerHTML = `<div class="pmbox"><div class="pmtop"><h3>${t_("Ойыншылар", "Участники")} · ${ids.length}</h3><button class="btn ghost" data-x="1">${t_("Жабу", "Закрыть")}</button></div>
+        <p class="pmnote">${t_("Шығарылған ойыншы осы құрылғыдан қайта кірсе, жаңа ойыншы ретінде қосылады. Оның осы ойындағы нәтижелері өшеді.", "Удалённый участник, если зайдёт снова, появится как новый. Его результаты в этой игре удаляются.")}</p>
+        <div class="pmlist">${ids.map(id => `<div class="pmrow"><span>${esc(H.players[id].name)}</span><button class="btn ghost pmdel" data-k="${id}">${t_("Шығару", "Удалить")}</button></div>`).join("") || `<p class="pmnote">${t_("Ойыншы жоқ", "Участников нет")}</p>`}</div></div>`;
+      w.querySelector("[data-x]").onclick = () => w.remove();
+      w.onclick = e => { if (e.target === w) w.remove(); };
+      w.querySelectorAll(".pmdel").forEach(b => b.onclick = () => {
+        if (b.dataset.c !== "1") { b.dataset.c = "1"; b.textContent = t_("Растау?", "Точно?"); b.classList.add("warn"); setTimeout(() => { if (b.isConnected) { b.dataset.c = ""; b.textContent = t_("Шығару", "Удалить"); b.classList.remove("warn"); } }, 3000); return; }
+        const nm = H.players[b.dataset.k] ? H.players[b.dataset.k].name : ""; kickPlayer(b.dataset.k); toast(nm + " — " + t_("шығарылды", "удалён")); draw(); });
+    };
+    document.body.appendChild(w); draw();
+  }
   function ctlBar(primary, extra, left) {
-    return `<div class="hctl"><div style="display:flex;gap:10px;align-items:center"><button class="btn ghost" id="reset">Новая игра</button>${left || ""}</div><div style="display:flex;gap:10px">${extra || ""}${primary ? `<button class="btn" id="next">${primary}</button>` : ""}</div></div>`;
+    return `<div class="hctl"><div style="display:flex;gap:10px;align-items:center"><button class="btn ghost" id="reset">Новая игра</button>${H.phase !== "lobby" ? `<button class="btn ghost" id="people">${t_("👥 Ойыншылар", "👥 Участники")} (${Object.keys(H.players).length})</button>` : ""}${left || ""}</div><div style="display:flex;gap:10px">${extra || ""}${primary ? `<button class="btn" id="next">${primary}</button>` : ""}</div></div>`;
   }
   function bind() {
+    const pp = $("#people"); if (pp) pp.onclick = PeopleModal;
     const n = $("#next"); if (n) n.onclick = next;
     const r = $("#reset"); if (r) r.onclick = () => {
       if (r.dataset.c !== "1") { r.dataset.c = "1"; r.textContent = "Точно? Код и участники сбросятся"; setTimeout(() => { r.dataset.c = ""; r.textContent = "Новая игра"; }, 3000); return; }

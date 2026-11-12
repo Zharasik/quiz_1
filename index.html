@@ -147,6 +147,7 @@ input{font:inherit}
 canvas#cf{position:fixed;inset:0;width:100%;height:100%;pointer-events:none;z-index:45}
 @media (max-width:900px){.lobby,.hgrid{grid-template-columns:1fr}.host{padding:20px}}
 @media (min-width:600px){.answers{grid-template-columns:1fr 1fr}.ans{min-height:110px}}
+.pmod{position:fixed;inset:0;z-index:95;background:rgba(0,0,0,.6);display:flex;align-items:flex-start;justify-content:center;padding:40px 16px;overflow:auto}.pmbox{width:100%;max-width:560px;background:var(--s1);border:1px solid var(--line);border-radius:18px;padding:20px;display:flex;flex-direction:column;gap:12px}.pmtop{display:flex;justify-content:space-between;align-items:center;gap:12px}.pmtop h3{margin:0;font-family:var(--disp);font-size:24px}.pmnote{margin:0;font-size:14px;color:var(--mut)}.pmlist{display:flex;flex-direction:column;gap:6px;max-height:60vh;overflow:auto}.pmrow{display:flex;justify-content:space-between;align-items:center;gap:10px;background:var(--s2);border-radius:10px;padding:8px 8px 8px 14px;font-weight:600;font-size:16px}.pmrow .btn{height:38px;font-size:14px;padding:0 14px}.pmdel.warn{color:var(--bad);border:1px solid var(--bad)}
 </style>
 </head>
 <body>
@@ -365,11 +366,37 @@ function Host(){
   }
   document.addEventListener("keydown", e => { if (e.target.tagName === "INPUT" || e.target.tagName === "BUTTON") return; if (e.code === "Space" || e.code === "Enter" || e.code === "ArrowRight") { e.preventDefault(); next(); } if (e.code === "KeyP") { e.preventDefault(); togglePause(); } });
 
+
+  function kickPlayer(id) {
+    const p = H.players[id]; if (!p) return;
+    p.kicked = true; pubPlayer(id);
+    for (const k of ["ans", "subs", "chk", "fs", "rates", "grades", "ovr", "votes"]) if (H[k] && typeof H[k] === "object") delete H[k][id];
+    if (H.rates) for (const v of Object.values(H.rates)) if (v && typeof v === "object") delete v[id];
+    
+    delete H.players[id]; save(); pubState(); render();
+  }
+  function PeopleModal() {
+    const old = document.querySelector(".pmod"); if (old) old.remove();
+    const w = document.createElement("div"); w.className = "pmod";
+    const draw = () => {
+      const ids = Object.keys(H.players).sort((a, b) => H.players[a].name.localeCompare(H.players[b].name));
+      w.innerHTML = `<div class="pmbox"><div class="pmtop"><h3>${"Ойыншылар"} · ${ids.length}</h3><button class="btn ghost" data-x="1">${"Жабу"}</button></div>
+        <p class="pmnote">${"Шығарылған ойыншы осы құрылғыдан қайта кірсе, жаңа ойыншы ретінде қосылады. Оның осы ойындағы нәтижелері өшеді."}</p>
+        <div class="pmlist">${ids.map(id => `<div class="pmrow"><span>${esc(H.players[id].name)}</span><button class="btn ghost pmdel" data-k="${id}">${"Шығару"}</button></div>`).join("") || `<p class="pmnote">${"Ойыншы жоқ"}</p>`}</div></div>`;
+      w.querySelector("[data-x]").onclick = () => w.remove();
+      w.onclick = e => { if (e.target === w) w.remove(); };
+      w.querySelectorAll(".pmdel").forEach(b => b.onclick = () => {
+        if (b.dataset.c !== "1") { b.dataset.c = "1"; b.textContent = "Растау?"; b.classList.add("warn"); setTimeout(() => { if (b.isConnected) { b.dataset.c = ""; b.textContent = "Шығару"; b.classList.remove("warn"); } }, 3000); return; }
+        const nm = H.players[b.dataset.k] ? H.players[b.dataset.k].name : ""; kickPlayer(b.dataset.k); toast(nm + " — " + "шығарылды"); draw(); });
+    };
+    document.body.appendChild(w); draw();
+  }
   function ctlBar(primary){
-    return `<div class="hctl"><div style="display:flex;gap:10px"><button class="btn ghost" id="reset">Жаңа ойын</button></div>
+    return `<div class="hctl"><div style="display:flex;gap:10px"><button class="btn ghost" id="reset">Жаңа ойын</button>${H.phase !== "lobby" ? `<button class="btn ghost" id="people">${"👥 Ойыншылар"} (${Object.keys(H.players).length})</button>` : ""}</div>
       <div style="display:flex;gap:10px">${H.phase === "question" ? `<button class="btn ghost" id="pause">${H.paused ? "▶ Жалғастыру" : "❚❚ Кідірту"}</button>` : ""}${primary ? `<button class="btn" id="next">${primary}</button>` : ""}</div></div>`;
   }
   function bind(){
+    const pp = $("#people"); if (pp) pp.onclick = PeopleModal;
     const n = $("#next"); if (n) n.onclick = next;
     const pz = $("#pause"); if (pz) pz.onclick = togglePause;
     const r = $("#reset"); if (r) r.onclick = () => {
