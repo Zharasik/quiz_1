@@ -220,6 +220,7 @@ canvas#cf{position:fixed;inset:0;width:100%;height:100%;pointer-events:none;z-in
 .mode button{height:48px;padding:0 20px;border-radius:12px;background:var(--s2);border:1px solid var(--line);font-weight:700;font-size:16px;color:var(--mut)}
 .mode button.on{background:var(--tx);color:var(--bg);border-color:var(--tx)}
 .howf{font-family:Consolas,"SF Mono",Menlo,monospace;color:var(--tx);background:var(--s2);padding:2px 8px;border-radius:6px}
+.pmod{position:fixed;inset:0;z-index:95;background:rgba(0,0,0,.6);display:flex;align-items:flex-start;justify-content:center;padding:40px 16px;overflow:auto}.pmbox{width:100%;max-width:560px;background:var(--s1);border:1px solid var(--line);border-radius:18px;padding:20px;display:flex;flex-direction:column;gap:12px}.pmtop{display:flex;justify-content:space-between;align-items:center;gap:12px}.pmtop h3{margin:0;font-family:var(--disp);font-size:24px}.pmnote{margin:0;font-size:14px;color:var(--mut)}.pmlist{display:flex;flex-direction:column;gap:6px;max-height:60vh;overflow:auto}.pmrow{display:flex;justify-content:space-between;align-items:center;gap:10px;background:var(--s2);border-radius:10px;padding:8px 8px 8px 14px;font-weight:600;font-size:16px}.pmrow .btn{height:38px;font-size:14px;padding:0 14px}.pmdel.warn{color:var(--bad);border:1px solid var(--bad)}
 .tgrid{display:grid;grid-template-columns:minmax(0,.85fr) minmax(0,1.15fr);gap:28px;align-items:start;margin-top:4px}
 .steps{background:var(--s1);border:1px solid var(--line);border-radius:16px;padding:20px 24px}
 .steps ol{margin:0;padding-left:24px;display:flex;flex-direction:column;gap:10px;font-size:19px;line-height:1.4}
@@ -402,6 +403,22 @@ a.btn svg{width:18px;height:18px}
 .p100{display:flex;align-items:baseline;gap:8px;margin:0 0 10px}.p100 b{font-family:var(--disp);font-size:48px;font-weight:800}.p100 span{color:var(--mut);font-weight:700}
 .fm th.sum,.fm td.sum{position:sticky;right:0;background:var(--s1);z-index:1;border-left:1px solid var(--line)}.fm thead th.sum{z-index:3}
 .pmod{position:fixed;inset:0;z-index:95;background:rgba(0,0,0,.6);display:flex;align-items:flex-start;justify-content:center;padding:40px 16px;overflow:auto}.pmbox{width:100%;max-width:560px;background:var(--s1);border:1px solid var(--line);border-radius:18px;padding:20px;display:flex;flex-direction:column;gap:12px}.pmtop{display:flex;justify-content:space-between;align-items:center;gap:12px}.pmtop h3{margin:0;font-family:var(--disp);font-size:24px}.pmnote{margin:0;font-size:14px;color:var(--mut)}.pmlist{display:flex;flex-direction:column;gap:6px;max-height:60vh;overflow:auto}.pmrow{display:flex;justify-content:space-between;align-items:center;gap:10px;background:var(--s2);border-radius:10px;padding:8px 8px 8px 14px;font-weight:600;font-size:16px}.pmrow .btn{height:38px;font-size:14px;padding:0 14px}.pmdel.warn{color:var(--bad);border:1px solid var(--bad)}
+.lbcm{display:flex;flex-direction:column;gap:8px;width:min(1100px,100%);margin:0 auto}
+.lbcm textarea{width:100%;font:inherit;font-size:16px;padding:10px 12px;border-radius:12px;border:1px solid var(--line);background:var(--s1);color:inherit;resize:vertical;min-height:52px}
+.lbcmr{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.qcm{display:flex;gap:6px;flex-wrap:wrap;flex:1}
+.chipb{font:inherit;font-size:13px;padding:6px 10px;border-radius:999px;border:1px solid var(--line);background:transparent;color:inherit;cursor:pointer}
+.chipb:hover{border-color:var(--a2)}
+.fm td i.cmi{font-style:normal;font-size:11px;position:absolute;left:3px;top:2px}
+.fm td.t{position:relative}
+.fbk{margin:12px 0;padding:12px 14px;border-radius:14px;border:2px solid var(--a2);background:var(--s1);text-align:left}
+.fbh{font-size:12px;text-transform:uppercase;letter-spacing:.06em;opacity:.7;margin-bottom:4px}
+.fbg{font-size:17px}.fbg b{font-size:22px}.fbg b.g5,.fbpop b.g5{color:var(--g5)}.fbg b.g4{color:var(--g4)}.fbg b.g3{color:var(--g3)}.fbg b.g2{color:var(--g2)}
+.fbt{font-size:16px;line-height:1.4;white-space:pre-wrap;word-break:break-word;margin-top:4px}
+.mcm{font-size:14px;background:rgba(127,127,127,.12);padding:8px 10px;border-radius:10px;margin:6px 0}
+.fbpop{position:fixed;left:12px;right:12px;top:12px;z-index:9999;max-width:520px;margin:0 auto;padding:14px 16px;border-radius:16px;background:var(--s2);color:var(--tx);box-shadow:0 12px 40px rgba(0,0,0,.45);border:2px solid var(--a2);animation:fbin .3s ease-out;cursor:pointer}
+.fbpop .fbx{font-size:12px;opacity:.55;margin-top:6px}
+@keyframes fbin{from{transform:translateY(-30px);opacity:0}to{transform:none;opacity:1}}
 </style>
 </head>
 <body>
@@ -596,7 +613,7 @@ function PlanEditor(plan0, onDone) {
 /* ===================== ЖҮРГІЗУШІ (мұғалім) ===================== */
 function Host() {
   let H = store.get("host");
-  const fresh = () => ({room: rid(5, "ABCDEFGHJKLMNPQRSTUVWXYZ23456789"), b: +(PARAMS.get("b") || 0), lang: store.get("lang") || "ru", plan: store.get("plan") || defaultPlan(), set: "quiz", phase: "lobby", qi: -1, players: {}, ans: {}, counts: [0, 0, 0, 0], qEnd: 0, feed: [], prevRank: {}, subs: {}, grades: {}, rates: {}, chk: {}, mix: "after", thr: [100, 150, 200], fs: {}, items: null, fid: "", hideMarks: false});
+  const fresh = () => ({room: rid(5, "ABCDEFGHJKLMNPQRSTUVWXYZ23456789"), b: +(PARAMS.get("b") || 0), lang: store.get("lang") || "ru", plan: store.get("plan") || defaultPlan(), set: "quiz", phase: "lobby", qi: -1, players: {}, ans: {}, counts: [0, 0, 0, 0], qEnd: 0, feed: [], prevRank: {}, subs: {}, grades: {}, rates: {}, chk: {}, mix: "after", thr: [100, 150, 200], fs: {}, items: null, fid: "", hideMarks: false, cmts: {}});
   if (!H || !H.room || !SETS[H.set]) H = fresh();
   if (!Array.isArray(H.plan) || !H.plan.length) H.plan = store.get("plan") || defaultPlan();
   if (!H.lang) H.lang = "ru";
@@ -674,7 +691,8 @@ function Host() {
     pub("p/" + pid, {name: p.name, score: p.score, rank: r.indexOf(pid) + 1, of: r.length, streak: p.streak, pw: p.pw, x2on: p.x2on ? rk() : "", hide: p.hide, frozen: p.frozen, last: p.last,
       locked: H.ans[pid] ? {set: H.set, qi: H.qi, a: H.ans[pid].a} : null,
       sub: H.subs[pid] ? {k: rk(), left: H.subs[pid].left} : null, chk: H.chk && H.chk[pid] ? Object.assign({k: rk(), place: place(pid)}, H.chk[pid]) : null, grade: H.grades[pid] ? {k: rk(), g: H.grades[pid]} : null, rates: {k: rk(), m: (H.rates || {})[pid] || {}},
-      fs: FREE() ? {fid: H.fid, s: H.fs[pid] || [], hide: !!H.hideMarks, now: Date.now(), p100: H.items ? fScore(pid).final : null} : null,
+      cm: H.cmts && H.cmts[pid] ? {k: rk(), t: H.cmts[pid]} : null,
+      fs: FREE() ? {fid: H.fid, s: H.fs[pid] || [], hide: false, now: Date.now(), p100: H.items ? fScore(pid).final : null} : null,
       note: p.note, kicked: !!p.kicked}, true);
   }
 
@@ -794,7 +812,7 @@ function Host() {
 
   function startQ() {
     if (H.qi + 1 >= total()) return finish();
-    H.qi++; H.phase = "question"; H.ans = {}; H.counts = [0, 0, 0, 0]; H.feed = []; H.subs = {}; H.grades = {}; H.rates = {}; H.chk = {}; H.paused = false;
+    H.qi++; H.phase = "question"; H.ans = {}; H.counts = [0, 0, 0, 0]; H.feed = []; H.subs = {}; H.grades = {}; H.cmts = {}; H.rates = {}; H.chk = {}; H.paused = false;
     for (const k in IMG) delete IMG[k];
     for (const id of pids()) { const p = H.players[id]; p.x2on = false; p.hide = null; p.frozen = null; }
     H.qEnd = Date.now() + R().t * 1000;
@@ -859,7 +877,7 @@ function Host() {
   function board() { H.phase = "board"; save(); pubState(); render(); }
   function finish() { H.phase = "final"; save(); pubState(); pids().forEach(pubPlayer); render(); }
   function toSet(set) {
-    H.set = set; H.phase = "lobby"; H.qi = -1; H.ans = {}; H.counts = [0, 0, 0, 0]; H.feed = []; H.prevRank = {}; H.subs = {}; H.grades = {}; H.rates = {}; H.chk = {}; H.fs = {}; H.items = null;
+    H.set = set; H.phase = "lobby"; H.qi = -1; H.ans = {}; H.counts = [0, 0, 0, 0]; H.feed = []; H.prevRank = {}; H.subs = {}; H.grades = {}; H.cmts = {}; H.rates = {}; H.chk = {}; H.fs = {}; H.items = null;
     for (const id of pids()) { const n = H.players[id].name; H.players[id] = newPlayer(n); }
     save(); pubState(); pids().forEach(pubPlayer); render();
   }
@@ -882,7 +900,7 @@ function Host() {
     if (!H.paused && left <= 0) reveal();
   }
   document.addEventListener("keydown", e => {
-    if (e.target.tagName === "INPUT" || e.target.tagName === "SELECT") return;
+    if (e.target.tagName === "INPUT" || e.target.tagName === "SELECT" || e.target.tagName === "TEXTAREA") return;
     if (flb) {
       const d = $("#lb");
       if (e.code === "Escape") { flb = null; if (d) d.remove(); render(); }
@@ -907,6 +925,20 @@ function Host() {
   function openLb(id) { lb = id; drawLb(); }
   function closeLb() { lb = null; const d = $("#lb"); if (d) d.remove(); render(); }
   function stepLb(dir) { const L = subPids(); if (!L.length) return; const i = L.indexOf(lb); lb = L[(i + dir + L.length) % L.length]; drawLb(); }
+
+  const QCM = () => [t_("Жарайсың!", "Отлично!"), t_("Ұқыпты орындалған", "Аккуратно выполнено"), t_("Түзету керек", "Нужно доработать"), t_("Тапсырманы қайта оқы", "Перечитай задание"), t_("Скриншот анық емес", "Скриншот нечёткий"), t_("Мерзімнен кешікті", "Не уложился во время")];
+  function cmBox(val) {
+    return `<div class="lbcm"><textarea id="lbcm" maxlength="400" rows="2" placeholder="${t_("Студентке пікір (ол телефоннан бірден көреді)…", "Комментарий студенту (он сразу увидит его на телефоне)…")}">${esc(val || "")}</textarea>
+      <div class="lbcmr"><div class="qcm">${QCM().map(q => `<button class="chipb" data-q="${esc(q)}">${esc(q)}</button>`).join("")}</div><span class="mut" id="lbcmst" style="font-size:13px">${val ? "✓ " + t_("жіберілді", "отправлено") : ""}</span><button class="btn" id="lbcms">💬 ${t_("Жіберу", "Отправить")}</button></div></div>`;
+  }
+  function bindCm(saveFn) {
+    const ta = $("#lbcm"), st = $("#lbcmst"); if (!ta) return;
+    const go = () => { saveFn(ta.value.replace(/\s+$/,"").slice(0, 400)); st.textContent = "✓ " + t_("жіберілді", "отправлено"); };
+    $("#lbcms").onclick = go;
+    ta.oninput = () => { st.textContent = t_("сақталмаған", "не отправлено"); };
+    ta.onkeydown = e => { e.stopPropagation(); if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); go(); } if (e.key === "Escape") ta.blur(); };
+    document.querySelectorAll(".lbcm .chipb").forEach(b => b.onclick = () => { const q = b.dataset.q; ta.value = ta.value.trim() ? ta.value.trim() + " " + q : q; go(); });
+  }
   function grade(g) { if (!lb) return; H.grades[lb] = g; save(); pubPlayer(lb); drawLb(); }
   function drawLb() {
     let d = $("#lb"); if (!d) { d = document.createElement("div"); d.id = "lb"; d.className = "lb"; document.body.appendChild(d); }
@@ -915,7 +947,8 @@ function Host() {
       <div class="lbimg">${IMG[lb] ? `<img src="${IMG[lb]}" alt="${esc(p ? p.name : "")} жұмысы">` : `<div class="mut">Сурет жүктелуде…</div>`}</div>
       <div class="lbbar"><button class="btn ghost" id="lbp">←</button>
         <div style="display:flex;gap:10px">${Object.keys(GRADE).map((k, j) => `<button class="btn grade ${g === k || (!g && k === "ok") ? "on" : ""}" data-g="${k}" style="--gc:${GRADE[k].c}">${j + 1} · ${k === "ok" ? "✓ " : k === "best" ? "★ " : "↺ "}${GRADE[k].t}</button>`).join("")}</div>
-        <button class="btn ghost" id="lbn">→</button></div>`;
+        <button class="btn ghost" id="lbn">→</button></div>${cmBox((H.cmts || {})[lb])}`;
+    bindCm(t => { if (!lb) return; H.cmts = H.cmts || {}; if (t) H.cmts[lb] = t; else delete H.cmts[lb]; save(); pubPlayer(lb); });
     $("#lbx").onclick = closeLb; $("#lbp").onclick = () => stepLb(-1); $("#lbn").onclick = () => stepLb(1);
     d.querySelectorAll(".grade").forEach(b => b.onclick = () => grade(b.dataset.g));
   }
@@ -924,7 +957,7 @@ function Host() {
   function kickPlayer(id) {
     const p = H.players[id]; if (!p) return;
     p.kicked = true; pubPlayer(id);
-    for (const k of ["ans", "subs", "chk", "fs", "rates", "grades", "ovr", "votes"]) if (H[k] && typeof H[k] === "object") delete H[k][id];
+    for (const k of ["ans", "subs", "chk", "fs", "rates", "grades", "cmts", "ovr", "votes"]) if (H[k] && typeof H[k] === "object") delete H[k][id];
     if (H.rates) for (const v of Object.values(H.rates)) if (v && typeof v === "object") delete v[id];
     if (typeof IMG !== 'undefined') delete IMG[id]; if (typeof IMGF !== 'undefined') delete IMGF[id];
     delete H.players[id]; save(); pubState(); render();
@@ -1017,8 +1050,8 @@ function Host() {
       const cells = items.map((it, i) => { const x = st[i] || {};
         if (it.type === "mc") return `<td class="q ${x.a == null ? "" : x.c ? "ok" : "no"}">${x.a == null ? (x.o ? "…" : "") : x.c ? "✓" : "✗"}</td>`;
         const g = fGrade(x), dots = it.checks.length && x.ok ? `<span class="fd">${x.ok.map(o => `<i class="${o ? "g" : "b"}"></i>`).join("")}</span>` : "";
-        if (x.d) return `<td class="t done ${x.tg ? "tgr" : ""}" data-c="${id}:${i}">${hide ? "✓" : `<b class="g${g}">${g}</b>`}<small>${mmss(x.sec || 0)}</small>${x.sub ? "<em>▣</em>" : ""}</td>`;
-        if (x.o) return `<td class="t run" data-c="${id}:${i}"><small data-run="${x.o}">${mmss((Date.now() - x.o) / 1000)}</small>${dots}${x.sub ? "<em>▣</em>" : ""}${x.tg && !hide ? `<b class="g${x.tg}">${x.tg}</b>` : ""}</td>`;
+        if (x.d) return `<td class="t done ${x.tg ? "tgr" : ""}" data-c="${id}:${i}">${hide ? "✓" : `<b class="g${g}">${g}</b>`}<small>${mmss(x.sec || 0)}</small>${x.sub ? "<em>▣</em>" : ""}${x.cm ? "<i class=\"cmi\">💬</i>" : ""}</td>`;
+        if (x.o) return `<td class="t run" data-c="${id}:${i}"><small data-run="${x.o}">${mmss((Date.now() - x.o) / 1000)}</small>${dots}${x.sub ? "<em>▣</em>" : ""}${x.tg && !hide ? `<b class="g${x.tg}">${x.tg}</b>` : ""}${x.cm ? "<i class=\"cmi\">💬</i>" : ""}</td>`;
         return `<td class="t"></td>`; }).join("");
       return `<tr><th class="nm">${esc(p.name)}${p.cur != null && items[p.cur] ? `<small>→ ${items[p.cur].type === "task" ? items.slice(0, p.cur + 1).filter(x => x.type === "task").length : "⌨"}</small>` : ""}</th>${cells}<td class="sum" data-s="${id}">${hide ? rr.done + "/" + items.length : (sc => `<b class="${sc.ovr != null ? "ovr" : ""}">${sc.final}</b><span class="mut">/100 ${LET(sc.final)}</span>`)(fScore(id))}<small>${hide ? "" : (rr.avg == null ? "—" : t_("орт. ", "ср. ") + String(rr.avg).replace(".", ","))}${rr.hkN ? ` · ⌨ ${rr.hk}/${rr.hkN}` : ""}</small></td></tr>`; }).join("");
     return `<div class="fwrap"><table class="fm"><thead><tr><th class="nm">${t_("Студент", "Студент")}</th>${heads}<th class="sum">${t_("Қорытынды /100", "Итог /100")}</th></tr></thead><tbody>${rows || `<tr><td class="mut" colspan="${items.length + 2}" style="padding:20px">${t_("Ойыншылар жоқ", "Нет участников")}</td></tr>`}</tbody></table></div>`;
@@ -1052,7 +1085,8 @@ function Host() {
       ${it.checks.length ? `<div class="mut" style="font-size:15px">${it.checks.map((c, j) => `${x.ok && x.ok[j] ? "✓" : x.ok ? "✗" : "·"} ${esc(L(c.l, H.lang))}`).join(" &nbsp; ")}</div>` : ""}
       <div class="lbbar"><button class="btn ghost" id="lbp">←</button>
         <div style="display:flex;gap:10px;align-items:center"><span class="mut">${t_("Сіздің бағаңыз", "Ваша оценка")}:</span>${[5, 4, 3, 2].map(g => `<button class="btn grade g${g} ${x.tg === g ? "on" : ""}" data-g="${g}" style="--gc:var(--g${g})">${g}</button>`).join("")}<button class="btn grade ${!x.tg ? "on" : ""}" data-g="0" style="--gc:var(--mut)">${t_("Авто", "Авто")}${x.ag ? " (" + x.ag + ")" : ""}</button></div>
-        <button class="btn ghost" id="lbn">→</button></div>`;
+        <button class="btn ghost" id="lbn">→</button></div>${cmBox(x.cm)}`;
+    bindCm(t => { if (!flb) return; const y = fSt(flb.pid, flb.i); y.cm = t || null; y.cmId = t ? Date.now() : null; save(); pubPlayer(flb.pid); });
     $("#lbx").onclick = () => { flb = null; d.remove(); render(); };
     const others = pids().filter(id => { const y = (H.fs[id] || [])[flb.i]; return y && (y.o || y.sub); }).sort((a, b) => H.players[a].name.localeCompare(H.players[b].name));
     const step = k => { if (!others.length) return; const j = others.indexOf(flb.pid); flb.pid = others[(j + k + others.length) % others.length]; drawFlb(); };
@@ -1091,9 +1125,9 @@ function Host() {
     const items = H.items || [], tasks = items.map((it, i) => [it, i]).filter(([it]) => it.type === "task");
     const q = v => `"${String(v == null ? "" : v).replace(/"/g, '""')}"`;
     const c = P100();
-    const head = [t_("Студент", "Студент"), ...tasks.flatMap(([it], n) => [`${n + 1}. ${it.title} — ${t_("уақыт", "время")}`, `${n + 1}. ${t_("баға", "оценка")}`, `${n + 1}. ${t_("балл", "баллы")}`]), t_("Орташа баға", "Средняя оценка"), t_("Пернелер (дұрыс)", "Горячие клавиши (верно)"), t_("Қорытынды (100)", "Итог (100)"), t_("Әріптік", "Буквенная"), t_("Дәстүрлі", "Традиционная")];
+    const head = [t_("Студент", "Студент"), ...tasks.flatMap(([it], n) => [`${n + 1}. ${it.title} — ${t_("уақыт", "время")}`, `${n + 1}. ${t_("баға", "оценка")}`, `${n + 1}. ${t_("балл", "баллы")}`, `${n + 1}. ${t_("пікір", "комментарий")}`]), t_("Орташа баға", "Средняя оценка"), t_("Пернелер (дұрыс)", "Горячие клавиши (верно)"), t_("Қорытынды (100)", "Итог (100)"), t_("Әріптік", "Буквенная"), t_("Дәстүрлі", "Традиционная")];
     const rows = pids().sort((a, b) => H.players[a].name.localeCompare(H.players[b].name)).map(id => { const st = H.fs[id] || [], rr = fRow(id), sc = fScore(id);
-      return [H.players[id].name, ...tasks.flatMap(([it, i]) => { const x = st[i] || {}, g = fGrade(x); const used = pids().some(z => fGrade((H.fs[z] || [])[i])); return [x.d ? mmss(x.sec) : "", g || "", g ? c.map[g] : (c.zero && used ? 0 : "")]; }), rr.avg == null ? "" : String(rr.avg).replace(".", ","), rr.hkN ? rr.hk + "/" + rr.hkN : "", sc.final, LET(sc.final), TRAD(sc.final)]; });
+      return [H.players[id].name, ...tasks.flatMap(([it, i]) => { const x = st[i] || {}, g = fGrade(x); const used = pids().some(z => fGrade((H.fs[z] || [])[i])); return [x.d ? mmss(x.sec) : "", g || "", g ? c.map[g] : (c.zero && used ? 0 : ""), x.cm || ""]; }), rr.avg == null ? "" : String(rr.avg).replace(".", ","), rr.hkN ? rr.hk + "/" + rr.hkN : "", sc.final, LET(sc.final), TRAD(sc.final)]; });
     return [head, ...rows].map(r => r.map(q).join(";")).join("\r\n");
   }
   async function zipAll() {
@@ -1212,7 +1246,7 @@ function Player() {
   const fs = () => P && P.fs && S && P.fs.fid === S.fid ? P.fs : null;
   const fst = i => { const f = fs(); return (f && f.s[i]) || {}; };
   const fItems = () => ITEMS && S && ITEMS.fid === S.fid ? ITEMS.items : [];
-  const seen = {note: null, frozen: null, res: null};
+  const seen = {note: null, frozen: null, res: null, fb: null};
   let iceTimer = null, thSub = false, viewer = null;
   const THUMBS = {}, myRates = {}, chkVals = {};
   const RR = () => !S || !SETS[S.set] ? null : isFree() ? fItems()[curF] || null : S.qi < 0 ? null : S.set === "quiz" ? COURSE.quiz[S.qi] : S.task || null;
@@ -1240,7 +1274,33 @@ function Player() {
     if (P.name && P.name !== name) { name = P.name; store.set("name", name); }
     if (P.note && P.note.id !== seen.note) { const first = seen.note === null && lastScreen === ""; seen.note = P.note.id; if (!first) toast(P.note.t); }
     if (P.frozen && P.frozen.id !== seen.frozen && S && S.phase === "question" && P.frozen.k === qkey() && !locked()) { seen.frozen = P.frozen.id; freeze(P.frozen.by); }
+    fbWatch();
   }
+  function fbWatch() {
+    if (P.fs && P.fs.s) {
+      const st = P.fs.s, sig = st.map(x => x ? (x.tg || "") + "|" + (x.cmId || "") : "|");
+      if (seen.fb && seen.fb.k === "f" + P.fs.fid) st.forEach((x, i) => { if (x && sig[i] !== (seen.fb.a[i] || "|") && (x.tg || x.cm)) { const it = fItems()[i]; const prevTg = (seen.fb.a[i] || "|").split("|")[0]; fbPop(it ? it.title : "", String(x.tg || "") !== prevTg ? x.tg : null, (x.cmId || "") !== (seen.fb.a[i] || "|").split("|")[1] ? x.cm : null); } });
+      seen.fb = {k: "f" + P.fs.fid, a: sig}; return;
+    }
+    const k = qkey(), g = P.grade && P.grade.k === k ? P.grade.g : "", cm = P.cm && P.cm.k === k ? P.cm.t : "", sig = g + "|" + cm;
+    if (seen.fb && seen.fb.k === "r" + k && seen.fb.a !== sig && (g || cm)) { const [pg, pc] = seen.fb.a.split(/\|(.*)/s); fbPop(RR() ? RR().title || "" : "", g && g !== pg ? GRADE[g].t : null, cm && cm !== pc ? cm : null); }
+    seen.fb = {k: "r" + k, a: sig};
+  }
+  function fbPop(title, g, cm) {
+    if (!g && !cm) return;
+    const old = $(".fbpop"); if (old) old.remove();
+    const d = document.createElement("div"); d.className = "fbpop";
+    d.innerHTML = `<div class="fbh">${t_("Мұғалімнен", "От преподавателя")}${title ? " · " + esc(title) : ""}</div>${g ? `<div class="fbg">${t_("Баға", "Оценка")}: <b class="${/^[2-5]$/.test(String(g)) ? "g" + g : ""}">${esc(String(g))}</b></div>` : ""}${cm ? `<div class="fbt">💬 ${esc(cm)}</div>` : ""}<div class="fbx">${t_("Жабу үшін басыңыз", "Нажмите, чтобы закрыть")}</div>`;
+    d.onclick = () => d.remove(); document.body.appendChild(d); vibrate([40, 60, 40]);
+    setTimeout(() => d.remove(), cm ? 9000 : 5000);
+  }
+  function fbBox() {
+    if (!isFree()) { const k = qkey(), g = P && P.grade && P.grade.k === k ? P.grade.g : null, cm = P && P.cm && P.cm.k === k ? P.cm.t : null;
+      return cm ? `<div class="fbk"><div class="fbh">${t_("Мұғалімнің пікірі", "Комментарий преподавателя")}</div><div class="fbt">${esc(cm)}</div></div>` : ""; }
+    const x = fst(curF); if (!x.tg && !x.cm) return "";
+    return `<div class="fbk"><div class="fbh">${t_("Мұғалімнен", "От преподавателя")}</div>${x.tg ? `<div class="fbg">${t_("Баға", "Оценка")}: <b class="g${x.tg}">${x.tg}</b></div>` : ""}${x.cm ? `<div class="fbt">💬 ${esc(x.cm)}</div>` : ""}</div>`;
+  }
+  function updateFb() { const b = $("#fbk"); if (!b) return; const h = fbBox(); if (b.dataset.h !== h) { b.dataset.h = h; b.innerHTML = h; } }
   function onThumb(id, m) {
     if (!m || typeof m.data !== "string" || m.data.slice(0, 11) !== "data:image/") return;
     THUMBS[id] = m;
@@ -1314,7 +1374,7 @@ function Player() {
       return (locked() ? "locked" : "q") + qkey();
     }
     if (S.phase === "reveal") return "rv" + qkey() + (P && P.last ? P.last.k : "");
-    if (S.phase === "review") return "review" + qkey() + (P && P.grade ? P.grade.k + P.grade.g : "") + (mySub() ? "s" : "");
+    if (S.phase === "review") return "review" + qkey() + (P && P.grade ? P.grade.k + P.grade.g : "") + (P && P.cm ? P.cm.k + P.cm.t : "") + (mySub() ? "s" : "");
     if (S.phase === "vote") return "vote" + qkey() + (S.cands ? S.cands.length : 0);
     if (S.phase === "board") return "board" + qkey() + (P && P.last ? P.last.k + P.last.pts : "");
     return S.phase + qkey();
@@ -1396,7 +1456,7 @@ function Player() {
     closeList(); const items = fItems(), hide = fs() && fs().hide;
     const d = document.createElement("div"); d.className = "sheet"; d.id = "flist";
     d.innerHTML = `<div class="in"><h3>${t_("Барлық тапсырмалар", "Все задания")}</h3>
-      ${items.map((it, i) => { const x = fst(i), g = x.tg || x.ag; return `<button class="tg fli ${i === curF ? "on" : ""}" data-i="${i}"><span><b class="si s${statusIcon(i) === "✓" ? "ok" : statusIcon(i) === "✗" ? "no" : statusIcon(i) === "◐" ? "run" : ""}">${statusIcon(i)}</b> ${esc(itemLabel(it, i))}</span><span class="mut">${it.type === "task" && x.d && !hide ? "«" + g + "» · " + mmss(x.sec || 0) : it.type === "task" ? it.t / 60 + " " + t_("мин", "мин") : ""}</span></button>`; }).join("")}
+      ${items.map((it, i) => { const x = fst(i), g = x.tg || x.ag; return `<button class="tg fli ${i === curF ? "on" : ""}" data-i="${i}"><span><b class="si s${statusIcon(i) === "✓" ? "ok" : statusIcon(i) === "✗" ? "no" : statusIcon(i) === "◐" ? "run" : ""}">${statusIcon(i)}</b> ${esc(itemLabel(it, i))}</span><span class="mut">${it.type === "task" && x.d && !hide ? "«" + g + "» · " + mmss(x.sec || 0) : it.type === "task" ? it.t / 60 + " " + t_("мин", "мин") : ""}${it.type === "task" && x.tg && !x.d ? " · «" + x.tg + "»" : ""}${x.cm ? " 💬" : ""}</span></button>`; }).join("")}
       <button class="btn ghost" id="fmine" style="width:100%;margin-top:14px">${t_("Менің жұмыстарым", "Мои работы")}</button>
       <button class="btn ghost" id="flx" style="width:100%;margin-top:8px">${t_("Жабу", "Закрыть")}</button></div>`;
     document.body.appendChild(d);
@@ -1439,6 +1499,7 @@ function Player() {
     }
     app.innerHTML = `<div class="ply"><div class="pw-wrap">${top()}
       <div class="pk">${esc(r.k)} · ${t_("уақыт", "время")} <span id="ptt">${x.o ? "" : "0:00"}</span></div><div class="pq up">${esc(r.title)}</div>
+      <div id="fbk"></div>
       <div class="langsw"><span class="mut">${LANG_LABEL}</span>${LANGS.map(([k, t]) => `<button data-l="${k}" class="${lang() === k ? "on" : ""}">${t}</button>`).join("")}</div>
       <ol class="psteps">${r.steps.map(s => `<li>${esc(L(s, lang()))}</li>`).join("")}</ol>
       ${r.crit && r.crit.length ? `<div class="crit">${r.crit.map(c => `<span>${esc(c)}</span>`).join("")}</div>` : ""}
@@ -1453,7 +1514,7 @@ function Player() {
     document.querySelectorAll(".langsw button").forEach(b => b.onclick = () => { store.set("lang", b.dataset.l); lastScreen = ""; render(); });
     $("#file").onchange = async e => { const f = e.target.files && e.target.files[0]; e.target.value = ""; if (!f) return;
       try { draft = {k: qkey(), data: await compressImage(f)}; taskUpload(); } catch (err) { toast("Бұл файлды ашу мүмкін болмады. JPG/PNG немесе скриншот таңдаңыз"); } };
-    upSig = ""; lastChk = ""; taskUpload(); bindChecks(r); updateChecks(); bindFreeNav();
+    upSig = ""; lastChk = ""; taskUpload(); bindChecks(r); updateChecks(); bindFreeNav(); updateFb();
     const cp = $("#copytbl"); if (cp) cp.onclick = () => copyText(r.table.head.join("\t") + "\n" + r.table.rows.map(z => z.join("\t")).join("\n"));
     const loop = () => { const el = $("#ptt"); if (!el) return; const y = fst(curF); el.textContent = y.d ? mmss(y.sec || 0) + " ✓" : y.o ? mmss(Math.max(0, (Date.now() + skew - y.o) / 1000)) : "0:00"; raf = requestAnimationFrame(() => setTimeout(loop, 500)); };
     loop();
@@ -1463,6 +1524,7 @@ function Player() {
     let tn = 0;
     const cards = items.map((it, i) => { if (it.type !== "task") return ""; tn++; const x = fst(i), img = own[i], g = x.tg || x.ag;
       return `<div class="mine"><div class="mt"><b>${tn}. ${esc(it.title)}</b><span class="mut">${x.d ? (hide ? "✓" : "«" + g + "»") + " · " + mmss(x.sec || 0) : x.o ? t_("аяқталмаған", "не завершено") : t_("ашылмаған", "не начато")}</span></div>
+        ${x.tg ? `<div class="fbg" style="font-size:14px">${t_("Мұғалім бағасы", "Оценка преподавателя")}: <b class="g${x.tg}">${x.tg}</b></div>` : ""}${x.cm ? `<div class="fbt mcm">💬 ${esc(x.cm)}</div>` : ""}
         ${img ? `<img src="${img}" alt=""><a class="btn ghost" download="${String(tn).padStart(2, "0")}_${esc(safeName(it.title))}.jpg" href="${img}">⬇ ${t_("Сақтау", "Сохранить")}</a>` : `<div class="mut" style="font-size:13px">${t_("Скриншот жоқ", "Скриншота нет")}</div>`}
         ${!fin ? `<button class="btn ghost" data-go="${i}">${t_("Тапсырмаға өту", "Открыть задание")}</button>` : ""}</div>`; }).join("");
     const mcs = items.map((it, i) => it.type === "mc" ? fst(i) : null).filter(Boolean);
@@ -1477,7 +1539,7 @@ function Player() {
     $("#zipme").onclick = async () => {
       if (typeof JSZip === "undefined") { toast(t_("ZIP жүктелмеді", "Не загрузился ZIP")); return; }
       const zip = new JSZip(); let n = 0, k = 0, lines = [`${TITLE}`, `${name}`, ""];
-      items.forEach((it, i) => { if (it.type !== "task") return; k++; const x = fst(i); lines.push(`${k}. ${it.title}: ${x.d ? (hide ? "✓" : (x.tg || x.ag)) + " · " + mmss(x.sec || 0) : "—"}`);
+      items.forEach((it, i) => { if (it.type !== "task") return; k++; const x = fst(i); lines.push(`${k}. ${it.title}: ${x.d ? (hide ? "✓" : (x.tg || x.ag)) + " · " + mmss(x.sec || 0) : "—"}`); if (x.cm) lines.push("   " + t_("Пікір", "Комментарий") + ": " + x.cm);
         if (own[i]) { zip.file(String(k).padStart(2, "0") + "_" + safeName(it.title) + ".jpg", dataToBytes(own[i])); n++; } });
       if (mcs.length) lines.push("", t_("Пернелер сұрақтары", "Горячие клавиши") + `: ${mcs.filter(x => x.c).length}/${mcs.length}`);
       if (!hide && fs() && fs().p100 != null) lines.push("", t_("Қорытынды", "Итог") + `: ${fs().p100} / 100`);
@@ -1506,7 +1568,7 @@ function Player() {
   function render() {
     const key = screenKey();
     if (key.startsWith("q")) updatePw();
-    if (key === lastScreen) { if (key.startsWith("task") || (key.startsWith("fr") && !key.startsWith("frmine") && !key.startsWith("frwait"))) { taskUpload(); updateChecks(); updateFreeNav(); } return; }
+    if (key === lastScreen) { if (key.startsWith("task") || (key.startsWith("fr") && !key.startsWith("frmine") && !key.startsWith("frwait"))) { taskUpload(); updateChecks(); updateFreeNav(); updateFb(); } return; }
     const prev = lastScreen; lastScreen = key;
     if (key.startsWith("frwait")) { app.innerHTML = `<div class="ply">${top()}<div class="pc"><div class="wait up"><div class="ring"></div><h1>${t_("Тапсырмалар жүктелуде…", "Загружаем задания…")}</h1></div></div></div>`; return; }
     if (key.startsWith("frmine")) { closeSheet(); renderMine(); return; }
@@ -1609,6 +1671,7 @@ function Player() {
         ${img ? `<img class="prev" src="${img}" alt="Сіздің жұмысыңыз" style="max-height:38vh">` : ""}
         <h1 style="font-size:28px">${sent ? "Мұғалім жұмыстарды қарап жатыр" : "Жұмыс жіберілмеді"}</h1>
         ${g ? `<div class="gbadge" style="background:${GRADE[g].c}">${GRADE[g].t}</div>` : sent ? `<p class="mut" style="margin:0;font-size:17px">Экранға қараңыз</p>` : `<p class="mut" style="margin:0;font-size:17px">Келесі тапсырмада үлгеріңіз!</p>`}
+        ${fbBox()}
       </div></div></div>`;
       if (g === "best" && seen.res !== qkey() + "best") { seen.res = qkey() + "best"; confetti(); vibrate(60); }
       return;
