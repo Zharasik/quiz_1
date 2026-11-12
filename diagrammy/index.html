@@ -545,15 +545,16 @@ function compressImage(file) {
 
 
 /* ===================== ТАПСЫРМАЛАР РЕДАКТОРЫ (мұғалім) ===================== */
-function PlanEditor(plan0, onDone) {
+function PlanEditor(plan0, onDone, opts) {
+  opts = opts || {}; const used = new Set(opts.used || []);
   let plan = JSON.parse(JSON.stringify(plan0));
   let pvLang = "ru";
   const w = document.createElement("div"); w.className = "ed"; w.id = "ed"; document.body.appendChild(w);
   const totalMin = () => plan.reduce((a, t) => a + (+t.min || 0), 0);
   function draw() {
     const inPlan = new Set(plan.map(t => t.id));
-    w.innerHTML = `<div class="edtop"><div><div class="kicker">Практика</div><h2 class="disp" style="margin:0;font-size:32px">Задания: ${plan.length} · ${totalMin()} мин</h2></div>
-        <div style="display:flex;gap:10px;flex-wrap:wrap"><button class="btn ghost" id="edadd">+ Своё задание</button><button class="btn ghost" id="eddef">Вернуть по умолчанию</button><button class="btn" id="edok">Готово</button></div></div>
+    w.innerHTML = `<div class="edtop"><div><div class="kicker">${opts.add ? t_("Жүріп жатқан практикаға қосу", "Добавить в идущую практику") : "Практика"}</div><h2 class="disp" style="margin:0;font-size:32px">${opts.add ? t_("Жаңа тапсырмалар", "Новые задания") : "Тапсырмалар"}: ${plan.length} · ${totalMin()} мин</h2></div>
+        <div style="display:flex;gap:10px;flex-wrap:wrap">${opts.add ? `<button class="btn ghost" id="edcancel">${t_("Болдырмау", "Отмена")}</button>` : ""}<button class="btn ghost" id="edadd">+ Своё задание</button>${opts.add ? "" : `<button class="btn ghost" id="eddef">Вернуть по умолчанию</button>`}<button class="btn" id="edok">${opts.add ? t_("Студенттерге қосу", "Добавить студентам") : "Дайын"}</button></div></div>
       <div class="edcols">
         <div class="edlist"><div class="edh">На паре (по порядку)</div>
           ${plan.map((t, i) => `<div class="edrow">
@@ -566,11 +567,12 @@ function PlanEditor(plan0, onDone) {
         </div>
         <div class="edbank"><div class="edh">Банк заданий · ${COURSE.bank.length}</div><div class="bgrid">
           ${COURSE.bank.map(b => `<div class="bcard ${inPlan.has(b.id) ? "on" : ""}">${b.ex ? `<img src="${esc(exUrl(b.ex))}" alt="${esc(b.title)}">` : `<div class="noimg2">${esc(b.title)}</div>`}<div class="bt"><b>${esc(b.title)}</b><span class="mut">${b.min} мин</span></div>
-            <button class="btn ${inPlan.has(b.id) ? "ghost" : ""}" data-add="${b.id}" ${inPlan.has(b.id) ? "disabled" : ""}>${inPlan.has(b.id) ? "✓ Добавлено" : "+ Добавить"}</button></div>`).join("")}
+            <button class="btn ${inPlan.has(b.id) ? "ghost" : ""}" data-add="${b.id}" ${inPlan.has(b.id) ? "disabled" : ""}>${inPlan.has(b.id) ? "✓ Добавлено" : used.has(b.id) ? "+ " + t_("Тағы бір рет (практикада бар)", "Ещё раз (уже было)") : "+ Добавить"}</button></div>`).join("")}
         </div></div>
       </div>`;
     $("#edok").onclick = () => { if (!plan.length) { toast("Выберите хотя бы 1 задание"); return; } onDone(plan); w.remove(); };
-    $("#eddef").onclick = () => { plan = defaultPlan(); draw(); };
+    if ($("#eddef")) $("#eddef").onclick = () => { plan = defaultPlan(); draw(); };
+    if ($("#edcancel")) $("#edcancel").onclick = () => w.remove();
     $("#edadd").onclick = () => edit(-1);
     w.querySelectorAll("[data-add]").forEach(b => b.onclick = () => { const t = fromBank(b.dataset.add); if (t) { plan.push(t); draw(); } });
     w.querySelectorAll("[data-a]").forEach(b => b.onclick = () => {
@@ -1077,12 +1079,12 @@ function Host() {
       <div class="ftop"><div><div class="kicker">${fin ? t_("Аяқталды", "Завершено") : t_("Еркін практика жүріп жатыр", "Идёт свободная практика")}</div>
         <h2 class="qtext" style="font-size:34px">${t_("Уақыт", "Прошло")}: <span id="ftime">${mmss(((fin ? H.fend : Date.now()) - H.fstart) / 1000)}</span></h2>
         <div class="mut" style="font-size:14px;margin-top:4px">${t_("Бағалау уақыт бойынша", "Оценка по времени")}: 5 ≤ ${H.thr[0]}% · 4 ≤ ${H.thr[1]}% · 3 ≤ ${H.thr[2]}% ${t_("нормадан", "от нормы")} · ${t_("ұяшықты басып — өз бағаңыз", "клик по ячейке — ваша оценка")}</div></div>
-        <div class="fbtns"><button class="btn ghost" id="fitems">✂ ${t_("Тапсырмалар", "Задания")}${items0Off() ? " (−" + items0Off() + ")" : ""}</button><button class="btn ghost" id="f100">⚙ ${t_("100 балл", "100 баллов")}</button><button class="btn ghost" id="fhide">${H.hideMarks ? t_("👁 Бағаларды көрсету", "👁 Показать оценки") : t_("👁 Бағаларды жасыру", "👁 Скрыть оценки")}</button>
+        <div class="fbtns"><button class="btn ghost" id="fadd">+ ${t_("Тапсырма қосу", "Добавить задание")}</button><button class="btn ghost" id="fitems">✂ ${t_("Тапсырмалар", "Задания")}${items0Off() ? " (−" + items0Off() + ")" : ""}</button><button class="btn ghost" id="f100">⚙ ${t_("100 балл", "100 баллов")}</button><button class="btn ghost" id="fhide">${H.hideMarks ? t_("👁 Бағаларды көрсету", "👁 Показать оценки") : t_("👁 Бағаларды жасыру", "👁 Скрыть оценки")}</button>
           <button class="btn ghost" id="fzip">⬇ ${t_("Барлық жұмыстар (ZIP)", "Все работы (ZIP)")}</button><button class="btn ghost" id="fcsv">⬇ ${t_("Журнал (CSV)", "Журнал (CSV)")}</button></div></div>
       ${items0Off() ? `<div class="offban">${t_("Алынған тапсырмалар", "Убрано заданий/вопросов")}: <b>${items0Off()}</b> — ${t_("олардың скриншоттары мен бағалары кестеде, журналда және ZIP-те көрсетілмейді.", "их скриншоты и оценки не показываются в таблице, журнале и ZIP.")} <button class="btn ghost" id="offall">↩ ${t_("Барлығын қайтару", "Вернуть все")}</button></div>` : ""}
       ${freeTable()}
       ${ctlBar("", fin ? `<button class="btn ghost" id="freopen">${t_("Қайта ашу", "Открыть снова")}</button>` : `<button class="btn" id="fend">${t_("Практиканы аяқтау", "Завершить практику")}</button>`)}</div>`;
-    $("#f100").onclick = P100Settings; $("#fitems").onclick = ItemsEditor; const oa = $("#offall"); if (oa) oa.onclick = () => { (H.items || []).forEach(it => delete it.off); save(); pubItems(); pubState(); pids().forEach(pubPlayer); render(); };
+    $("#f100").onclick = P100Settings; $("#fitems").onclick = ItemsEditor; $("#fadd").onclick = AddTasks; const oa = $("#offall"); if (oa) oa.onclick = () => { (H.items || []).forEach(it => delete it.off); save(); pubItems(); pubState(); pids().forEach(pubPlayer); render(); };
     document.querySelectorAll("td.sum[data-s]").forEach(td => td.onclick = () => OvrEditor(td.dataset.s));
     $("#fhide").onclick = () => { H.hideMarks = !H.hideMarks; save(); pids().forEach(pubPlayer); render(); };
     $("#fzip").onclick = zipAll; $("#fcsv").onclick = () => downloadBlob(new Blob(["﻿" + journalCsv()], {type: "text/csv;charset=utf-8"}), safeName(TITLE) + " — журнал.csv");
@@ -1146,6 +1148,18 @@ function Host() {
     return [head, ...rows].map(r => r.map(q).join(";")).join("\r\n");
   }
 
+
+  function AddTasks() {
+    PlanEditor([], add => {
+      if (!add.length) return;
+      const items = H.items || [];
+      add.forEach(t => { const n = items.filter(x => x.type === "task").length + 1, r = toRound(t, n - 1);
+        r.k = t_(n + "-тапсырма", "Задание " + n) + " · " + t.min + " " + t_("мин", "мин"); r.added = Date.now(); r.id = t.id; items.push(r); });
+      H.items = items; if (H.phase === "final") { H.phase = "free"; H.fend = null; }
+      save(); pubItems(); pubState(); pids().forEach(pubPlayer); render();
+      toast(t_(`${add.length} тапсырма қосылды`, `Добавлено заданий: ${add.length}`));
+    }, {add: true, used: (H.plan || []).map(t => t.id).concat((H.items || []).map(x => x.id).filter(Boolean))});
+  }
   const items0Off = () => (H.items || []).filter(x => x.off).length;
   function ItemsEditor() {
     const w = document.createElement("div"); w.className = "edm fset"; document.body.appendChild(w);
@@ -1304,7 +1318,8 @@ function Player() {
     thSub = false;
     client = connect(bi, c => { thSub = false; c.subscribe([T(room) + "s", T(room) + "p/" + pid, T(room) + "items", T(room) + "img/" + pid + "/+"], {qos: 1}); if (joined) send({t: "join", name}); },
       (topic, m) => {
-        if (topic.endsWith("/items")) { ITEMS = m; if (S && S.fid === m.fid) { const sv = store.get("cur_" + m.fid); curF = nearOn(sv != null ? Math.min(sv, m.items.length - 1) : 0); } lastScreen = ""; render(); return; }
+        if (topic.endsWith("/items")) { const prevOn = ITEMS && ITEMS.fid === m.fid ? ITEMS.items.filter(x => !x.off && x.type === "task").length : null; ITEMS = m;
+          const nowOn = m.items.filter(x => !x.off && x.type === "task").length; if (prevOn != null && nowOn > prevOn) { const nw = m.items.filter(x => !x.off && x.type === "task").slice(prevOn); fbPop("", null, t_("Жаңа тапсырма қосылды: ", "Добавлено новое задание: ") + nw.map(x => "«" + x.title + "»").join(", ")); } if (S && S.fid === m.fid) { const sv = store.get("cur_" + m.fid); curF = nearOn(sv != null ? Math.min(sv, m.items.length - 1) : 0); } lastScreen = ""; render(); return; }
         if (topic.indexOf("/img/" + pid + "/") > 0) { if (m && m.fid && typeof m.data === "string") (OWN[m.fid] = OWN[m.fid] || {})[m.i] = m.data; if (showMine) { lastScreen = ""; render(); } return; }
         if (topic.indexOf("/th/") > 0) { onThumb(topic.split("/").pop(), m); return; }
         if (topic.endsWith("/s")) { S = m; if (S.phase === "question") deadline = performance.now() + (S.endsIn || 0); if (S.phase === "vote" && !thSub && client.connected) { thSub = true; client.subscribe(T(room) + "th/+", {qos: 1}); } }
