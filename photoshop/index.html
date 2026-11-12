@@ -419,6 +419,11 @@ a.btn svg{width:18px;height:18px}
 .fbpop{position:fixed;left:12px;right:12px;top:12px;z-index:9999;max-width:520px;margin:0 auto;padding:14px 16px;border-radius:16px;background:var(--s2);color:var(--tx);box-shadow:0 12px 40px rgba(0,0,0,.45);border:2px solid var(--a2);animation:fbin .3s ease-out;cursor:pointer}
 .fbpop .fbx{font-size:12px;opacity:.55;margin-top:6px}
 @keyframes fbin{from{transform:translateY(-30px);opacity:0}to{transform:none;opacity:1}}
+.itl{display:flex;flex-direction:column;gap:6px;max-height:52vh;overflow:auto;margin:4px 0}
+.iti{display:grid;grid-template-columns:22px 1fr auto;align-items:center;gap:10px;padding:10px 12px;border:1px solid var(--line);border-radius:12px;cursor:pointer;font-size:15px}
+.iti input{width:18px;height:18px;accent-color:var(--a3)}
+.iti.off{opacity:.5}.iti.off span{text-decoration:line-through}
+.iti small{font-size:12px;white-space:nowrap}
 </style>
 </head>
 <body>
@@ -1026,8 +1031,8 @@ function Host() {
   function fScore(pid) {
     const c = P100(), items = H.items || [], st = H.fs[pid] || [];
     const used = i => pids().some(id => fGrade((H.fs[id] || [])[i]));
-    const pts = items.map((it, i) => { if (it.type !== "task" || !used(i)) return undefined; const g = fGrade(st[i]); return g ? (+c.map[g] || 0) : (c.zero ? 0 : null); }).filter(x => x !== undefined && x !== null);
-    const mcs = items.map((it, i) => it.type === "mc" && pids().some(id => ((H.fs[id] || [])[i] || {}).a != null) ? st[i] || {} : null).filter(Boolean);
+    const pts = items.map((it, i) => { if (it.type !== "task" || it.off || !used(i)) return undefined; const g = fGrade(st[i]); return g ? (+c.map[g] || 0) : (c.zero ? 0 : null); }).filter(x => x !== undefined && x !== null);
+    const mcs = items.map((it, i) => it.type === "mc" && !it.off && pids().some(id => ((H.fs[id] || [])[i] || {}).a != null) ? st[i] || {} : null).filter(Boolean);
     const tScore = pts.length ? pts.reduce((a, b) => a + b, 0) / pts.length : 0;
     const w = mcs.length ? Math.max(0, Math.min(100, +c.hkW || 0)) / 100 : 0;
     const hkPct = mcs.length ? mcs.filter(x => x.c).length / mcs.length * 100 : 0;
@@ -1037,24 +1042,25 @@ function Host() {
   }
   function fRow(pid) {
     const items = H.items || [], st = H.fs[pid] || [];
-    const g = items.map((it, i) => it.type === "task" ? fGrade(st[i]) : null).filter(Boolean);
-    const mcs = items.map((it, i) => it.type === "mc" ? st[i] : undefined).filter(x => x !== undefined);
-    return {avg: g.length ? Math.round(g.reduce((a, b) => a + b, 0) / g.length * 10) / 10 : null, hk: mcs.filter(x => x && x.c).length, hkN: mcs.length, done: items.filter((it, i) => st[i] && st[i].d).length};
+    const g = items.map((it, i) => it.type === "task" && !it.off ? fGrade(st[i]) : null).filter(Boolean);
+    const mcs = items.map((it, i) => it.type === "mc" && !it.off ? st[i] : undefined).filter(x => x !== undefined);
+    return {avg: g.length ? Math.round(g.reduce((a, b) => a + b, 0) / g.length * 10) / 10 : null, hk: mcs.filter(x => x && x.c).length, hkN: mcs.length, done: items.filter((it, i) => !it.off && st[i] && st[i].d).length, n: items.filter(it => !it.off).length};
   }
   function freeTable() {
     const items = H.items || [], hide = H.hideMarks;
     const ids = pids().sort((a, b) => H.players[a].name.localeCompare(H.players[b].name));
     let tn = 0;
-    const heads = items.map((it, i) => it.type === "task" ? `<th title="${esc(it.title)}">${++tn}<small>${esc(it.title.slice(0, 14))}</small></th>` : `<th class="q" title="${esc(L(it.q, H.lang))}">⌨</th>`).join("");
+    const heads = items.map((it, i) => it.off ? "" : it.type === "task" ? `<th title="${esc(it.title)}">${++tn}<small>${esc(it.title.slice(0, 14))}</small></th>` : `<th class="q" title="${esc(L(it.q, H.lang))}">⌨</th>`).join("");
     const rows = ids.map(id => { const p = H.players[id], st = H.fs[id] || [], rr = fRow(id);
       const cells = items.map((it, i) => { const x = st[i] || {};
+        if (it.off) return "";
         if (it.type === "mc") return `<td class="q ${x.a == null ? "" : x.c ? "ok" : "no"}">${x.a == null ? (x.o ? "…" : "") : x.c ? "✓" : "✗"}</td>`;
         const g = fGrade(x), dots = it.checks.length && x.ok ? `<span class="fd">${x.ok.map(o => `<i class="${o ? "g" : "b"}"></i>`).join("")}</span>` : "";
         if (x.d) return `<td class="t done ${x.tg ? "tgr" : ""}" data-c="${id}:${i}">${hide ? "✓" : `<b class="g${g}">${g}</b>`}<small>${mmss(x.sec || 0)}</small>${x.sub ? "<em>▣</em>" : ""}${x.cm ? "<i class=\"cmi\">💬</i>" : ""}</td>`;
         if (x.o) return `<td class="t run" data-c="${id}:${i}"><small data-run="${x.o}">${mmss((Date.now() - x.o) / 1000)}</small>${dots}${x.sub ? "<em>▣</em>" : ""}${x.tg && !hide ? `<b class="g${x.tg}">${x.tg}</b>` : ""}${x.cm ? "<i class=\"cmi\">💬</i>" : ""}</td>`;
         return `<td class="t"></td>`; }).join("");
-      return `<tr><th class="nm">${esc(p.name)}${p.cur != null && items[p.cur] ? `<small>→ ${items[p.cur].type === "task" ? items.slice(0, p.cur + 1).filter(x => x.type === "task").length : "⌨"}</small>` : ""}</th>${cells}<td class="sum" data-s="${id}">${hide ? rr.done + "/" + items.length : (sc => `<b class="${sc.ovr != null ? "ovr" : ""}">${sc.final}</b><span class="mut">/100 ${LET(sc.final)}</span>`)(fScore(id))}<small>${hide ? "" : (rr.avg == null ? "—" : t_("орт. ", "ср. ") + String(rr.avg).replace(".", ","))}${rr.hkN ? ` · ⌨ ${rr.hk}/${rr.hkN}` : ""}</small></td></tr>`; }).join("");
-    return `<div class="fwrap"><table class="fm"><thead><tr><th class="nm">${t_("Студент", "Студент")}</th>${heads}<th class="sum">${t_("Қорытынды /100", "Итог /100")}</th></tr></thead><tbody>${rows || `<tr><td class="mut" colspan="${items.length + 2}" style="padding:20px">${t_("Ойыншылар жоқ", "Нет участников")}</td></tr>`}</tbody></table></div>`;
+      return `<tr><th class="nm">${esc(p.name)}${p.cur != null && items[p.cur] ? `<small>→ ${items[p.cur].type === "task" ? items.slice(0, p.cur + 1).filter(x => x.type === "task" && !x.off).length : "⌨"}</small>` : ""}</th>${cells}<td class="sum" data-s="${id}">${hide ? rr.done + "/" + rr.n : (sc => `<b class="${sc.ovr != null ? "ovr" : ""}">${sc.final}</b><span class="mut">/100 ${LET(sc.final)}</span>`)(fScore(id))}<small>${hide ? "" : (rr.avg == null ? "—" : t_("орт. ", "ср. ") + String(rr.avg).replace(".", ","))}${rr.hkN ? ` · ⌨ ${rr.hk}/${rr.hkN}` : ""}</small></td></tr>`; }).join("");
+    return `<div class="fwrap"><table class="fm"><thead><tr><th class="nm">${t_("Студент", "Студент")}</th>${heads}<th class="sum">${t_("Қорытынды /100", "Итог /100")}</th></tr></thead><tbody>${rows || `<tr><td class="mut" colspan="${items.filter(x => !x.off).length + 2}" style="padding:20px">${t_("Ойыншылар жоқ", "Нет участников")}</td></tr>`}</tbody></table></div>`;
   }
   function renderFree() {
     const fin = H.phase === "final";
@@ -1063,11 +1069,11 @@ function Host() {
       <div class="ftop"><div><div class="kicker">${fin ? t_("Аяқталды", "Завершено") : t_("Еркін практика жүріп жатыр", "Идёт свободная практика")}</div>
         <h2 class="qtext" style="font-size:34px">${t_("Уақыт", "Прошло")}: <span id="ftime">${mmss(((fin ? H.fend : Date.now()) - H.fstart) / 1000)}</span></h2>
         <div class="mut" style="font-size:14px;margin-top:4px">${t_("Бағалау уақыт бойынша", "Оценка по времени")}: 5 ≤ ${H.thr[0]}% · 4 ≤ ${H.thr[1]}% · 3 ≤ ${H.thr[2]}% ${t_("нормадан", "от нормы")} · ${t_("ұяшықты басып — өз бағаңыз", "клик по ячейке — ваша оценка")}</div></div>
-        <div class="fbtns"><button class="btn ghost" id="f100">⚙ ${t_("100 балл", "100 баллов")}</button><button class="btn ghost" id="fhide">${H.hideMarks ? t_("👁 Бағаларды көрсету", "👁 Показать оценки") : t_("👁 Бағаларды жасыру", "👁 Скрыть оценки")}</button>
+        <div class="fbtns"><button class="btn ghost" id="fitems">✂ ${t_("Тапсырмалар", "Задания")}${items0Off() ? " (−" + items0Off() + ")" : ""}</button><button class="btn ghost" id="f100">⚙ ${t_("100 балл", "100 баллов")}</button><button class="btn ghost" id="fhide">${H.hideMarks ? t_("👁 Бағаларды көрсету", "👁 Показать оценки") : t_("👁 Бағаларды жасыру", "👁 Скрыть оценки")}</button>
           <button class="btn ghost" id="fzip">⬇ ${t_("Барлық жұмыстар (ZIP)", "Все работы (ZIP)")}</button><button class="btn ghost" id="fcsv">⬇ ${t_("Журнал (CSV)", "Журнал (CSV)")}</button></div></div>
       ${freeTable()}
       ${ctlBar("", fin ? `<button class="btn ghost" id="freopen">${t_("Қайта ашу", "Открыть снова")}</button>` : `<button class="btn" id="fend">${t_("Практиканы аяқтау", "Завершить практику")}</button>`)}</div>`;
-    $("#f100").onclick = P100Settings;
+    $("#f100").onclick = P100Settings; $("#fitems").onclick = ItemsEditor;
     document.querySelectorAll("td.sum[data-s]").forEach(td => td.onclick = () => OvrEditor(td.dataset.s));
     $("#fhide").onclick = () => { H.hideMarks = !H.hideMarks; save(); pids().forEach(pubPlayer); render(); };
     $("#fzip").onclick = zipAll; $("#fcsv").onclick = () => downloadBlob(new Blob(["﻿" + journalCsv()], {type: "text/csv;charset=utf-8"}), safeName(TITLE) + " — журнал.csv");
@@ -1122,7 +1128,7 @@ function Host() {
     inp.onkeydown = e => { if (e.key === "Enter") $("#o-ok").click(); if (e.key === "Escape") w.remove(); };
   }
   function journalCsv() {
-    const items = H.items || [], tasks = items.map((it, i) => [it, i]).filter(([it]) => it.type === "task");
+    const items = H.items || [], tasks = items.map((it, i) => [it, i]).filter(([it]) => it.type === "task" && !it.off);
     const q = v => `"${String(v == null ? "" : v).replace(/"/g, '""')}"`;
     const c = P100();
     const head = [t_("Студент", "Студент"), ...tasks.flatMap(([it], n) => [`${n + 1}. ${it.title} — ${t_("уақыт", "время")}`, `${n + 1}. ${t_("баға", "оценка")}`, `${n + 1}. ${t_("балл", "баллы")}`, `${n + 1}. ${t_("пікір", "комментарий")}`]), t_("Орташа баға", "Средняя оценка"), t_("Пернелер (дұрыс)", "Горячие клавиши (верно)"), t_("Қорытынды (100)", "Итог (100)"), t_("Әріптік", "Буквенная"), t_("Дәстүрлі", "Традиционная")];
@@ -1130,13 +1136,40 @@ function Host() {
       return [H.players[id].name, ...tasks.flatMap(([it, i]) => { const x = st[i] || {}, g = fGrade(x); const used = pids().some(z => fGrade((H.fs[z] || [])[i])); return [x.d ? mmss(x.sec) : "", g || "", g ? c.map[g] : (c.zero && used ? 0 : ""), x.cm || ""]; }), rr.avg == null ? "" : String(rr.avg).replace(".", ","), rr.hkN ? rr.hk + "/" + rr.hkN : "", sc.final, LET(sc.final), TRAD(sc.final)]; });
     return [head, ...rows].map(r => r.map(q).join(";")).join("\r\n");
   }
+
+  const items0Off = () => (H.items || []).filter(x => x.off).length;
+  function ItemsEditor() {
+    const w = document.createElement("div"); w.className = "edm fset"; document.body.appendChild(w);
+    const draw = () => {
+      const items = H.items || []; let tn = 0;
+      const did = i => pids().filter(id => { const x = (H.fs[id] || [])[i]; return x && (x.d || x.a != null || x.sub || x.tg); }).length;
+      w.innerHTML = `<div class="edbox" style="max-width:640px"><h3 class="disp" style="margin:0;font-size:26px">${t_("Тапсырмаларды алып тастау", "Убрать задания и вопросы")}</h3>
+        <p class="mut" style="margin:0;font-size:15px">${t_("Алынған тапсырмалар студенттерде жоғалады және бағаға, журналға, ZIP-ке кірмейді. Кез келген уақытта қайтаруға болады.", "Убранные задания и вопросы исчезнут у студентов и не войдут в оценку, журнал и ZIP. Вернуть можно в любой момент — ничего не удаляется насовсем.")}</p>
+        <div class="itl">${items.map((it, i) => { const lbl = it.type === "task" ? (++tn) + ". " + esc(it.title) : "⌨ " + esc(L(it.q, H.lang)).slice(0, 70); const n = did(i);
+          return `<label class="iti ${it.off ? "off" : ""}"><input type="checkbox" data-i="${i}" ${it.off ? "" : "checked"}><span>${lbl}</span><small class="mut">${n ? t_("орындаған", "сделали") + ": " + n : t_("ешкім орындамаған", "никто не делал")}</small></label>`; }).join("")}</div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn ghost" id="it-unused">${t_("Ешкім жасамағандарды алу", "Убрать то, что никто не делал")}</button><button class="btn ghost" id="it-all">${t_("Барлығын қайтару", "Вернуть все")}</button><span style="flex:1"></span><button class="btn" id="it-ok">${t_("Дайын", "Готово")}</button></div></div>`;
+      w.querySelectorAll("input[data-i]").forEach(cb => cb.onchange = () => setOff([+cb.dataset.i], !cb.checked));
+      $("#it-unused").onclick = () => setOff(items.map((it, i) => i).filter(i => !did(i)), true);
+      $("#it-all").onclick = () => setOff(items.map((it, i) => i), false);
+      $("#it-ok").onclick = () => w.remove();
+    };
+    const setOff = (idx, off) => {
+      const items = H.items || [];
+      const left = items.filter((it, i) => !(idx.includes(i) ? off : it.off)).length;
+      if (!left) { toast(t_("Кемінде бір тапсырма қалуы керек", "Должно остаться хотя бы одно задание")); draw(); return; }
+      idx.forEach(i => { if (items[i]) { if (off) items[i].off = true; else delete items[i].off; } });
+      save(); pubItems(); pubState(); pids().forEach(pubPlayer); render(); draw();
+    };
+    w.onclick = e => { if (e.target === w) w.remove(); };
+    draw();
+  }
   async function zipAll() {
     if (typeof JSZip === "undefined") { toast(t_("ZIP кітапханасы жүктелмеді", "Не загрузилась библиотека ZIP")); return; }
     const zip = new JSZip(), items = H.items || [];
     zip.file(t_("журнал.csv", "журнал.csv"), "﻿" + journalCsv());
     let n = 0;
     for (const id of pids()) { const imgs = IMGF[id] || {}, folder = zip.folder(safeName(H.players[id].name));
-      let tn = 0; items.forEach((it, i) => { if (it.type !== "task") return; tn++; if (imgs[i]) { folder.file(String(tn).padStart(2, "0") + "_" + safeName(it.title) + ".jpg", dataToBytes(imgs[i])); n++; } }); }
+      let tn = 0; items.forEach((it, i) => { if (it.type !== "task" || it.off) return; tn++; if (imgs[i]) { folder.file(String(tn).padStart(2, "0") + "_" + safeName(it.title) + ".jpg", dataToBytes(imgs[i])); n++; } }); }
     const blob = await zip.generateAsync({type: "blob"});
     downloadBlob(blob, safeName(TITLE) + ".zip"); toast(t_(`${n} жұмыс жүктелді`, `Скачано работ: ${n}`));
   }
@@ -1259,7 +1292,7 @@ function Player() {
     thSub = false;
     client = connect(bi, c => { thSub = false; c.subscribe([T(room) + "s", T(room) + "p/" + pid, T(room) + "items", T(room) + "img/" + pid + "/+"], {qos: 1}); if (joined) send({t: "join", name}); },
       (topic, m) => {
-        if (topic.endsWith("/items")) { ITEMS = m; if (S && S.fid === m.fid) { const sv = store.get("cur_" + m.fid); curF = sv != null ? Math.min(sv, m.items.length - 1) : 0; } lastScreen = ""; render(); return; }
+        if (topic.endsWith("/items")) { ITEMS = m; if (S && S.fid === m.fid) { const sv = store.get("cur_" + m.fid); curF = nearOn(sv != null ? Math.min(sv, m.items.length - 1) : 0); } lastScreen = ""; render(); return; }
         if (topic.indexOf("/img/" + pid + "/") > 0) { if (m && m.fid && typeof m.data === "string") (OWN[m.fid] = OWN[m.fid] || {})[m.i] = m.data; if (showMine) { lastScreen = ""; render(); } return; }
         if (topic.indexOf("/th/") > 0) { onThumb(topic.split("/").pop(), m); return; }
         if (topic.endsWith("/s")) { S = m; if (S.phase === "question") deadline = performance.now() + (S.endsIn || 0); if (S.phase === "vote" && !thSub && client.connected) { thSub = true; client.subscribe(T(room) + "th/+", {qos: 1}); } }
@@ -1367,7 +1400,7 @@ function Player() {
     if (P && P.kicked) return "kicked";
     if (S.phase === "lobby") return "lobby" + S.set;
     if (isFree()) { if (!fItems().length) return "frwait" + S.fid; if (showMine || S.phase === "final") return "frmine" + S.fid + ":" + S.phase + ":" + Object.keys(OWN[S.fid] || {}).length + ":" + JSON.stringify((fs() || {}).s || []).length + ":" + ((fs() || {}).p100) + ":" + !!(fs() || {}).hide;
-      const it = fItems()[curF]; return "fr" + S.fid + ":" + curF + ":" + lang() + (it && it.type === "mc" ? ":" + (fst(curF).a != null) : ""); }
+      const it = fItems()[curF]; return "fr" + S.fid + ":" + curF + ":" + onIdx().join(",") + ":" + lang() + (it && it.type === "mc" ? ":" + (fst(curF).a != null) : ""); }
     const r = RR();
     if (S.phase === "question") {
       if (isTask(r)) return "task" + qkey() + lang();
@@ -1379,7 +1412,7 @@ function Player() {
     if (S.phase === "board") return "board" + qkey() + (P && P.last ? P.last.k + P.last.pts : "");
     return S.phase + qkey();
   }
-  const top = () => isFree() ? `<div class="pbar"><span class="me">${esc(name)}</span><span>${fItems().filter((it, i) => fst(i).d).length} / ${fItems().length} ${t_("дайын", "готово")}</span></div>` : `<div class="pbar"><span class="me">${esc(name)}</span><span>${P ? P.score + " ұпай" : ""}${S && S.qi >= 0 && S.total ? ` · ${S.qi + 1}/${S.total}` : ""}</span></div>`;
+  const top = () => isFree() ? `<div class="pbar"><span class="me">${esc(name)}</span><span>${fItems().filter((it, i) => !it.off && (fst(i).d || fst(i).a != null)).length} / ${onIdx().length} ${t_("дайын", "готово")}</span></div>` : `<div class="pbar"><span class="me">${esc(name)}</span><span>${P ? P.score + " ұпай" : ""}${S && S.qi >= 0 && S.total ? ` · ${S.qi + 1}/${S.total}` : ""}</span></div>`;
   function sendMc(a) {
     if ($("#ice") || locked()) return;
     if (!send({t: "ans", qi: S.qi, a})) { toast("Байланыс жоқ — қайта басыңыз"); return; }
@@ -1449,14 +1482,16 @@ function Player() {
   }
 
   /* ---------- Еркін режим (студент) ---------- */
-  function openItem(i) { const n = fItems().length; if (!n) return; curF = Math.max(0, Math.min(n - 1, i)); store.set("cur_" + S.fid, curF); showMine = false; closeList(); send({t: "fopen", i: curF}); lastScreen = ""; render(); window.scrollTo(0, 0); }
+  const onIdx = () => fItems().map((it, i) => it.off ? -1 : i).filter(i => i >= 0);
+  function nearOn(i) { const L = onIdx(); if (!L.length) return 0; if (L.includes(i)) return i; const nx = L.find(j => j > i); return nx != null ? nx : L[L.length - 1]; }
+  function openItem(i) { const n = fItems().length; if (!n) return; curF = nearOn(Math.max(0, Math.min(n - 1, i))); store.set("cur_" + S.fid, curF); showMine = false; closeList(); send({t: "fopen", i: curF}); lastScreen = ""; render(); window.scrollTo(0, 0); }
   function itemLabel(it, i) { return it.type === "task" ? it.title : t_("Пернелер сұрағы", "Вопрос: горячие клавиши"); }
   function statusIcon(i) { const x = fst(i), it = fItems()[i]; if (it.type === "mc") return x.a == null ? "○" : x.c ? "✓" : "✗"; return x.d ? "✓" : x.o || x.tries || x.sub ? "◐" : "○"; }
   function openList() {
     closeList(); const items = fItems(), hide = fs() && fs().hide;
     const d = document.createElement("div"); d.className = "sheet"; d.id = "flist";
     d.innerHTML = `<div class="in"><h3>${t_("Барлық тапсырмалар", "Все задания")}</h3>
-      ${items.map((it, i) => { const x = fst(i), g = x.tg || x.ag; return `<button class="tg fli ${i === curF ? "on" : ""}" data-i="${i}"><span><b class="si s${statusIcon(i) === "✓" ? "ok" : statusIcon(i) === "✗" ? "no" : statusIcon(i) === "◐" ? "run" : ""}">${statusIcon(i)}</b> ${esc(itemLabel(it, i))}</span><span class="mut">${it.type === "task" && x.d && !hide ? "«" + g + "» · " + mmss(x.sec || 0) : it.type === "task" ? it.t / 60 + " " + t_("мин", "мин") : ""}${it.type === "task" && x.tg && !x.d ? " · «" + x.tg + "»" : ""}${x.cm ? " 💬" : ""}</span></button>`; }).join("")}
+      ${items.map((it, i) => { if (it.off) return ""; const x = fst(i), g = x.tg || x.ag; return `<button class="tg fli ${i === curF ? "on" : ""}" data-i="${i}"><span><b class="si s${statusIcon(i) === "✓" ? "ok" : statusIcon(i) === "✗" ? "no" : statusIcon(i) === "◐" ? "run" : ""}">${statusIcon(i)}</b> ${esc(itemLabel(it, i))}</span><span class="mut">${it.type === "task" && x.d && !hide ? "«" + g + "» · " + mmss(x.sec || 0) : it.type === "task" ? it.t / 60 + " " + t_("мин", "мин") : ""}${it.type === "task" && x.tg && !x.d ? " · «" + x.tg + "»" : ""}${x.cm ? " 💬" : ""}</span></button>`; }).join("")}
       <button class="btn ghost" id="fmine" style="width:100%;margin-top:14px">${t_("Менің жұмыстарым", "Мои работы")}</button>
       <button class="btn ghost" id="flx" style="width:100%;margin-top:8px">${t_("Жабу", "Закрыть")}</button></div>`;
     document.body.appendChild(d);
@@ -1466,23 +1501,23 @@ function Player() {
   }
   function closeList() { const d = $("#flist"); if (d) d.remove(); }
   function freeNav() {
-    const n = fItems().length;
-    return `<div class="fnav" id="fnav"><button class="btn ghost" id="fprev" ${curF === 0 ? "disabled" : ""}>←</button><button class="btn ghost" id="fmenu">☰ ${curF + 1}/${n}</button><button class="btn" id="fnext"></button></div>`;
+    const L = onIdx();
+    return `<div class="fnav" id="fnav"><button class="btn ghost" id="fprev" ${curF <= L[0] ? "disabled" : ""}>←</button><button class="btn ghost" id="fmenu">☰ ${L.indexOf(curF) + 1}/${L.length}</button><button class="btn" id="fnext"></button></div>`;
   }
   function updateFreeNav() {
-    const b = $("#fnext"); if (!b) return; const n = fItems().length, x = fst(curF), last = curF >= n - 1;
+    const b = $("#fnext"); if (!b) return; const L = onIdx(), x = fst(curF), last = curF >= L[L.length - 1];
     const done = x.d || x.a != null;
     b.textContent = last ? t_("Менің жұмыстарым →", "Мои работы →") : done ? t_("Келесі тапсырма →", "Следующее →") : t_("Өткізіп жіберу →", "Пропустить →");
     b.classList.toggle("ghost", !done && !last);
   }
   function bindFreeNav() {
-    $("#fprev").onclick = () => openItem(curF - 1);
+    $("#fprev").onclick = () => { const L = onIdx(), j = L.indexOf(curF); if (j > 0) openItem(L[j - 1]); };
     $("#fmenu").onclick = openList;
-    $("#fnext").onclick = () => { const n = fItems().length, x = fst(curF);
-      if (curF >= n - 1) { showMine = true; lastScreen = ""; render(); return; }
+    $("#fnext").onclick = () => { const L = onIdx(), x = fst(curF);
+      if (curF >= L[L.length - 1]) { showMine = true; lastScreen = ""; render(); return; }
       const b = $("#fnext");
       if (!(x.d || x.a != null) && b.dataset.c !== "1") { b.dataset.c = "1"; b.textContent = t_("Тапсырылмаған. Бәрібір өту?", "Не сдано. Всё равно перейти?"); setTimeout(() => { b.dataset.c = ""; updateFreeNav(); }, 3000); return; }
-      let j = curF + 1; openItem(j); };
+      openItem(L[L.indexOf(curF) + 1]); };
     updateFreeNav();
   }
   function renderFreeItem() {
@@ -1522,12 +1557,12 @@ function Player() {
   function renderMine() {
     const items = fItems(), own = OWN[S.fid] || {}, hide = fs() && fs().hide, fin = S.phase === "final";
     let tn = 0;
-    const cards = items.map((it, i) => { if (it.type !== "task") return ""; tn++; const x = fst(i), img = own[i], g = x.tg || x.ag;
+    const cards = items.map((it, i) => { if (it.type !== "task" || (it.off && !own[i])) return ""; tn++; const x = fst(i), img = own[i], g = x.tg || x.ag;
       return `<div class="mine"><div class="mt"><b>${tn}. ${esc(it.title)}</b><span class="mut">${x.d ? (hide ? "✓" : "«" + g + "»") + " · " + mmss(x.sec || 0) : x.o ? t_("аяқталмаған", "не завершено") : t_("ашылмаған", "не начато")}</span></div>
         ${x.tg ? `<div class="fbg" style="font-size:14px">${t_("Мұғалім бағасы", "Оценка преподавателя")}: <b class="g${x.tg}">${x.tg}</b></div>` : ""}${x.cm ? `<div class="fbt mcm">💬 ${esc(x.cm)}</div>` : ""}
         ${img ? `<img src="${img}" alt=""><a class="btn ghost" download="${String(tn).padStart(2, "0")}_${esc(safeName(it.title))}.jpg" href="${img}">⬇ ${t_("Сақтау", "Сохранить")}</a>` : `<div class="mut" style="font-size:13px">${t_("Скриншот жоқ", "Скриншота нет")}</div>`}
         ${!fin ? `<button class="btn ghost" data-go="${i}">${t_("Тапсырмаға өту", "Открыть задание")}</button>` : ""}</div>`; }).join("");
-    const mcs = items.map((it, i) => it.type === "mc" ? fst(i) : null).filter(Boolean);
+    const mcs = items.map((it, i) => it.type === "mc" && !it.off ? fst(i) : null).filter(Boolean);
     app.innerHTML = `<div class="ply"><div class="pw-wrap">${top()}<div class="pq up" style="margin-top:14px">${fin ? t_("Практика аяқталды", "Практика завершена") : t_("Менің жұмыстарым", "Мои работы")}</div>
       ${!hide && fs() && fs().p100 != null ? `<div class="p100"><b>${fs().p100}</b><span>/ 100</span></div>` : ""}
       ${mcs.length ? `<p class="mut" style="margin:0 0 10px">${t_("Пернелер сұрақтары", "Вопросы по горячим клавишам")}: ${mcs.filter(x => x.c).length} / ${mcs.length}</p>` : ""}
@@ -1539,7 +1574,7 @@ function Player() {
     $("#zipme").onclick = async () => {
       if (typeof JSZip === "undefined") { toast(t_("ZIP жүктелмеді", "Не загрузился ZIP")); return; }
       const zip = new JSZip(); let n = 0, k = 0, lines = [`${TITLE}`, `${name}`, ""];
-      items.forEach((it, i) => { if (it.type !== "task") return; k++; const x = fst(i); lines.push(`${k}. ${it.title}: ${x.d ? (hide ? "✓" : (x.tg || x.ag)) + " · " + mmss(x.sec || 0) : "—"}`); if (x.cm) lines.push("   " + t_("Пікір", "Комментарий") + ": " + x.cm);
+      items.forEach((it, i) => { if (it.type !== "task" || (it.off && !own[i])) return; k++; const x = fst(i); lines.push(`${k}. ${it.title}: ${x.d ? (hide ? "✓" : (x.tg || x.ag)) + " · " + mmss(x.sec || 0) : "—"}`); if (x.cm) lines.push("   " + t_("Пікір", "Комментарий") + ": " + x.cm);
         if (own[i]) { zip.file(String(k).padStart(2, "0") + "_" + safeName(it.title) + ".jpg", dataToBytes(own[i])); n++; } });
       if (mcs.length) lines.push("", t_("Пернелер сұрақтары", "Горячие клавиши") + `: ${mcs.filter(x => x.c).length}/${mcs.length}`);
       if (!hide && fs() && fs().p100 != null) lines.push("", t_("Қорытынды", "Итог") + `: ${fs().p100} / 100`);
