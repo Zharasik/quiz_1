@@ -426,6 +426,10 @@ a.btn svg{width:18px;height:18px}
 .itb{padding:6px 12px;font-size:13px;min-height:0}.itb.del{color:var(--bad)}
 .offban{margin:0 0 10px;padding:10px 14px;border-radius:12px;border:1px solid var(--a2);background:rgba(245,165,36,.1);font-size:15px;display:flex;align-items:center;gap:10px;flex-wrap:wrap}.offban .btn{padding:6px 12px;min-height:0;font-size:14px}
 .iti small{font-size:12px;white-space:nowrap}
+.fm td.t b.g0{background:#8b1e2d;color:#fff}
+.btn.grade.g0{--g0:#e5484d}.btn.grade.g0.on{border-color:#e5484d;color:#e5484d}
+.fbg b.g0{color:#e5484d}
+:root{--g0:#e5484d}
 </style>
 </head>
 <body>
@@ -492,7 +496,7 @@ const ICON = {
   up: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 16V4M6 10l6-6 6 6M4 20h16"/></svg>',
   ext: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 4h6v6M20 4l-9 9M18 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h5"/></svg>'
 };
-const GRADE = {ok: {t: "Қабылданды", c: "var(--ok)"}, best: {t: "Үздік жұмыс", c: "var(--a2)"}, redo: {t: "Пысықтау керек", c: "var(--bad)"}};
+const GRADE = {ok: {t: "Қабылданды", c: "var(--ok)"}, best: {t: "Үздік жұмыс", c: "var(--a2)"}, redo: {t: "Пысықтау керек", c: "var(--bad)"}, zero: {t: "Есептелмеді · 0", c: "#8b1e2d"}};
 function vibrate(p) { try { navigator.vibrate && navigator.vibrate(p); } catch (e) {} }
 function toast(t) { const old = $(".toast"); if (old) old.remove(); const d = document.createElement("div"); d.className = "toast"; d.textContent = t; document.body.appendChild(d); setTimeout(() => d.remove(), 2800); }
 function setNet(on, text) { const n = $("#net"); n.classList.toggle("on", !!on); n.querySelector("span").textContent = on ? "Қосылды" : (text || "Қосылуда…"); }
@@ -866,16 +870,18 @@ function Host() {
         else if (c && c.ok.length && c.ok.every(Boolean)) pts = 300;
         else if (s || (c && c.ok.some(Boolean))) pts = 150;
         if (g === "best") pts += 500; if (g === "redo") pts = Math.min(pts, 150);
-        const fav = max > 0 && st[id] && st[id].avg === max; if (fav) pts += 300;
+        const fav = g !== "zero" && max > 0 && st[id] && st[id].avg === max; if (fav) pts += 300;
+        if (g === "zero") { if (c && c.fin != null) p.done = Math.max(0, (p.done || 1) - 1); pts = 0; }
         if (!s && !c) { p.last = {k: rk(), ok: false, pts: 0, none: true}; continue; }
         p.score += pts; p.last = {k: rk(), ok: !!(c && c.fin != null), pts, g, place: pl, avg: st[id] ? st[id].avg : 0, fav}; continue;
       }
       if (!s) { p.last = {k: rk(), ok: false, pts: 0, none: true}; continue; }
       const g = H.grades[id] || "ok";
       let pts = 0;
-      if (g !== "redo") { pts = Math.round(500 + 500 * Math.min(1, s.left / T0)); if (g === "best") pts += 500; p.done = (p.done || 0) + 1; }
+      if (g === "zero") pts = 0;
+      else if (g !== "redo") { pts = Math.round(500 + 500 * Math.min(1, s.left / T0)); if (g === "best") pts += 500; p.done = (p.done || 0) + 1; }
       else pts = 200;
-      const fav = max > 0 && st[id] && st[id].avg === max;
+      const fav = g !== "zero" && max > 0 && st[id] && st[id].avg === max;
       if (fav) pts += 300;
       p.score += pts; p.last = {k: rk(), ok: g !== "redo", pts, g, avg: st[id] ? st[id].avg : 0, fav};
     }
@@ -913,14 +919,14 @@ function Host() {
       if (e.code === "Escape") { flb = null; if (d) d.remove(); render(); }
       else if (e.code === "ArrowRight" && d && d._step) { e.preventDefault(); d._step(1); }
       else if (e.code === "ArrowLeft" && d && d._step) { e.preventDefault(); d._step(-1); }
-      else if (/^Digit[2-5]$/.test(e.code)) fSetGrade(+e.code.slice(5)); else if (e.code === "KeyA" || e.code === "Digit0") fSetGrade(0);
+      else if (/^Digit[2-5]$/.test(e.code)) fSetGrade(e.code.slice(5)); else if (e.code === "Digit0") fSetGrade("0"); else if (e.code === "KeyA") fSetGrade("auto");
       return;
     }
     if (lb) {
       if (e.code === "Escape") { closeLb(); }
       else if (e.code === "ArrowRight") { e.preventDefault(); stepLb(1); }
       else if (e.code === "ArrowLeft") { e.preventDefault(); stepLb(-1); }
-      else if (e.code === "Digit1") grade("ok"); else if (e.code === "Digit2") grade("best"); else if (e.code === "Digit3") grade("redo");
+      else if (e.code === "Digit1") grade("ok"); else if (e.code === "Digit2") grade("best"); else if (e.code === "Digit3") grade("redo"); else if (e.code === "Digit4" || e.code === "Digit0") grade("zero");
       return;
     }
     if (e.target.tagName === "BUTTON") return;
@@ -933,7 +939,7 @@ function Host() {
   function closeLb() { lb = null; const d = $("#lb"); if (d) d.remove(); render(); }
   function stepLb(dir) { const L = subPids(); if (!L.length) return; const i = L.indexOf(lb); lb = L[(i + dir + L.length) % L.length]; drawLb(); }
 
-  const QCM = () => [t_("Жарайсың!", "Отлично!"), t_("Ұқыпты орындалған", "Аккуратно выполнено"), t_("Түзету керек", "Нужно доработать"), t_("Тапсырманы қайта оқы", "Перечитай задание"), t_("Скриншот анық емес", "Скриншот нечёткий"), t_("Мерзімнен кешікті", "Не уложился во время")];
+  const QCM = () => [t_("Жарайсың!", "Отлично!"), t_("Ұқыпты орындалған", "Аккуратно выполнено"), t_("Түзету керек", "Нужно доработать"), t_("Тапсырманы қайта оқы", "Перечитай задание"), t_("Скриншот анық емес", "Скриншот нечёткий"), t_("Мерзімнен кешікті", "Не уложился во время"), t_("Жұмыс өзіңдікі емес — 0", "Работа не твоя — 0")];
   function cmBox(val) {
     return `<div class="lbcm"><textarea id="lbcm" maxlength="400" rows="2" placeholder="${t_("Студентке пікір (ол телефоннан бірден көреді)…", "Комментарий студенту (он сразу увидит его на телефоне)…")}">${esc(val || "")}</textarea>
       <div class="lbcmr"><div class="qcm">${QCM().map(q => `<button class="chipb" data-q="${esc(q)}">${esc(q)}</button>`).join("")}</div><span class="mut" id="lbcmst" style="font-size:13px">${val ? "✓ " + t_("жіберілді", "отправлено") : ""}</span><button class="btn" id="lbcms">💬 ${t_("Жіберу", "Отправить")}</button></div></div>`;
@@ -953,7 +959,7 @@ function Host() {
     d.innerHTML = `<div class="lbtop"><span class="lbn">${esc(p ? p.name : "")}</span><span class="mut">${i + 1} / ${L.length}${st[lb] ? ` · ${avgTxt(st[lb])} баға` : ""}</span><button class="btn ghost" id="lbx">Жабу · Esc</button></div>
       <div class="lbimg">${IMG[lb] ? `<img src="${IMG[lb]}" alt="${esc(p ? p.name : "")} жұмысы">` : `<div class="mut">Сурет жүктелуде…</div>`}</div>
       <div class="lbbar"><button class="btn ghost" id="lbp">←</button>
-        <div style="display:flex;gap:10px">${Object.keys(GRADE).map((k, j) => `<button class="btn grade ${g === k || (!g && k === "ok") ? "on" : ""}" data-g="${k}" style="--gc:${GRADE[k].c}">${j + 1} · ${k === "ok" ? "✓ " : k === "best" ? "★ " : "↺ "}${GRADE[k].t}</button>`).join("")}</div>
+        <div style="display:flex;gap:10px">${Object.keys(GRADE).map((k, j) => `<button class="btn grade ${g === k || (!g && k === "ok") ? "on" : ""}" data-g="${k}" style="--gc:${GRADE[k].c}">${j + 1} · ${k === "ok" ? "✓ " : k === "best" ? "★ " : k === "zero" ? "⛔ " : "↺ "}${GRADE[k].t}</button>`).join("")}</div>
         <button class="btn ghost" id="lbn">→</button></div>${cmBox((H.cmts || {})[lb])}`;
     bindCm(t => { if (!lb) return; H.cmts = H.cmts || {}; if (t) H.cmts[lb] = t; else delete H.cmts[lb]; save(); pubPlayer(lb); });
     $("#lbx").onclick = closeLb; $("#lbp").onclick = () => stepLb(-1); $("#lbn").onclick = () => stepLb(1);
@@ -1021,7 +1027,7 @@ function Host() {
     if (!L.length) return `<div class="mut" style="font-size:18px;padding:30px 0">Әзірге жұмыс жоқ…</div>`;
     return `<div class="gal ${big ? "big" : ""}">${L.map(id => { const g = H.grades[id];
       return `<button class="thumb" data-p="${id}">${IMG[id] ? `<img src="${IMG[id]}" alt="${esc(H.players[id].name)}">` : `<span class="ph">…</span>`}
-        <span class="cap"><span>${esc(H.players[id].name)}</span>${st[id] ? `<b>${avgTxt(st[id])}</b>` : ""}${g && g !== "ok" ? `<i style="background:${GRADE[g].c}">${g === "best" ? "★" : "↺"}</i>` : ""}</span></button>`; }).join("")}</div>`;
+        <span class="cap"><span>${esc(H.players[id].name)}</span>${st[id] ? `<b>${avgTxt(st[id])}</b>` : ""}${g && g !== "ok" ? `<i style="background:${GRADE[g].c}">${g === "best" ? "★" : g === "zero" ? "0" : "↺"}</i>` : ""}</span></button>`; }).join("")}</div>`;
   }
 
   /* ---------- Еркін режим: мониторинг ---------- */
@@ -1044,7 +1050,7 @@ function Host() {
   }
   function fRow(pid) {
     const items = H.items || [], st = H.fs[pid] || [];
-    const g = items.map((it, i) => it.type === "task" && !it.off ? fGrade(st[i]) : null).filter(Boolean);
+    const g = items.map((it, i) => it.type === "task" && !it.off ? fGrade(st[i]) : null).filter(Boolean).map(Number);
     const mcs = items.map((it, i) => it.type === "mc" && !it.off ? st[i] : undefined).filter(x => x !== undefined);
     return {avg: g.length ? Math.round(g.reduce((a, b) => a + b, 0) / g.length * 10) / 10 : null, hk: mcs.filter(x => x && x.c).length, hkN: mcs.length, done: items.filter((it, i) => !it.off && st[i] && st[i].d).length, n: items.filter(it => !it.off).length};
   }
@@ -1093,17 +1099,17 @@ function Host() {
       <div class="lbimg">${img ? `<img src="${img}" alt="">` : `<div class="mut">${t_("Скриншот әлі жоқ", "Скриншота пока нет")}</div>`}</div>
       ${it.checks.length ? `<div class="mut" style="font-size:15px">${it.checks.map((c, j) => `${x.ok && x.ok[j] ? "✓" : x.ok ? "✗" : "·"} ${esc(L(c.l, H.lang))}`).join(" &nbsp; ")}</div>` : ""}
       <div class="lbbar"><button class="btn ghost" id="lbp">←</button>
-        <div style="display:flex;gap:10px;align-items:center"><span class="mut">${t_("Сіздің бағаңыз", "Ваша оценка")}:</span>${[5, 4, 3, 2].map(g => `<button class="btn grade g${g} ${x.tg === g ? "on" : ""}" data-g="${g}" style="--gc:var(--g${g})">${g}</button>`).join("")}<button class="btn grade ${!x.tg ? "on" : ""}" data-g="0" style="--gc:var(--mut)">${t_("Авто", "Авто")}${x.ag ? " (" + x.ag + ")" : ""}</button></div>
+        <div style="display:flex;gap:10px;align-items:center"><span class="mut">${t_("Сіздің бағаңыз", "Ваша оценка")}:</span>${[5, 4, 3, 2, 0].map(g => `<button class="btn grade g${g} ${x.tg != null && String(x.tg) === String(g) ? "on" : ""}" data-g="${g}" style="--gc:var(--g${g})" ${g === 0 ? `title="${t_("Есептелмейді (көшірген, алдаған)", "Не засчитано (списал, обман)")}"` : ""}>${g}</button>`).join("")}<button class="btn grade ${!x.tg ? "on" : ""}" data-g="auto" style="--gc:var(--mut)">${t_("Авто", "Авто")}${x.ag ? " (" + x.ag + ")" : ""}</button></div>
         <button class="btn ghost" id="lbn">→</button></div>${cmBox(x.cm)}`;
     bindCm(t => { if (!flb) return; const y = fSt(flb.pid, flb.i); y.cm = t || null; y.cmId = t ? Date.now() : null; save(); pubPlayer(flb.pid); });
     $("#lbx").onclick = () => { flb = null; d.remove(); render(); };
     const others = pids().filter(id => { const y = (H.fs[id] || [])[flb.i]; return y && (y.o || y.sub); }).sort((a, b) => H.players[a].name.localeCompare(H.players[b].name));
     const step = k => { if (!others.length) return; const j = others.indexOf(flb.pid); flb.pid = others[(j + k + others.length) % others.length]; drawFlb(); };
     $("#lbp").onclick = () => step(-1); $("#lbn").onclick = () => step(1);
-    d.querySelectorAll(".grade").forEach(b => b.onclick = () => fSetGrade(+b.dataset.g));
+    d.querySelectorAll(".grade").forEach(b => b.onclick = () => fSetGrade(b.dataset.g));
     d._step = step;
   }
-  function fSetGrade(g) { if (!flb) return; const x = fSt(flb.pid, flb.i); x.tg = g || null; save(); pubPlayer(flb.pid); drawFlb(); }
+  function fSetGrade(g) { if (!flb) return; const x = fSt(flb.pid, flb.i); x.tg = g === "0" || g === 0 ? "0" : (+g >= 2 && +g <= 5 ? +g : null); save(); pubPlayer(flb.pid); drawFlb(); }
   function P100Settings() {
     const c = P100(), w = document.createElement("div"); w.className = "edm fset"; document.body.appendChild(w);
     w.innerHTML = `<div class="edbox" style="max-width:620px"><h3 class="disp" style="margin:0;font-size:26px">${t_("100 баллдық бағалау", "Перевод в 100 баллов")}</h3>
@@ -1136,7 +1142,7 @@ function Host() {
     const c = P100();
     const head = [t_("Студент", "Студент"), ...tasks.flatMap(([it], n) => [`${n + 1}. ${it.title} — ${t_("уақыт", "время")}`, `${n + 1}. ${t_("баға", "оценка")}`, `${n + 1}. ${t_("балл", "баллы")}`, `${n + 1}. ${t_("пікір", "комментарий")}`]), t_("Орташа баға", "Средняя оценка"), t_("Пернелер (дұрыс)", "Горячие клавиши (верно)"), t_("Қорытынды (100)", "Итог (100)"), t_("Әріптік", "Буквенная"), t_("Дәстүрлі", "Традиционная")];
     const rows = pids().sort((a, b) => H.players[a].name.localeCompare(H.players[b].name)).map(id => { const st = H.fs[id] || [], rr = fRow(id), sc = fScore(id);
-      return [H.players[id].name, ...tasks.flatMap(([it, i]) => { const x = st[i] || {}, g = fGrade(x); const used = pids().some(z => fGrade((H.fs[z] || [])[i])); return [x.d ? mmss(x.sec) : "", g || "", g ? c.map[g] : (c.zero && used ? 0 : ""), x.cm || ""]; }), rr.avg == null ? "" : String(rr.avg).replace(".", ","), rr.hkN ? rr.hk + "/" + rr.hkN : "", sc.final, LET(sc.final), TRAD(sc.final)]; });
+      return [H.players[id].name, ...tasks.flatMap(([it, i]) => { const x = st[i] || {}, g = fGrade(x); const used = pids().some(z => fGrade((H.fs[z] || [])[i])); return [x.d ? mmss(x.sec) : "", g || "", g ? (+c.map[g] || 0) : (c.zero && used ? 0 : ""), x.cm || ""]; }), rr.avg == null ? "" : String(rr.avg).replace(".", ","), rr.hkN ? rr.hk + "/" + rr.hkN : "", sc.final, LET(sc.final), TRAD(sc.final)]; });
     return [head, ...rows].map(r => r.map(q).join(";")).join("\r\n");
   }
 
@@ -1329,7 +1335,7 @@ function Player() {
     if (!g && !cm) return;
     const old = $(".fbpop"); if (old) old.remove();
     const d = document.createElement("div"); d.className = "fbpop";
-    d.innerHTML = `<div class="fbh">${t_("Мұғалімнен", "От преподавателя")}${title ? " · " + esc(title) : ""}</div>${g ? `<div class="fbg">${t_("Баға", "Оценка")}: <b class="${/^[2-5]$/.test(String(g)) ? "g" + g : ""}">${esc(String(g))}</b></div>` : ""}${cm ? `<div class="fbt">💬 ${esc(cm)}</div>` : ""}<div class="fbx">${t_("Жабу үшін басыңыз", "Нажмите, чтобы закрыть")}</div>`;
+    d.innerHTML = `<div class="fbh">${t_("Мұғалімнен", "От преподавателя")}${title ? " · " + esc(title) : ""}</div>${g ? `<div class="fbg">${t_("Баға", "Оценка")}: <b class="${/^[0-5]$/.test(String(g)) ? "g" + g : ""}">${esc(String(g))}</b></div>` : ""}${cm ? `<div class="fbt">💬 ${esc(cm)}</div>` : ""}<div class="fbx">${t_("Жабу үшін басыңыз", "Нажмите, чтобы закрыть")}</div>`;
     d.onclick = () => d.remove(); document.body.appendChild(d); vibrate([40, 60, 40]);
     setTimeout(() => d.remove(), cm ? 9000 : 5000);
   }
