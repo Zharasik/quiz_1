@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="kk">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#0F1115">
+<title>Практикалық сабақтар · ВЕБ 2-1, ВЕБ 2-2</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@600;800&family=Inter:wght@400;500;600;700&display=swap">
+<style>
+:root{--bg:#0F1115;--s1:#171A21;--s2:#1F232C;--line:#2A2F3A;--tx:#F3F4F6;--mut:#9AA1AE;--a3:#2FB36D}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--tx);font-family:Inter,system-ui,sans-serif;padding:40px clamp(16px,4vw,56px)}
+h1{font-family:"Inter Tight",Inter,sans-serif;font-weight:800;font-size:clamp(30px,4vw,48px);letter-spacing:-.02em;margin:0 0 6px}
+.mut{color:var(--mut)}h2{font-family:"Inter Tight",Inter,sans-serif;font-size:22px;margin:34px 0 14px}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:16px}
+.card{background:var(--s1);border:1px solid var(--line);border-radius:18px;padding:20px;display:flex;flex-direction:column;gap:12px}
+.card img{width:100%;aspect-ratio:16/9;object-fit:cover;border-radius:12px;background:#fff}
+.k{font-size:12px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--a3)}
+.card b{font-size:19px;line-height:1.25}
+.row{display:flex;gap:8px;flex-wrap:wrap;margin-top:auto}
+a.btn{display:inline-flex;align-items:center;height:42px;padding:0 16px;border-radius:10px;background:var(--tx);color:var(--bg);font-weight:700;text-decoration:none;font-size:15px}
+a.btn.g{background:var(--s2);color:var(--tx)}
+footer{margin-top:40px;font-size:13px}
+</style>
+</head>
+<body>
+<h1>Практикалық сабақтар</h1>
+<p class="mut">Мұғалім «Мұғалімге» батырмасын проекторда ашады, студенттер экрандағы QR-кодты сканерлейді. Әр бетте: квиз, деңгейлі тапсырмалар (A/B/C), өзін-өзі бағалау, өзара бағалау, рефлексия және журнал (CSV/ZIP).</p>
+<h2>ВЕБ 2-1 · Adobe Photoshop (РО 2.1)</h2>
+<div class="grid">
+ <div class="card"><img src="../ps-mask/ex/gradmask.jpg" alt=""><span class="k">Маскалар</span><b>Қабат маскалары және қиып алу маскалары (Clipping Mask)</b><div class="row"><a class="btn" href="../ps-mask/?host">Мұғалімге</a><a class="btn g" href="../ps-mask/">Студентке</a></div></div>
+ <div class="card"><img src="../ps-blend/ex/screen.jpg" alt=""><span class="k">Режимдер</span><b>Қабаттастыру режимдері (Blending Modes)</b><div class="row"><a class="btn" href="../ps-blend/?host">Мұғалімге</a><a class="btn g" href="../ps-blend/">Студентке</a></div></div>
+</div>
+<h2>ВЕБ 2-2 · Adobe Illustrator (РО 2.2)</h2>
+<div class="grid">
+ <div class="card"><img src="../ai-uikit/ex/uikit.jpg" alt=""><span class="k">UI Kit</span><b>UI Kit құрастыру: батырмалар, енгізу өрістері, белгішелер</b><div class="row"><a class="btn" href="../ai-uikit/?host">Мұғалімге</a><a class="btn g" href="../ai-uikit/">Студентке</a></div></div>
+ <div class="card"><img src="../ai-charts/ex/column.jpg" alt=""><span class="k">Диаграммалар</span><b>Деректерді визуализациялау: диаграммалар</b><div class="row"><a class="btn" href="../ai-charts/?host">Мұғалімге</a><a class="btn g" href="../ai-charts/">Студентке</a></div></div>
+</div>
+<h2>Басқа практикалар</h2>
+<div class="row"><a class="btn g" href="../photoshop/?host">Photoshop (жалпы банк)</a><a class="btn g" href="../illustrator/?host">Illustrator (жалпы банк)</a><a class="btn g" href="../diagrammy/?host">Диаграммы в Excel</a><a class="btn g" href="../excel/?host">Анализ «что если»</a><a class="btn g" href="../?host">Handoff квизі</a></div>
+<footer class="mut">Интернет нашар болса — мұғалім бетінде «Басқа сервер» батырмасы бар. Студенттің жіберген жұмыстары мұғалім қайта қосылғанда өзі жетеді.</footer>
+</body>
+</html>
