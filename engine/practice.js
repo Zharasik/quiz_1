@@ -20,7 +20,7 @@ const LANG_LABEL = COURSE.langLabel || "Интерфейс:";
 const exUrl = ex => !ex ? "" : /^https?:\/\//.test(ex) ? ex : "ex/" + ex + ".jpg";
 const fromBank = id => { const b = COURSE.bank.find(x => x.id === id); return b ? JSON.parse(JSON.stringify(Object.assign({uid: rid(6)}, b))) : null; };
 const defaultPlan = () => COURSE.defaults.map(fromBank).filter(Boolean);
-const toRound = (t, i) => ({type: "task", t: Math.max(1, +t.min || 5) * 60, k: (i + 1) + "-тапсырма · " + (+t.min || 5) + " мин", title: t.title, steps: t.steps || [], crit: t.crit || [], ex: t.ex || "", table: t.table || null, hints: t.hints || [], checks: t.checks || [], shot: t.shot !== false, ai: t.ai || [], vp: t.vp || [], lvl: t.lvl || ""});
+const toRound = (t, i) => ({type: "task", t: Math.max(1, +t.min || 5) * 60, k: (i + 1) + "-тапсырма · " + (+t.min || 5) + " мин", title: t.title, steps: t.steps || [], crit: t.crit || [], ex: t.ex || "", table: t.table || null, hints: t.hints || [], checks: t.checks || [], shot: t.shot !== false, ai: t.ai || [], vp: t.vp || [], lvl: t.lvl || "", why: t.why || ""});
 const LVL = {A: t_("A · базалық", "A · базовый"), B: t_("B · орта", "B · средний"), C: t_("C · жоғары", "C · высокий")};
 const lvlB = l => LVL[l] ? `<span class="lvl l${l}">${LVL[l]}</span>` : "";
 const LESSON = COURSE.lesson || null;
@@ -30,6 +30,8 @@ const REFQ = () => LESSON && Array.isArray(LESSON.reflQ) && LESSON.reflQ.length 
 const REFC = () => ({g: {t: t_("Өзім орындай аламын", "Могу сам"), c: "#2FB36D"}, y: {t: t_("Кейде көмек керек", "Иногда нужна помощь"), c: "#F5A524"}, r: {t: t_("Қайта түсіндіру керек", "Нужно объяснить ещё раз"), c: "#E5484D"}});
 const selfLine = (crit, self) => self && crit && crit.length ? `<div class="selfl"><span class="mut">${t_("Өзін-өзі бағалау", "Самооценка")}:</span> ${crit.map((c, j) => `<span class="${self[j] ? "okc" : "badc"}">${self[j] ? "✓" : "✗"} ${esc(c)}</span>`).join("")}<b>${self.filter(Boolean).length}/${crit.length}</b></div>` : "";
 const linkify = x => esc(x).replace(/(https?:\/\/[^\s<,)»]+)/g, u => `<a href="${u}" target="_blank" rel="noopener">${u.replace(/^https?:\/\/(www\.)?/, "").replace(/\/$/, "")}</a>`);
+const PB = g => /^[0-5]$/.test(String(g)) ? (({5: 100, 4: 85, 3: 70, 2: 50, 1: 25, 0: 0})[g]) + " / 100" : g;
+const whyBox = r => r.why ? `<div class="whyb"><b>${t_("Не үшін?", "Зачем?")}</b> ${esc(L(r.why, typeof lang === "function" ? lang() : "kk"))}</div>` : "";
 const extraTips = (r, lg) => (r.ai && r.ai.length ? `<details class="exd tipai"><summary>🤖 ${t_("ЖИ көмекшісі", "ИИ-помощник")}</summary><ul class="hints">${r.ai.map(h => `<li>${linkify(L(h, lg))}</li>`).join("")}</ul></details>` : "")
   + (r.vp && r.vp.length ? `<details class="exd tipvp"><summary>🌐 ${t_("Illustrator жоқ па? Vectorpea", "Нет Illustrator? Vectorpea")}</summary><ul class="hints">${r.vp.map(h => `<li>${linkify(L(h, lg))}</li>`).join("")}</ul></details>` : "");
 const checkOk = (c, v) => { if (c.opts) return (v | 0) === c.c && v !== "" && v != null; const x = parseFloat(String(v == null ? "" : v).replace(/[\s\u00a0]/g, "").replace("%", "").replace(",", ".")); if (!isFinite(x)) return false; const tol = c.tol != null ? c.tol : Math.max(0.5, Math.abs(c.a) * 0.002); return Math.abs(x - c.a) <= tol || (c.pct && Math.abs(x * 100 - c.a) <= tol); };
@@ -721,7 +723,7 @@ function Host() {
       <div class="lbimg">${img ? `<img src="${img}" alt="">` : `<div class="mut">${t_("Скриншот әлі жоқ", "Скриншота пока нет")}</div>`}</div>${selfLine(it.crit, x.self)}
       ${it.checks.length ? `<div class="mut" style="font-size:15px">${it.checks.map((c, j) => `${x.ok && x.ok[j] ? "✓" : x.ok ? "✗" : "·"} ${esc(L(c.l, H.lang))}`).join(" &nbsp; ")}</div>` : ""}
       <div class="lbbar"><button class="btn ghost" id="lbp">←</button>
-        <div style="display:flex;gap:10px;align-items:center"><span class="mut">${t_("Сіздің бағаңыз", "Ваша оценка")}:</span>${[5, 4, 3, 2, 0].map(g => `<button class="btn grade g${g} ${x.tg != null && String(x.tg) === String(g) ? "on" : ""}" data-g="${g}" style="--gc:var(--g${g})" ${g === 0 ? `title="${t_("Есептелмейді (көшірген, алдаған)", "Не засчитано (списал, обман)")}"` : ""}>${g}</button>`).join("")}<button class="btn grade ${!x.tg ? "on" : ""}" data-g="auto" style="--gc:var(--mut)">${t_("Авто", "Авто")}${x.ag ? " (" + x.ag + ")" : ""}</button></div>
+        <div style="display:flex;gap:10px;align-items:center"><span class="mut">${t_("Сіздің бағаңыз", "Ваша оценка")}:</span>${[5, 4, 3, 2, 0].map(g => `<button class="btn grade g${g} ${x.tg != null && String(x.tg) === String(g) ? "on" : ""}" data-g="${g}" style="--gc:var(--g${g})" ${g === 0 ? `title="${t_("Есептелмейді (көшірген, алдаған)", "Не засчитано (списал, обман)")}"` : `title="«${g}»"`}>${g ? P100().map[g] : 0}</button>`).join("")}<button class="btn grade ${!x.tg ? "on" : ""}" data-g="auto" style="--gc:var(--mut)">${t_("Авто", "Авто")}${x.ag ? " (" + x.ag + ")" : ""}</button></div>
         <button class="btn ghost" id="lbn">→</button></div>${cmBox(x.cm)}`;
     bindCm(t => { if (!flb) return; const y = fSt(flb.pid, flb.i); y.cm = t || null; y.cmId = t ? Date.now() : null; save(); pubPlayer(flb.pid); });
     $("#lbx").onclick = () => { flb = null; d.remove(); render(); };
@@ -772,10 +774,10 @@ function Host() {
 
   function editItemLive(i) {
     const r = (H.items || [])[i]; if (!r || r.type !== "task") return;
-    const t = {id: r.id || "", title: r.title, min: Math.round(r.t / 60), steps: r.steps, crit: r.crit, ex: r.ex, hints: r.hints, ai: r.ai, vp: r.vp};
+    const t = {id: r.id || "", title: r.title, min: Math.round(r.t / 60), steps: r.steps, crit: r.crit, ex: r.ex, hints: r.hints, ai: r.ai, vp: r.vp, why: r.why};
     TaskDialog(t, document.body, {head: t_("Нұсқаулықты өзгерту", "Изменить инструкцию"), note: t_("Сақтағаннан кейін студенттердің экранында бірден жаңарады. Уақыт өзгерсе — уақыт бойынша баға жаңа нормамен есептеледі.", "После сохранения инструкция сразу обновится у студентов. Если изменить минуты — оценка по времени будет считаться по новой норме."), saveLabel: t_("Сақтау және жіберу", "Сохранить и отправить"),
       onSave: nt => { const n = (H.items || []).slice(0, i + 1).filter(x => x.type === "task").length;
-        Object.assign(r, {title: nt.title, t: nt.min * 60, steps: nt.steps, crit: nt.crit, ex: nt.ex, hints: nt.hints, ai: nt.ai, vp: nt.vp, k: t_(n + "-тапсырма", "Задание " + n) + " · " + nt.min + " " + t_("мин", "мин")});
+        Object.assign(r, {title: nt.title, t: nt.min * 60, steps: nt.steps, crit: nt.crit, ex: nt.ex, hints: nt.hints, ai: nt.ai, vp: nt.vp, why: nt.why, k: t_(n + "-тапсырма", "Задание " + n) + " · " + nt.min + " " + t_("мин", "мин")});
         save(); pubItems(); render(); const w = document.querySelector(".fset"); if (w && w._draw) w._draw(); toast(t_("Нұсқаулық жаңартылды", "Инструкция обновлена")); }});
   }
   function AddTasks() {
@@ -890,7 +892,7 @@ function Host() {
     } else if (H.phase === "question") {
       const r = R(), left = leftMs(), n = pids().length, done = Object.keys(H.subs).length;
       app.innerHTML = `<div class="host">${head}<div class="hbody" style="justify-content:flex-start">
-        <div class="qhead"><div style="flex:1"><div class="kicker">${esc(r.k)} ${lvlB(r.lvl)}</div><h2 class="qtext">${esc(r.title)}</h2></div><div style="text-align:right">${H.paused ? `<div class="kicker" style="color:var(--a2)">Кідірту</div>` : ""}<div class="timer" id="htime" style="${H.paused ? "color:var(--a2)" : ""}">${fmtTime(Math.ceil(left / 1000))}</div></div></div>
+        <div class="qhead"><div style="flex:1"><div class="kicker">${esc(r.k)} ${lvlB(r.lvl)}</div><h2 class="qtext">${esc(r.title)}</h2>${whyBox(r)}</div><div style="text-align:right">${H.paused ? `<div class="kicker" style="color:var(--a2)">Кідірту</div>` : ""}<div class="timer" id="htime" style="${H.paused ? "color:var(--a2)" : ""}">${fmtTime(Math.ceil(left / 1000))}</div></div></div>
         <div class="bar"><i id="hbar" style="transform:scaleX(${left / (r.t * 1000)})"></i></div>
         <div class="tgrid">
           <div class="steps">${r.ex ? `<img class="exh" src="${esc(exUrl(r.ex))}" alt="Мысал" onerror="this.remove()">` : ""}<ol>${r.steps.map(s => `<li>${esc(L(s, H.lang))}</li>`).join("")}</ol>${r.crit && r.crit.length ? `<div class="crit">${r.crit.map(c => `<span>${esc(c)}</span>`).join("")}</div>` : ""}</div>
@@ -1004,7 +1006,7 @@ function Player() {
     if (!g && !cm) return;
     const old = $(".fbpop"); if (old) old.remove();
     const d = document.createElement("div"); d.className = "fbpop";
-    d.innerHTML = `<div class="fbh">${t_("Мұғалімнен", "От преподавателя")}${title ? " · " + esc(title) : ""}</div>${g ? `<div class="fbg">${t_("Баға", "Оценка")}: <b class="${/^[0-5]$/.test(String(g)) ? "g" + g : ""}">${esc(String(g))}</b></div>` : ""}${cm ? `<div class="fbt">💬 ${esc(cm)}</div>` : ""}<div class="fbx">${t_("Жабу үшін басыңыз", "Нажмите, чтобы закрыть")}</div>`;
+    d.innerHTML = `<div class="fbh">${t_("Мұғалімнен", "От преподавателя")}${title ? " · " + esc(title) : ""}</div>${g ? `<div class="fbg">${t_("Баға", "Оценка")}: <b class="${/^[0-5]$/.test(String(g)) ? "g" + g : ""}">${esc(String(PB(g)))}</b></div>` : ""}${cm ? `<div class="fbt">💬 ${esc(cm)}</div>` : ""}<div class="fbx">${t_("Жабу үшін басыңыз", "Нажмите, чтобы закрыть")}</div>`;
     d.onclick = () => d.remove(); document.body.appendChild(d); vibrate([40, 60, 40]);
     setTimeout(() => d.remove(), cm ? 9000 : 5000);
   }
@@ -1012,7 +1014,7 @@ function Player() {
     if (!isFree()) { const k = qkey(), g = P && P.grade && P.grade.k === k ? P.grade.g : null, cm = P && P.cm && P.cm.k === k ? P.cm.t : null;
       return cm ? `<div class="fbk"><div class="fbh">${t_("Мұғалімнің пікірі", "Комментарий преподавателя")}</div><div class="fbt">${esc(cm)}</div></div>` : ""; }
     const x = fst(curF); if (!x.tg && !x.cm) return "";
-    return `<div class="fbk"><div class="fbh">${t_("Мұғалімнен", "От преподавателя")}</div>${x.tg ? `<div class="fbg">${t_("Баға", "Оценка")}: <b class="g${x.tg}">${x.tg}</b></div>` : ""}${x.cm ? `<div class="fbt">💬 ${esc(x.cm)}</div>` : ""}</div>`;
+    return `<div class="fbk"><div class="fbh">${t_("Мұғалімнен", "От преподавателя")}</div>${x.tg ? `<div class="fbg">${t_("Баға", "Оценка")}: <b class="g${x.tg}">${PB(x.tg)}</b></div>` : ""}${x.cm ? `<div class="fbt">💬 ${esc(x.cm)}</div>` : ""}</div>`;
   }
   function updateFb() { const b = $("#fbk"); if (!b) return; const h = fbBox(); if (b.dataset.h !== h) { b.dataset.h = h; b.innerHTML = h; } }
   function onThumb(id, m) {
@@ -1220,7 +1222,7 @@ function Player() {
       bindFreeNav(); return;
     }
     app.innerHTML = `<div class="ply"><div class="pw-wrap">${top()}
-      <div class="pk">${esc(r.k)} · ${t_("уақыт", "время")} <span id="ptt">${x.o ? "" : "0:00"}</span> ${lvlB(r.lvl)}</div><div class="pq up">${esc(r.title)}</div>
+      <div class="pk">${esc(r.k)} · ${t_("уақыт", "время")} <span id="ptt">${x.o ? "" : "0:00"}</span> ${lvlB(r.lvl)}</div><div class="pq up">${esc(r.title)}</div>${whyBox(r)}
       <div id="fbk"></div>
       <div class="langsw"><span class="mut">${LANG_LABEL}</span>${LANGS.map(([k, t]) => `<button data-l="${k}" class="${lang() === k ? "on" : ""}">${t}</button>`).join("")}</div>
       <ol class="psteps">${r.steps.map(s => `<li>${esc(L(s, lang()))}</li>`).join("")}</ol>
@@ -1264,7 +1266,7 @@ function Player() {
     let tn = 0;
     const cards = items.map((it, i) => { if (it.type !== "task" || (it.off && !own[i])) return ""; tn++; const x = fst(i), img = own[i], g = x.tg || x.ag;
       return `<div class="mine"><div class="mt"><b>${tn}. ${esc(it.title)}</b><span class="mut">${x.d ? (hide ? "✓" : "«" + g + "»") + " · " + mmss(x.sec || 0) : x.o ? t_("аяқталмаған", "не завершено") : t_("ашылмаған", "не начато")}</span></div>
-        ${x.tg ? `<div class="fbg" style="font-size:14px">${t_("Мұғалім бағасы", "Оценка преподавателя")}: <b class="g${x.tg}">${x.tg}</b></div>` : ""}${x.cm ? `<div class="fbt mcm">💬 ${esc(x.cm)}</div>` : ""}
+        ${x.tg ? `<div class="fbg" style="font-size:14px">${t_("Мұғалім бағасы", "Оценка преподавателя")}: <b class="g${x.tg}">${PB(x.tg)}</b></div>` : ""}${x.cm ? `<div class="fbt mcm">💬 ${esc(x.cm)}</div>` : ""}
         ${img ? `<img src="${img}" alt=""><a class="btn ghost" download="${String(tn).padStart(2, "0")}_${esc(safeName(it.title))}.jpg" href="${img}">⬇ ${t_("Сақтау", "Сохранить")}</a>` : `<div class="mut" style="font-size:13px">${t_("Скриншот жоқ", "Скриншота нет")}</div>`}
         ${!fin ? `<button class="btn ghost" data-go="${i}">${t_("Тапсырмаға өту", "Открыть задание")}</button>` : ""}</div>`; }).join("");
     const mcs = items.map((it, i) => it.type === "mc" && !it.off ? fst(i) : null).filter(Boolean);
@@ -1299,7 +1301,7 @@ function Player() {
       f.classList.toggle("good", !!(c && c.ok[i])); f.classList.toggle("bad", !!(c && c.ok.length && !c.ok[i]));
       s.textContent = c && c.ok.length ? (c.ok[i] ? "✓" : "✗") : ""; const inp = f.querySelector("input"); if (inp) inp.disabled = !!(c && c.ok[i]); });
     const st = $("#chkst"), allOk = c && c.ok.length && c.ok.every(Boolean);
-    if (st) st.innerHTML = !c ? "" : c.fin != null ? (isFree() ? `<b class="okc">${t_("Дайын!", "Готово!")}</b> ${fs() && fs().hide ? "" : t_("Уақыт бағасы", "Оценка по времени") + ": <b>" + (c.tg || c.ag) + "</b>"}` : `<b class="okc">${t_("Дайын!", "Готово!")} ${t_("Орныңыз", "Ваше место")}: ${c.place}</b>`)
+    if (st) st.innerHTML = !c ? "" : c.fin != null ? (isFree() ? `<b class="okc">${t_("Дайын!", "Готово!")}</b> ${fs() && fs().hide ? "" : (c.tg ? t_("Мұғалім бағасы", "Оценка преподавателя") : t_("Уақыт бойынша", "По времени")) + ": <b>" + PB(c.tg || c.ag) + "</b>"}` : `<b class="okc">${t_("Дайын!", "Готово!")} ${t_("Орныңыз", "Ваше место")}: ${c.place}</b>`)
       : allOk ? (r && r.shot ? `<b class="okc">${t_("Сандар дұрыс ✓", "Числа верны ✓")}</b> ${t_("Енді скриншот жіберіңіз.", "Теперь отправьте скриншот.")}` : "")
       : `<span class="badc">${t_("Қатесі бар — ✗ белгіленген өрістерді тексеріңіз.", "Есть ошибки — проверьте поля с ✗.")}</span>`;
     const go = $("#chkgo"); if (go) go.disabled = !!allOk;
@@ -1351,7 +1353,7 @@ function Player() {
     }
     if (key.startsWith("task")) {
       app.innerHTML = `<div class="ply"><div class="pw-wrap">${top()}<div class="ptimer"><i id="pt"></i></div><div id="pzl" class="hidden pzl">Кідірту — уақыт тоқтатылды</div>
-        <div class="pk">${esc(r.k)} · <span id="ptt"></span> ${lvlB(r.lvl)}</div><div class="pq up">${esc(r.title)}</div>
+        <div class="pk">${esc(r.k)} · <span id="ptt"></span> ${lvlB(r.lvl)}</div><div class="pq up">${esc(r.title)}</div>${whyBox(r)}
         <div class="langsw"><span class="mut">${LANG_LABEL}</span>${LANGS.map(([k, t]) => `<button data-l="${k}" class="${lang() === k ? "on" : ""}">${t}</button>`).join("")}</div>
         <ol class="psteps">${r.steps.map(s => `<li>${esc(L(s, lang()))}</li>`).join("")}</ol>
         ${r.crit && r.crit.length ? `<div class="crit">${r.crit.map(c => `<span>${esc(c)}</span>`).join("")}</div>` : ""}

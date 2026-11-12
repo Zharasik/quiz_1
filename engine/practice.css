@@ -465,3 +465,5 @@ a.btn svg{width:18px;height:18px}
 .rfn{display:flex;align-items:center;gap:8px;font-weight:800;font-size:15px}
 .rfa .mut{display:block;font-size:12px}
 @media (max-width:900px){.jrow{flex-direction:column;align-items:flex-start}.rfb{grid-template-columns:1fr 1fr 30px}}
+
+.whyb{margin:8px 0 12px;padding:10px 14px;border-radius:12px;background:rgba(242,163,58,.12);border-left:4px solid #F2A33A;font-size:15px;line-height:1.4}.whyb b{color:#C77A12;margin-right:4px}.host .whyb{font-size:18px}
