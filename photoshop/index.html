@@ -420,9 +420,11 @@ a.btn svg{width:18px;height:18px}
 .fbpop .fbx{font-size:12px;opacity:.55;margin-top:6px}
 @keyframes fbin{from{transform:translateY(-30px);opacity:0}to{transform:none;opacity:1}}
 .itl{display:flex;flex-direction:column;gap:6px;max-height:52vh;overflow:auto;margin:4px 0}
-.iti{display:grid;grid-template-columns:22px 1fr auto;align-items:center;gap:10px;padding:10px 12px;border:1px solid var(--line);border-radius:12px;cursor:pointer;font-size:15px}
+.iti{display:grid;grid-template-columns:1fr auto auto;align-items:center;gap:10px;padding:10px 12px;border:1px solid var(--line);border-radius:12px;cursor:pointer;font-size:15px}
 .iti input{width:18px;height:18px;accent-color:var(--a3)}
-.iti.off{opacity:.5}.iti.off span{text-decoration:line-through}
+.iti.off{opacity:.5}.iti.off span{text-decoration:line-through}.iti.off{opacity:.6}
+.itb{padding:6px 12px;font-size:13px;min-height:0}.itb.del{color:var(--bad)}
+.offban{margin:0 0 10px;padding:10px 14px;border-radius:12px;border:1px solid var(--a2);background:rgba(245,165,36,.1);font-size:15px;display:flex;align-items:center;gap:10px;flex-wrap:wrap}.offban .btn{padding:6px 12px;min-height:0;font-size:14px}
 .iti small{font-size:12px;white-space:nowrap}
 </style>
 </head>
@@ -1071,9 +1073,10 @@ function Host() {
         <div class="mut" style="font-size:14px;margin-top:4px">${t_("Бағалау уақыт бойынша", "Оценка по времени")}: 5 ≤ ${H.thr[0]}% · 4 ≤ ${H.thr[1]}% · 3 ≤ ${H.thr[2]}% ${t_("нормадан", "от нормы")} · ${t_("ұяшықты басып — өз бағаңыз", "клик по ячейке — ваша оценка")}</div></div>
         <div class="fbtns"><button class="btn ghost" id="fitems">✂ ${t_("Тапсырмалар", "Задания")}${items0Off() ? " (−" + items0Off() + ")" : ""}</button><button class="btn ghost" id="f100">⚙ ${t_("100 балл", "100 баллов")}</button><button class="btn ghost" id="fhide">${H.hideMarks ? t_("👁 Бағаларды көрсету", "👁 Показать оценки") : t_("👁 Бағаларды жасыру", "👁 Скрыть оценки")}</button>
           <button class="btn ghost" id="fzip">⬇ ${t_("Барлық жұмыстар (ZIP)", "Все работы (ZIP)")}</button><button class="btn ghost" id="fcsv">⬇ ${t_("Журнал (CSV)", "Журнал (CSV)")}</button></div></div>
+      ${items0Off() ? `<div class="offban">${t_("Алынған тапсырмалар", "Убрано заданий/вопросов")}: <b>${items0Off()}</b> — ${t_("олардың скриншоттары мен бағалары кестеде, журналда және ZIP-те көрсетілмейді.", "их скриншоты и оценки не показываются в таблице, журнале и ZIP.")} <button class="btn ghost" id="offall">↩ ${t_("Барлығын қайтару", "Вернуть все")}</button></div>` : ""}
       ${freeTable()}
       ${ctlBar("", fin ? `<button class="btn ghost" id="freopen">${t_("Қайта ашу", "Открыть снова")}</button>` : `<button class="btn" id="fend">${t_("Практиканы аяқтау", "Завершить практику")}</button>`)}</div>`;
-    $("#f100").onclick = P100Settings; $("#fitems").onclick = ItemsEditor;
+    $("#f100").onclick = P100Settings; $("#fitems").onclick = ItemsEditor; const oa = $("#offall"); if (oa) oa.onclick = () => { (H.items || []).forEach(it => delete it.off); save(); pubItems(); pubState(); pids().forEach(pubPlayer); render(); };
     document.querySelectorAll("td.sum[data-s]").forEach(td => td.onclick = () => OvrEditor(td.dataset.s));
     $("#fhide").onclick = () => { H.hideMarks = !H.hideMarks; save(); pids().forEach(pubPlayer); render(); };
     $("#fzip").onclick = zipAll; $("#fcsv").onclick = () => downloadBlob(new Blob(["﻿" + journalCsv()], {type: "text/csv;charset=utf-8"}), safeName(TITLE) + " — журнал.csv");
@@ -1146,9 +1149,12 @@ function Host() {
       w.innerHTML = `<div class="edbox" style="max-width:640px"><h3 class="disp" style="margin:0;font-size:26px">${t_("Тапсырмаларды алып тастау", "Убрать задания и вопросы")}</h3>
         <p class="mut" style="margin:0;font-size:15px">${t_("Алынған тапсырмалар студенттерде жоғалады және бағаға, журналға, ZIP-ке кірмейді. Кез келген уақытта қайтаруға болады.", "Убранные задания и вопросы исчезнут у студентов и не войдут в оценку, журнал и ZIP. Вернуть можно в любой момент — ничего не удаляется насовсем.")}</p>
         <div class="itl">${items.map((it, i) => { const lbl = it.type === "task" ? (++tn) + ". " + esc(it.title) : "⌨ " + esc(L(it.q, H.lang)).slice(0, 70); const n = did(i);
-          return `<label class="iti ${it.off ? "off" : ""}"><input type="checkbox" data-i="${i}" ${it.off ? "" : "checked"}><span>${lbl}</span><small class="mut">${n ? t_("орындаған", "сделали") + ": " + n : t_("ешкім орындамаған", "никто не делал")}</small></label>`; }).join("")}</div>
+          return `<div class="iti ${it.off ? "off" : ""}"><span>${lbl}</span><small class="mut">${n ? t_("орындаған", "сделали") + ": " + n : t_("ешкім орындамаған", "никто не делал")}</small>${it.off ? `<button class="btn ghost itb" data-on="${i}">↩ ${t_("Қайтару", "Вернуть")}</button>` : `<button class="btn ghost itb del" data-off="${i}" data-n="${n}">✕ ${t_("Алып тастау", "Убрать")}</button>`}</div>`; }).join("")}</div>
         <div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn ghost" id="it-unused">${t_("Ешкім жасамағандарды алу", "Убрать то, что никто не делал")}</button><button class="btn ghost" id="it-all">${t_("Барлығын қайтару", "Вернуть все")}</button><span style="flex:1"></span><button class="btn" id="it-ok">${t_("Дайын", "Готово")}</button></div></div>`;
-      w.querySelectorAll("input[data-i]").forEach(cb => cb.onchange = () => setOff([+cb.dataset.i], !cb.checked));
+      w.querySelectorAll("[data-on]").forEach(b => b.onclick = () => setOff([+b.dataset.on], false));
+      w.querySelectorAll("[data-off]").forEach(b => b.onclick = () => {
+        if (+b.dataset.n > 0 && b.dataset.c !== "1") { b.dataset.c = "1"; b.textContent = t_(`Сенімдісіз бе? ${b.dataset.n} жұмыс жасырылады`, `Точно? Скроются работы: ${b.dataset.n}`); return; }
+        setOff([+b.dataset.off], true); });
       $("#it-unused").onclick = () => setOff(items.map((it, i) => i).filter(i => !did(i)), true);
       $("#it-all").onclick = () => setOff(items.map((it, i) => i), false);
       $("#it-ok").onclick = () => w.remove();
