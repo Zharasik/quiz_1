@@ -436,6 +436,13 @@ a.btn svg{width:18px;height:18px}
 .fm th.thed{cursor:pointer}.fm th.thed:hover{color:var(--a2)}
 .hostoff{position:fixed;left:10px;right:10px;top:10px;pointer-events:none;opacity:.97;z-index:9998;max-width:560px;margin:0 auto;padding:12px 14px;border-radius:14px;background:#2A1F06;color:#FFE7A8;border:1.5px solid #F5A524;box-shadow:0 10px 30px rgba(0,0,0,.4);display:flex;flex-direction:column;gap:4px;font-size:14px;line-height:1.35}
 .hostoff b{font-size:15px;color:#FFD166}
+.goal{margin:4px 0 12px;padding:12px 14px;border-radius:12px;background:rgba(245,165,36,.12);border:1px solid rgba(245,165,36,.45);font-size:16px;line-height:1.45}
+.goal b{display:block;font-size:13px;letter-spacing:.04em;text-transform:uppercase;color:var(--a2);margin-bottom:2px}
+.psteps li,.steps ol li{line-height:1.55}
+.mp{display:inline;background:rgba(124,92,255,.16);border:1px solid rgba(124,92,255,.35);border-radius:7px;padding:1px 6px;font-weight:600;white-space:normal;box-decoration-break:clone;-webkit-box-decoration-break:clone}
+.mp i{font-style:normal;opacity:.55;margin:0 1px}
+kbd{display:inline-block;font:600 .85em/1.3 ui-monospace,Menlo,Consolas,monospace;padding:1px 6px;border-radius:6px;border:1px solid var(--line);border-bottom-width:2px;background:var(--s2);white-space:nowrap}
+.psteps a,.steps a{color:var(--a2);word-break:break-all}
 </style>
 </head>
 <body>
@@ -468,10 +475,17 @@ const LANG_LABEL = COURSE.langLabel || "Интерфейс:";
 const exUrl = ex => !ex ? "" : /^https?:\/\//.test(ex) ? ex : "ex/" + ex + ".jpg";
 const fromBank = id => { const b = COURSE.bank.find(x => x.id === id); return b ? JSON.parse(JSON.stringify(Object.assign({uid: rid(6)}, b))) : null; };
 const defaultPlan = () => COURSE.defaults.map(fromBank).filter(Boolean);
-const toRound = (t, i) => ({type: "task", t: Math.max(1, +t.min || 5) * 60, k: (i + 1) + "-е задание · " + (+t.min || 5) + " мин", title: t.title, steps: t.steps || [], crit: t.crit || [], ex: t.ex || "", table: t.table || null, hints: t.hints || [], checks: t.checks || [], shot: t.shot !== false, ai: t.ai || [], vp: t.vp || []});
+const toRound = (t, i) => ({type: "task", t: Math.max(1, +t.min || 5) * 60, k: (i + 1) + "-е задание · " + (+t.min || 5) + " мин", title: t.title, steps: t.steps || [], crit: t.crit || [], ex: t.ex || "", table: t.table || null, hints: t.hints || [], checks: t.checks || [], shot: t.shot !== false, ai: t.ai || [], vp: t.vp || [], goal: t.goal || ""});
 const linkify = x => esc(x).replace(/(https?:\/\/[^\s<,)»]+)/g, u => `<a href="${u}" target="_blank" rel="noopener">${u.replace(/^https?:\/\/(www\.)?/, "").replace(/\/$/, "")}</a>`);
 const extraTips = (r, lg) => (r.ai && r.ai.length ? `<details class="exd tipai"><summary>🤖 ${t_("ЖИ көмекшісі", "ИИ-помощник")}</summary><ul class="hints">${r.ai.map(h => `<li>${linkify(L(h, lg))}</li>`).join("")}</ul></details>` : "")
-  + (r.vp && r.vp.length ? `<details class="exd tipvp"><summary>🌐 ${t_("Illustrator жоқ па? Vectorpea", "Нет Illustrator? Vectorpea")}</summary><ul class="hints">${r.vp.map(h => `<li>${linkify(L(h, lg))}</li>`).join("")}</ul></details>` : "");
+  + (r.vp && r.vp.length ? `<details class="exd tipvp"><summary>🌐 ${t_("Бағдарлама жоқ па? ", "Нет программы? ")}${esc(COURSE.tool.name)}</summary><ul class="hints">${r.vp.map(h => `<li>${linkify(L(h, lg))}</li>`).join("")}</ul></details>` : "");
+const fmtStep = (x, lg) => esc(String(x == null ? "" : x).replace(/\[\[([^|\]]*)\|([^\]]*)\]\]/g, (m, ru, en) => "\u0001" + (lg === "en" ? en : ru) + "\u0002"))
+  .replace(/\u0001([^\u0002]*)\u0002/g, (m, p) => `<span class="mp">${p.replace(/ → /g, ' <i>›</i> ')}</span>`)
+  .replace(/((?:Ctrl|Alt|Shift|Cmd)(?:\+[A-Za-zА-Яа-я0-9\[\]]+)+)/g, "<kbd>$1</kbd>")
+  .replace(/\(([A-Z])\)/g, "(<kbd>$1</kbd>)")
+  .replace(/(https?:\/\/[^\s<,)»]+)/g, u => `<a href="${u}" target="_blank" rel="noopener">${u.replace(/^https?:\/\/(www\.)?/, "").replace(/\/$/, "")}</a>`);
+const goalBox = (r, host) => (r.goal ? `<div class="goal"><b>🎯 ${t_("Не жасаймыз?", "Что делаем?")}</b> ${esc(r.goal)}</div>` : "")
+  + (r.ex && !host ? `<details class="exd" open><summary>${t_("Мысал — осындай нәтиже керек", "Образец — к такому результату стремимся")}</summary><img src="${esc(exUrl(r.ex))}" alt="" loading="lazy" onerror="this.parentNode.remove()"></details>` : "");
 const checkOk = (c, v) => { if (c.opts) return (v | 0) === c.c && v !== "" && v != null; const x = parseFloat(String(v == null ? "" : v).replace(/[\s\u00a0]/g, "").replace("%", "").replace(",", ".")); if (!isFinite(x)) return false; const tol = c.tol != null ? c.tol : Math.max(0.5, Math.abs(c.a) * 0.002); return Math.abs(x - c.a) <= tol || (c.pct && Math.abs(x * 100 - c.a) <= tol); };
 const NS = COURSE.ns;
 const TITLE = COURSE.title;
@@ -565,6 +579,7 @@ function TaskDialog(t, parent, o) {
     <div class="edform">
       <div class="ff"><label>Название</label><input id="f-title" value="${esc(t.title)}" maxlength="80" placeholder="Например: Диаграмма продаж"></div>
       <div class="ff" style="max-width:160px"><label>Время, мин</label><input id="f-min" type="number" min="1" max="60" value="${+t.min || 6}"></div>
+      <div class="ff wide"><label>🎯 ${t_("Мақсат — студентке не жасайтынын бір сөйлеммен түсіндіріңіз (міндетті емес)", "Цель — одним предложением, что студент делает (необязательно)")}</label><input id="f-goal" value="${esc(t.goal || "")}" maxlength="240"></div>
       <div class="ff wide"><label>Шаги — по одному на строку</label><textarea id="f-steps" rows="8">${esc((t.steps || []).join("\n"))}</textarea>
         <div class="hint">Два варианта меню: <code>[[Файл → Создать|File → New]]</code> — студент увидит вариант для своей программы.</div></div>
       <div class="ff"><label>Критерии — по одному на строку</label><textarea id="f-crit" rows="3">${esc((t.crit || []).join("\n"))}</textarea></div>
@@ -576,7 +591,7 @@ function TaskDialog(t, parent, o) {
       <div class="ff wide"><div class="pvh"><label>Предпросмотр</label><div class="mode" style="margin:0">${LANGS.map(([k, x]) => `<button data-pv="${k}" class="${TD_LANG === k ? "on" : ""}">${x}</button>`).join("")}</div></div><ol class="pv" id="pv"></ol></div>
     </div>
     <div class="edtop" style="margin:0;justify-content:flex-end">${bankItem && o.canReset ? `<button class="btn ghost" id="mreset">Вернуть версию из банка</button>` : ""}<button class="btn" id="msave">${o.saveLabel || "Сақтау"}</button></div></div>`;
-  const pv = () => { $("#pv").innerHTML = $("#f-steps").value.split("\n").map(x => x.trim()).filter(Boolean).map(x => `<li>${esc(L(x, TD_LANG))}</li>`).join("") || `<li class="mut">Шагов нет</li>`; };
+  const pv = () => { $("#pv").innerHTML = $("#f-steps").value.split("\n").map(x => x.trim()).filter(Boolean).map(x => `<li>${fmtStep(x, TD_LANG)}</li>`).join("") || `<li class="mut">Шагов нет</li>`; };
   $("#f-steps").oninput = pv; pv();
   m.querySelectorAll("[data-pv]").forEach(b => b.onclick = () => { TD_LANG = b.dataset.pv; m.querySelectorAll("[data-pv]").forEach(x => x.classList.toggle("on", x === b)); pv(); });
   $("#f-exsel").onchange = () => { $("#f-exurl").style.display = $("#f-exsel").value === "__url" ? "" : "none"; };
@@ -589,7 +604,7 @@ function TaskDialog(t, parent, o) {
     if (!steps.length) { toast("Напишите хотя бы один шаг"); return; }
     const sel = $("#f-exsel").value, url = $("#f-exurl").value.trim();
     if (sel === "__url" && url && !/^https?:\/\//.test(url)) { toast("Ссылка должна начинаться с https://"); return; }
-    const nt = Object.assign({}, t, {title, min: Math.min(60, Math.max(1, +$("#f-min").value || 6)), steps, crit: lines("#f-crit"), hints: lines("#f-hints"), ai: lines("#f-ai"), vp: lines("#f-vp"), ex: sel === "__url" ? url : sel, edited: !!bankItem});
+    const nt = Object.assign({}, t, {title, min: Math.min(60, Math.max(1, +$("#f-min").value || 6)), steps, goal: $("#f-goal").value.trim(), crit: lines("#f-crit"), hints: lines("#f-hints"), ai: lines("#f-ai"), vp: lines("#f-vp"), ex: sel === "__url" ? url : sel, edited: !!bankItem});
     m.remove(); o.onSave(nt);
   };
 }
@@ -1179,10 +1194,10 @@ function Host() {
 
   function editItemLive(i) {
     const r = (H.items || [])[i]; if (!r || r.type !== "task") return;
-    const t = {id: r.id || "", title: r.title, min: Math.round(r.t / 60), steps: r.steps, crit: r.crit, ex: r.ex, hints: r.hints, ai: r.ai, vp: r.vp};
+    const t = {id: r.id || "", title: r.title, min: Math.round(r.t / 60), goal: r.goal, steps: r.steps, crit: r.crit, ex: r.ex, hints: r.hints, ai: r.ai, vp: r.vp};
     TaskDialog(t, document.body, {head: t_("Нұсқаулықты өзгерту", "Изменить инструкцию"), note: t_("Сақтағаннан кейін студенттердің экранында бірден жаңарады. Уақыт өзгерсе — уақыт бойынша баға жаңа нормамен есептеледі.", "После сохранения инструкция сразу обновится у студентов. Если изменить минуты — оценка по времени будет считаться по новой норме."), saveLabel: t_("Сақтау және жіберу", "Сохранить и отправить"),
       onSave: nt => { const n = (H.items || []).slice(0, i + 1).filter(x => x.type === "task").length;
-        Object.assign(r, {title: nt.title, t: nt.min * 60, steps: nt.steps, crit: nt.crit, ex: nt.ex, hints: nt.hints, ai: nt.ai, vp: nt.vp, k: t_(n + "-тапсырма", "Задание " + n) + " · " + nt.min + " " + t_("мин", "мин")});
+        Object.assign(r, {title: nt.title, t: nt.min * 60, goal: nt.goal, steps: nt.steps, crit: nt.crit, ex: nt.ex, hints: nt.hints, ai: nt.ai, vp: nt.vp, k: t_(n + "-тапсырма", "Задание " + n) + " · " + nt.min + " " + t_("мин", "мин")});
         save(); pubItems(); render(); const w = document.querySelector(".fset"); if (w && w._draw) w._draw(); toast(t_("Нұсқаулық жаңартылды", "Инструкция обновлена")); }});
   }
   function AddTasks() {
@@ -1298,7 +1313,7 @@ function Host() {
         <div class="qhead"><div style="flex:1"><div class="kicker">${esc(r.k)}</div><h2 class="qtext">${esc(r.title)}</h2></div><div style="text-align:right">${H.paused ? `<div class="kicker" style="color:var(--a2)">Пауза</div>` : ""}<div class="timer" id="htime" style="${H.paused ? "color:var(--a2)" : ""}">${fmtTime(Math.ceil(left / 1000))}</div></div></div>
         <div class="bar"><i id="hbar" style="transform:scaleX(${left / (r.t * 1000)})"></i></div>
         <div class="tgrid">
-          <div class="steps">${r.ex ? `<img class="exh" src="${esc(exUrl(r.ex))}" alt="Образец" onerror="this.remove()">` : ""}<ol>${r.steps.map(s => `<li>${esc(L(s, H.lang))}</li>`).join("")}</ol>${r.crit && r.crit.length ? `<div class="crit">${r.crit.map(c => `<span>${esc(c)}</span>`).join("")}</div>` : ""}</div>
+          <div class="steps">${r.ex ? `<img class="exh" src="${esc(exUrl(r.ex))}" alt="Образец" onerror="this.remove()">` : ""}${goalBox(r, true)}<ol>${r.steps.map(s => `<li>${fmtStep(s, H.lang)}</li>`).join("")}</ol>${r.crit && r.crit.length ? `<div class="crit">${r.crit.map(c => `<span>${esc(c)}</span>`).join("")}</div>` : ""}</div>
           <div>${r.checks.length ? race(r) : ""}<div class="count">${done} / ${n} сдали</div>${gallery(false)}</div>
         </div></div>${ctlBar("Закончить время", `<button class="btn ghost" id="tedit">✎ ${t_("Нұсқаулықты өзгерту", "Изменить инструкцию")}</button><button class="btn ghost" id="pause">${H.paused ? "▶ Продолжить" : "❚❚ Пауза"}</button>`)}</div>`;
     } else if (H.phase === "review" || H.phase === "vote") {
@@ -1621,12 +1636,11 @@ function Player() {
       <div class="pk">${esc(r.k)} · ${t_("уақыт", "время")} <span id="ptt">${x.o ? "" : "0:00"}</span></div><div class="pq up">${esc(r.title)}</div>
       <div id="fbk"></div>
       <div class="langsw"><span class="mut">${LANG_LABEL}</span>${LANGS.map(([k, t]) => `<button data-l="${k}" class="${lang() === k ? "on" : ""}">${t}</button>`).join("")}</div>
-      <ol class="psteps">${r.steps.map(s => `<li>${esc(L(s, lang()))}</li>`).join("")}</ol>
+      ${goalBox(r)}<ol class="psteps">${r.steps.map(s => `<li>${fmtStep(s, lang())}</li>`).join("")}</ol>
       ${r.crit && r.crit.length ? `<div class="crit">${r.crit.map(c => `<span>${esc(c)}</span>`).join("")}</div>` : ""}
       ${r.table ? dataTable(r.table) : ""}
       ${r.hints && r.hints.length ? `<details class="exd"><summary>${t_("Кеңестер", "Подсказки")} (${r.hints.length})</summary><ul class="hints">${r.hints.map(h => `<li>${esc(L(h, lang()))}</li>`).join("")}</ul></details>` : ""}
       ${extraTips(r, lang())}
-      ${r.ex ? `<details class="exd"><summary>${t_("Мысалды көру", "Посмотреть образец")}</summary><img src="${esc(exUrl(r.ex))}" alt="" onerror="this.parentNode.remove()"></details>` : ""}
       ${r.checks && r.checks.length ? checkForm(r) : ""}
       <a class="btn ghost" href="${COURSE.tool.url}" target="_blank" rel="noopener" style="width:100%;margin:12px 0">${ICON.ext}<span>${esc(COURSE.tool.name)} — открыть</span></a>
       <input type="file" id="file" accept="image/*" class="hidden">
@@ -1732,12 +1746,11 @@ function Player() {
       app.innerHTML = `<div class="ply"><div class="pw-wrap">${top()}<div class="ptimer"><i id="pt"></i></div><div id="pzl" class="hidden pzl">Пауза — время остановлено</div>
         <div class="pk">${esc(r.k)} · <span id="ptt"></span></div><div class="pq up">${esc(r.title)}</div>
         <div class="langsw"><span class="mut">${LANG_LABEL}</span>${LANGS.map(([k, t]) => `<button data-l="${k}" class="${lang() === k ? "on" : ""}">${t}</button>`).join("")}</div>
-        <ol class="psteps">${r.steps.map(s => `<li>${esc(L(s, lang()))}</li>`).join("")}</ol>
+        ${goalBox(r)}<ol class="psteps">${r.steps.map(s => `<li>${fmtStep(s, lang())}</li>`).join("")}</ol>
         ${r.crit && r.crit.length ? `<div class="crit">${r.crit.map(c => `<span>${esc(c)}</span>`).join("")}</div>` : ""}
         ${r.table ? dataTable(r.table) : ""}
         ${r.hints && r.hints.length ? `<details class="exd"><summary>${t_("Кеңестер", "Подсказки")} (${r.hints.length})</summary><ul class="hints">${r.hints.map(h => `<li>${esc(L(h, lang()))}</li>`).join("")}</ul></details>` : ""}
         ${extraTips(r, lang())}
-      ${r.ex ? `<details class="exd"><summary>${t_("Мысалды көру", "Посмотреть образец")}</summary><img src="${esc(exUrl(r.ex))}" alt="Образец" onerror="this.parentNode.remove()"></details>` : ""}
         ${r.checks && r.checks.length ? checkForm(r) : ""}
         <a class="btn ghost" href="${COURSE.tool.url}" target="_blank" rel="noopener" style="width:100%;margin:12px 0">${ICON.ext}<span>${esc(COURSE.tool.name)} — открыть</span></a>
         <input type="file" id="file" accept="image/*" class="hidden">
