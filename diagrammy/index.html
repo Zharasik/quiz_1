@@ -443,6 +443,9 @@ a.btn svg{width:18px;height:18px}
 .mp i{font-style:normal;opacity:.55;margin:0 1px}
 kbd{display:inline-block;font:600 .85em/1.3 ui-monospace,Menlo,Consolas,monospace;padding:1px 6px;border-radius:6px;border:1px solid var(--line);border-bottom-width:2px;background:var(--s2);white-space:nowrap}
 .psteps a,.steps a{color:var(--a2);word-break:break-all}
+.stepimg{display:block;position:relative;margin:8px 0 4px;border-radius:10px;overflow:hidden;border:1px solid var(--line);background:#323232}
+.stepimg img{display:block;width:100%;height:auto}
+.stepimg span{position:absolute;right:8px;bottom:8px;background:rgba(0,0,0,.55);color:#fff;border-radius:999px;padding:2px 8px;font-size:13px}
 </style>
 </head>
 <body>
@@ -483,6 +486,7 @@ const fmtStep = (x, lg) => esc(String(x == null ? "" : x).replace(/\[\[([^|\]]*)
   .replace(/\u0001([^\u0002]*)\u0002/g, (m, p) => `<span class="mp">${p.replace(/ → /g, ' <i>›</i> ')}</span>`)
   .replace(/((?:Ctrl|Alt|Shift|Cmd)(?:\+[A-Za-zА-Яа-я0-9\[\]]+)+)/g, "<kbd>$1</kbd>")
   .replace(/\(([A-Z])\)/g, "(<kbd>$1</kbd>)")
+  .replace(/\s*\{\{img:([\w-]+)\}\}/g, (m, n) => `<a class="stepimg" href="${exUrl(n)}" target="_blank" rel="noopener"><img src="${exUrl(n)}" alt="" loading="lazy" onerror="this.parentNode.remove()"><span>🔍</span></a>`)
   .replace(/(https?:\/\/[^\s<,)»]+)/g, u => `<a href="${u}" target="_blank" rel="noopener">${u.replace(/^https?:\/\/(www\.)?/, "").replace(/\/$/, "")}</a>`);
 const goalBox = (r, host) => (r.goal ? `<div class="goal"><b>🎯 ${t_("Не жасаймыз?", "Что делаем?")}</b> ${esc(r.goal)}</div>` : "")
   + (r.ex && !host ? `<details class="exd" open><summary>${t_("Мысал — осындай нәтиже керек", "Образец — к такому результату стремимся")}</summary><img src="${esc(exUrl(r.ex))}" alt="" loading="lazy" onerror="this.parentNode.remove()"></details>` : "");
@@ -616,7 +620,7 @@ function PlanEditor(plan0, onDone, opts) {
   function draw() {
     const inPlan = new Set(plan.map(t => t.id));
     w.innerHTML = `<div class="edtop"><div><div class="kicker">${opts.add ? t_("Жүріп жатқан практикаға қосу", "Добавить в идущую практику") : "Практика"}</div><h2 class="disp" style="margin:0;font-size:32px">${opts.add ? t_("Жаңа тапсырмалар", "Новые задания") : "Тапсырмалар"}: ${plan.length} · ${totalMin()} мин</h2></div>
-        <div style="display:flex;gap:10px;flex-wrap:wrap">${opts.add ? `<button class="btn ghost" id="edcancel">${t_("Болдырмау", "Отмена")}</button>` : ""}<button class="btn ghost" id="edadd">+ Своё задание</button>${opts.add ? "" : `<button class="btn ghost" id="eddef">Вернуть по умолчанию</button>`}<button class="btn" id="edok">${opts.add ? t_("Студенттерге қосу", "Добавить студентам") : "Дайын"}</button></div></div>
+        <div style="display:flex;gap:10px;flex-wrap:wrap">${opts.add ? `<button class="btn ghost" id="edcancel">${t_("Болдырмау", "Отмена")}</button>` : ""}${!opts.add && (COURSE.presets || []).length ? COURSE.presets.map((p, k) => `<button class="btn ghost" data-preset="${k}">⚡ ${esc(p.name)}</button>`).join("") : ""}<button class="btn ghost" id="edadd">+ Своё задание</button>${opts.add ? "" : `<button class="btn ghost" id="eddef">Вернуть по умолчанию</button>`}<button class="btn" id="edok">${opts.add ? t_("Студенттерге қосу", "Добавить студентам") : "Дайын"}</button></div></div>
       <div class="edcols">
         <div class="edlist"><div class="edh">На паре (по порядку)</div>
           ${plan.map((t, i) => `<div class="edrow">
@@ -634,6 +638,7 @@ function PlanEditor(plan0, onDone, opts) {
       </div>`;
     $("#edok").onclick = () => { if (!plan.length) { toast("Выберите хотя бы 1 задание"); return; } onDone(plan); w.remove(); };
     if ($("#eddef")) $("#eddef").onclick = () => { plan = defaultPlan(); draw(); };
+    w.querySelectorAll("[data-preset]").forEach(b => b.onclick = () => { const p = COURSE.presets[+b.dataset.preset]; plan = p.ids.map(fromBank).filter(Boolean); draw(); toast(p.name); });
     if ($("#edcancel")) $("#edcancel").onclick = () => w.remove();
     $("#edadd").onclick = () => edit(-1);
     w.querySelectorAll("[data-add]").forEach(b => b.onclick = () => { const t = fromBank(b.dataset.add); if (t) { plan.push(t); draw(); } });
