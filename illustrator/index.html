@@ -463,6 +463,61 @@ kbd{display:inline-block;font:600 .85em/1.3 ui-monospace,Menlo,Consolas,monospac
 .btn.ok{background:#2EBD7E;color:#06150e}
 .subhow{margin:0 0 10px;font-size:14px}
 .sec .exd{margin:6px 0}
+.exs summary{display:flex;align-items:center;gap:12px;list-style:none}.exs summary::-webkit-details-marker{display:none}
+.exth{width:64px;height:48px;object-fit:cover;border-radius:8px;border:1px solid var(--line);background:#fff;flex:none}
+.exs[open] .exth{display:none}
+.toollink{display:inline-block;margin-top:6px;font-size:14px;font-weight:700;color:var(--a1);text-decoration:none}
+.helpsec{padding:0}.helpsec>summary{padding:14px;margin:0;cursor:pointer;list-style:none}.helpsec>summary::-webkit-details-marker{display:none}
+.helpsec[open]>summary{padding-bottom:6px}.helpsec>*:not(summary){margin-left:14px;margin-right:14px}.helpsec[open]{padding-bottom:10px}
+.sec .langsw{margin:0 0 10px}
+/* ===== Светлая спокойная тема (единая для всего сайта) ===== */
+:root{
+  --bg:#F6F5F2;--s1:#FFFFFF;--s2:#EEEDE8;--line:#E2E0DA;--tx:#1F2328;--mut:#6B6F76;
+  --a0:#C2413B;--a1:#2F6FB3;--a2:#2F6FB3;--a3:#2E8B57;--ok:#2E8B57;--bad:#C2413B;--xl:#1F7A4D;
+  --g5:#2E8B57;--g4:#5B8DEF;--g3:#E0A12B;--g2:#D9534F;
+}
+html,body{background:var(--bg);color:var(--tx)}
+body{font-size:17px;line-height:1.5}
+.btn{background:var(--a1);color:#fff;box-shadow:none}
+.btn.ghost{background:#fff;color:var(--tx);border:1.5px solid var(--line)}
+.btn.ok,.btn.green{background:var(--ok);color:#fff}
+.net{background:#fff}
+/* карточки и секции — белые, мягкие */
+.sec{background:#fff;border:1px solid var(--line);box-shadow:0 1px 2px rgba(0,0,0,.03)}
+.sec.sub{border:2px solid #9FD3B5;background:#FBFEFC}
+.goal{background:#FFF8EA;border:1px solid #F1DFB7}
+.goal b{color:#9A6A12}
+.exd{background:#fff;border:1px solid var(--line)}
+.exd summary{color:var(--tx)}
+.mp{background:#EEF3FB;border-color:#D3E0F3;color:#1F3F6B}
+kbd{background:#fff;border-color:#CFCDC6;color:var(--tx)}
+.stepimg{background:#F1F0EC}
+.stpdots i{background:#E6E4DE}.stpdots i.d{background:#9FD3B5}.stpdots i.c{background:var(--a1)}
+.pprog{background:#E6E4DE}.pprog i{background:var(--ok)}
+.pbar{color:var(--mut)}.pbar .me{color:var(--tx)}
+.lnk{color:var(--a1)}
+.okline{color:var(--ok)}
+.crit span{background:#F1F0EC;color:var(--tx);border-color:var(--line)}
+.hints a,.psteps a,.steps a{color:var(--a1)}
+.fnav{background:linear-gradient(rgba(246,245,242,0),var(--bg) 30%)}
+.upbox{background:#fff;border-color:#CFCDC6}
+.chkbox,#chkbox{background:#fff}
+.chf input{background:#fff;color:var(--tx);border-color:#CFCDC6}
+.fbk{background:#FFF8EA;border-color:#F1DFB7}
+.fbpop{background:#fff;color:var(--tx);border-color:var(--a1);box-shadow:0 12px 40px rgba(0,0,0,.18)}
+.hostoff{background:#FFF8EA;color:#7A5410;border-color:#E9C46A;box-shadow:0 8px 24px rgba(0,0,0,.12)}.hostoff b{color:#7A5410}
+.schb{background:#fff;border-color:var(--line);box-shadow:0 8px 24px rgba(0,0,0,.12)}
+.edm,.pmod{background:rgba(30,30,40,.35)}
+.edbox{background:var(--bg)}
+.stars button{color:#C9C6BE}
+.aib{background:#1F2328}
+input,select,textarea{color:var(--tx)}
+/* таблица прогресса у преподавателя */
+.fm th,.fm td{border-color:var(--line)}
+.fm td.t b{color:#fff}.fm td.t b.g3{color:#1F2328}
+.fm td.run{background:#FFF8EA}.fm td.done{background:#F2FAF5}
+.tipai{border-color:#D9CCF5}.tipvp{border-color:#BFE3D2}
+.exd.exs summary img.exth{width:64px!important;height:48px!important;max-height:48px;margin:0;object-fit:cover}
 </style>
 </head>
 <body>
@@ -506,7 +561,7 @@ const fmtStep = (x, lg) => esc(String(x == null ? "" : x).replace(/\[\[([^|\]]*)
   .replace(/\s*\{\{img:([\w-]+)\}\}/g, (m, n) => `<a class="stepimg" href="${exUrl(n)}" target="_blank" rel="noopener"><img src="${exUrl(n)}" alt="" loading="lazy" onerror="this.parentNode.remove()"><span>🔍</span></a>`)
   .replace(/(https?:\/\/[^\s<,)»]+)/g, u => `<a href="${u}" target="_blank" rel="noopener">${u.replace(/^https?:\/\/(www\.)?/, "").replace(/\/$/, "")}</a>`);
 const goalBox = (r, host) => (r.goal ? `<div class="goal"><b>🎯 ${t_("Не жасаймыз?", "Что делаем?")}</b> ${esc(r.goal)}</div>` : "")
-  + (r.ex && !host ? `<details class="exd" open><summary>${t_("Мысал — осындай нәтиже керек", "Образец — к такому результату стремимся")}</summary><img src="${esc(exUrl(r.ex))}" alt="" loading="lazy" onerror="this.parentNode.remove()"></details>` : "");
+  + (r.ex && !host ? `<details class="exd exs"><summary><img class="exth" src="${esc(exUrl(r.ex))}" alt="" onerror="this.closest('details').remove()"><span>${t_("Мысалды көру", "Посмотреть образец")}</span></summary><img src="${esc(exUrl(r.ex))}" alt="" loading="lazy"></details>` : "");
 const checkOk = (c, v) => { if (c.opts) return (v | 0) === c.c && v !== "" && v != null; const x = parseFloat(String(v == null ? "" : v).replace(/[\s\u00a0]/g, "").replace("%", "").replace(",", ".")); if (!isFinite(x)) return false; const tol = c.tol != null ? c.tol : Math.max(0.5, Math.abs(c.a) * 0.002); return Math.abs(x - c.a) <= tol || (c.pct && Math.abs(x * 100 - c.a) <= tol); };
 const NS = COURSE.ns;
 const TITLE = COURSE.title;
@@ -1735,23 +1790,23 @@ function Player() {
     const steps = r.steps || [], SK = "stp:" + S.fid + ":" + curF; let si = Math.min(+(store.get(SK) || 0), Math.max(0, steps.length - 1)); const listMode = store.get("stepList") === 1;
     const needShot = r.shot !== false, needChk = !!(r.checks && r.checks.length);
     app.innerHTML = `<div class="ply"><div class="pw-wrap">${top() || topOld()}
-      <div class="tkhead"><div class="pk">${esc(r.k)} · ⏱ <span id="ptt">${x.o ? "" : "0:00"}</span></div><div class="pq up">${esc(r.title)}</div></div>
+      <div class="tkhead"><div class="pk">${esc(r.k)} · ⏱ <span id="ptt">${x.o ? "" : "0:00"}</span></div><div class="pq up">${esc(r.title)}</div>
+        <a class="toollink" href="${COURSE.tool.url}" target="_blank" rel="noopener">${esc(COURSE.tool.name)} ↗</a></div>
       <div id="fbk"></div>
-      <div class="langsw"><span class="mut">${LANG_LABEL}</span>${LANGS.map(([k, t]) => `<button data-l="${k}" class="${lang() === k ? "on" : ""}">${t}</button>`).join("")}</div>
       ${goalBox(r)}
-      <div class="sec"><div class="sech"><span>🧭 ${t_("Қадамдар", "Шаги")}</span><button class="lnk" id="stmode">${listMode ? t_("Біртіндеп көрсету", "Показывать по одному") : t_("Барлығы тізіммен", "Все шаги списком")}</button></div>
+      <div class="sec"><div class="sech"><span>${t_("Қадамдар", "Шаги")}</span><button class="lnk" id="stmode">${listMode ? t_("Біртіндеп", "По одному") : t_("Тізіммен", "Списком")}</button></div>
+        ${LANGS.length > 1 ? `<div class="langsw"><span class="mut">${LANG_LABEL}</span>${LANGS.map(([k, t]) => `<button data-l="${k}" class="${lang() === k ? "on" : ""}">${t}</button>`).join("")}</div>` : ""}
         ${listMode ? `<ol class="psteps">${steps.map(z => `<li>${fmtStep(z, lang())}</li>`).join("")}</ol>` : `<div id="stp" class="stp"></div>`}</div>
       ${r.table ? `<div class="sec"><div class="sech">📋 ${t_("Тапсырма деректері", "Данные для задания")}</div>${dataTable(r.table)}</div>` : ""}
-      ${(r.hints && r.hints.length) || (r.crit && r.crit.length) || (r.ai && r.ai.length) || (r.vp && r.vp.length) ? `<div class="sec"><div class="sech">💡 ${t_("Көмек", "Помощь")}</div>
+      ${(r.hints && r.hints.length) || (r.crit && r.crit.length) || (r.ai && r.ai.length) || (r.vp && r.vp.length) ? `<details class="sec helpsec"><summary class="sech">💡 ${t_("Көмек керек пе?", "Нужна помощь?")}<span class="mut" style="font-weight:600;font-size:13px">${t_("ашу", "открыть")}</span></summary>
         ${r.hints && r.hints.length ? `<details class="exd"><summary>${t_("Кеңестер", "Подсказки")} (${r.hints.length})</summary><ul class="hints">${r.hints.map(h => `<li>${fmtStep(h, lang())}</li>`).join("")}</ul></details>` : ""}
         ${extraTips(r, lang())}
-        ${r.crit && r.crit.length ? `<details class="exd"><summary>${t_("Не бағаланады?", "Что оценивается?")}</summary><div class="crit">${r.crit.map(c => `<span>${esc(c)}</span>`).join("")}</div></details>` : ""}</div>` : ""}
-      <div class="sec sub" id="subsec"><div class="sech">✅ ${t_("Тапсыру", "Сдать работу")}</div>
+        ${r.crit && r.crit.length ? `<details class="exd"><summary>${t_("Не бағаланады?", "Что оценивается?")}</summary><div class="crit">${r.crit.map(c => `<span>${esc(c)}</span>`).join("")}</div></details>` : ""}</details>` : ""}
+      <div class="sec sub" id="subsec"><div class="sech">${t_("Тапсыру", "Сдать работу")}</div>
         <p class="mut subhow">${needChk && needShot ? t_("1) Сандарды енгізіп «Тексеру» басыңыз. 2) Скриншот жіберіңіз.", "1) Введите числа и нажмите «Проверить». 2) Отправьте скриншот.") : needChk ? t_("Сандарды енгізіп «Тексеру» басыңыз.", "Введите числа и нажмите «Проверить».") : t_("Жұмыстың скриншотын жіберіңіз — бұл тапсыру.", "Отправьте скриншот работы — это и есть сдача.")}</p>
         ${needChk ? checkForm(r) : ""}
         <input type="file" id="file" accept="image/*" class="hidden">
         ${needShot ? `<div id="upbox" class="upbox"></div>` : ""}</div>
-      <a class="btn ghost" href="${COURSE.tool.url}" target="_blank" rel="noopener" style="width:100%;margin:6px 0 0">${ICON.ext}<span>${esc(COURSE.tool.name)}</span></a>
       ${freeNav()}</div></div>`;
     const drawStep = () => { const el = $("#stp"); if (!el) return; const n = steps.length;
       el.innerHTML = !n ? "" : `<div class="stpn">${t_("Қадам", "Шаг")} <b>${si + 1}</b> / ${n}</div><div class="stpdots">${steps.map((_, k) => `<i class="${k < si ? "d" : k === si ? "c" : ""}" data-sj="${k}"></i>`).join("")}</div>

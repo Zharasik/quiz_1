@@ -4,14 +4,14 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Практикум · колледж</title>
-<meta name="theme-color" content="#F6F5F1">
+<meta name="theme-color" content="#F6F5F2">
 <script>
 /* Старые ссылки квиза Handoff (?r=… / ?host) ведут на /handoff/ */
 (function () { var q = location.search; if (/[?&](r|host)(=|&|$)/.test(q) && !/[?&]sess=/.test(q)) location.replace("handoff/" + q + location.hash); })();
 </script>
 <style>
-:root{--bg:#F6F5F1;--card:#fff;--ink:#1C1B22;--mut:#6B6A75;--line:#E4E2DA;--acc:#4F46E5;--acc2:#EEF0FF;--ok:#13894B;--okbg:#E7F6EE;--warn:#B45309;--warnbg:#FEF4E2;--bad:#C2253A;--badbg:#FDECEE;--r:16px}
-*{box-sizing:border-box}html,body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.45 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;-webkit-text-size-adjust:100%}
+:root{--bg:#F6F5F2;--card:#fff;--ink:#1F2328;--mut:#6B6F76;--line:#E2E0DA;--acc:#2F6FB3;--acc2:#EEF3FB;--ok:#2E8B57;--okbg:#F2FAF5;--warn:#9A6A12;--warnbg:#FFF8EA;--bad:#C2413B;--badbg:#FCEFEE;--r:16px}
+*{box-sizing:border-box}html,body{margin:0;background:var(--bg);color:var(--ink);font:17px/1.5 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;-webkit-text-size-adjust:100%}
 a{color:var(--acc)}button,input,select,textarea{font:inherit;color:inherit}
 .wrap{max-width:1080px;margin:0 auto;padding:16px 16px 90px}
 .top{display:flex;align-items:center;gap:12px;padding:12px 16px;max-width:1080px;margin:0 auto}
@@ -26,7 +26,7 @@ h1{font-size:28px;line-height:1.2;margin:8px 0 6px}h2{font-size:21px;margin:0 0 
 .btn:disabled{opacity:.45;cursor:default}.btn.ghost{background:#fff;color:var(--ink);border:1.5px solid var(--line)}.btn.ok{background:var(--ok)}.btn.bad{background:#fff;color:var(--bad);border:1.5px solid #F2C2C9}
 .btn.sm{min-height:36px;padding:0 12px;font-size:14px;border-radius:10px}.btn.wide{width:100%}
 .big{display:flex;flex-direction:column;align-items:flex-start;gap:6px;width:100%;padding:22px;border-radius:20px;border:2px solid var(--line);background:#fff;cursor:pointer;text-align:left}
-.big b{font-size:22px}.big:hover{border-color:var(--acc)}.big.main{background:var(--acc);border-color:var(--acc);color:#fff}.big.main .mut{color:#DCDDFE}
+.big b{font-size:22px}.big:hover{border-color:var(--acc)}.big.main{background:#fff;border-color:var(--acc);box-shadow:0 2px 0 var(--acc)}.big.main b{color:var(--acc)}
 input[type=text],input[type=search],select,textarea{width:100%;min-height:48px;padding:10px 14px;border-radius:12px;border:1.5px solid var(--line);background:#fff;font-size:17px}
 textarea{min-height:160px;font-size:15px}input:focus,select:focus,textarea:focus{outline:none;border-color:var(--acc)}
 label.l{display:block;font-weight:700;margin:14px 0 6px}
@@ -40,7 +40,7 @@ label.l{display:block;font-weight:700;margin:14px 0 6px}
 .pad button{min-height:62px;border-radius:14px;border:1.5px solid var(--line);background:#fff;font-size:24px;font-weight:700;cursor:pointer}
 .pad button:active{background:var(--acc2)}
 .err{color:var(--bad);font-weight:700;text-align:center;min-height:24px}
-.live{border:2px solid var(--ok);background:var(--okbg)}.live .btn{margin-top:10px}
+.live{border:2px solid #9FD3B5;background:var(--okbg)}.live .btn{margin-top:10px}
 .dot{display:inline-block;width:10px;height:10px;border-radius:50%;background:var(--ok);margin-right:6px;animation:pl 1.4s infinite}
 @keyframes pl{50%{opacity:.3}}
 .list{display:flex;flex-direction:column;gap:8px}
@@ -54,7 +54,7 @@ label.l{display:block;font-weight:700;margin:14px 0 6px}
 .grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px}@media (max-width:720px){.grid2{grid-template-columns:1fr}}
 .mods{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:10px}
 .mod{padding:14px;border-radius:14px;border:2px solid var(--line);background:#fff;cursor:pointer;text-align:left}
-.mod b{display:block}.mod.on{border-color:var(--acc);background:var(--acc2)}.mod small{color:var(--mut)}
+.mod b{display:block}.mod.on{border-color:var(--acc);background:var(--acc2);box-shadow:0 0 0 1px var(--acc) inset}.mod small{color:var(--mut)}
 table.tb{width:100%;border-collapse:collapse;font-size:14px;background:#fff}
 table.tb th,table.tb td{border-bottom:1px solid var(--line);padding:9px 8px;text-align:left;vertical-align:top}
 table.tb th{font-size:12px;color:var(--mut);text-transform:uppercase;letter-spacing:.03em;position:sticky;top:0;background:#FAFAF7}
@@ -81,6 +81,51 @@ table.tb th{font-size:12px;color:var(--mut);text-transform:uppercase;letter-spac
 .pcard b{display:block;font-size:15px}.pcard .p{font-size:28px;font-weight:800;letter-spacing:6px;margin:4px 0}
 @media print{body{background:#fff}.noprint{display:none!important}.wrap{padding:0}.modal{position:static;background:none}.modal>div{max-height:none;padding:0;background:#fff}}
 .mockb{position:fixed;left:8px;bottom:8px;font-size:11px;background:#FEF4E2;color:#B45309;padding:3px 8px;border-radius:8px;z-index:5}
+/* ---- classroom ---- */
+.hdr{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:6px}.hdr h1{margin:0;flex:1;min-width:0}
+.pc{display:flex;gap:12px;align-items:flex-start;padding:14px;border:1px solid var(--line);border-radius:14px;background:#fff;cursor:pointer;text-decoration:none;color:inherit}
+.pc:hover{border-color:var(--acc)}.pc .ic{width:42px;height:42px;border-radius:12px;display:grid;place-items:center;font-size:20px;flex:none;background:var(--acc2)}
+.pc .ic.m{background:#F3EFE6}.pc .t{flex:1;min-width:0}.pc .t b{display:block;font-size:17px;line-height:1.3}.pc .t .small{margin-top:3px}
+.pc .st{flex:none;text-align:right}
+.chip.blue{background:var(--acc2);color:var(--acc)}
+.sect{margin:18px 0 8px;font-size:13px;font-weight:800;color:var(--mut);text-transform:uppercase;letter-spacing:.05em}
+.box{background:#fff;border:1px solid var(--line);border-radius:16px;padding:16px;margin:12px 0}
+.box h3{margin:0 0 8px}
+.goal2{background:var(--warnbg);border:1px solid #F1DFB7;border-radius:14px;padding:12px 14px;margin:10px 0}
+.goal2 b{display:block;font-size:12px;color:var(--warn);text-transform:uppercase;letter-spacing:.05em}
+.stp ol{padding-left:22px;margin:0}.stp li{margin:0 0 12px;line-height:1.55}
+.stp .one{font-size:18px;line-height:1.55;min-height:60px}
+.stpdots{display:flex;gap:5px;margin:4px 0 12px}.stpdots i{flex:1;height:6px;border-radius:9px;background:#E6E4DE;cursor:pointer}.stpdots i.d{background:#9FD3B5}.stpdots i.c{background:var(--acc)}
+.mp{background:#EEF3FB;border:1px solid #D3E0F3;color:#1F3F6B;border-radius:7px;padding:1px 6px;font-weight:600;box-decoration-break:clone;-webkit-box-decoration-break:clone}
+kbd{display:inline-block;font:600 .85em/1.3 ui-monospace,Menlo,Consolas,monospace;padding:1px 6px;border-radius:6px;border:1px solid #CFCDC6;border-bottom-width:2px;background:#fff;white-space:nowrap}
+.simg{display:block;margin:8px 0;border-radius:10px;overflow:hidden;border:1px solid var(--line)}.simg img{display:block;width:100%}
+.exim{width:100%;border-radius:12px;border:1px solid var(--line);display:block;background:#fff}
+details.dd{border:1px solid var(--line);border-radius:12px;background:#fff;margin:8px 0}details.dd>summary{padding:12px 14px;cursor:pointer;font-weight:700}details.dd>div{padding:0 14px 12px}
+.subbox{border:2px solid #9FD3B5;background:var(--okbg);border-radius:16px;padding:16px;margin:16px 0}
+.subbox.graded{border-color:#B9D0F0;background:#F4F8FE}
+.thumbs{display:flex;gap:8px;flex-wrap:wrap;margin:10px 0}.thumbs div{position:relative}.thumbs img{width:96px;height:96px;object-fit:cover;border-radius:10px;border:1px solid var(--line);display:block;background:#fff}
+.thumbs button{position:absolute;top:-6px;right:-6px;width:24px;height:24px;border-radius:50%;border:0;background:var(--ink);color:#fff;font-size:13px;cursor:pointer}
+.pick{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;min-height:64px;border:2px dashed #BFD3C7;border-radius:14px;background:#fff;font-weight:700;cursor:pointer;color:var(--ok)}
+.big-score{font-size:34px;font-weight:800;line-height:1}
+.chk{display:flex;align-items:center;gap:8px;margin:8px 0}.chk label{flex:1}.chk input,.chk select{max-width:180px;min-height:44px}
+.chk .r{width:26px;text-align:center;font-weight:800}.chk.ok .r{color:var(--ok)}.chk.no .r{color:var(--bad)}
+.ans{white-space:pre-wrap;background:#fff;border:1px solid var(--line);border-radius:10px;padding:10px;margin:8px 0}
+.files{display:flex;flex-direction:column;gap:8px;margin:10px 0}.file{display:flex;align-items:center;gap:10px;padding:10px 12px;border:1px solid var(--line);border-radius:12px;background:#fff}
+.file .fi{width:38px;height:44px;border-radius:6px;display:grid;place-items:center;font-size:11px;font-weight:800;color:#fff;background:#C2413B;flex:none}.file .fi.w{background:#2F6FB3}.file .fi.o{background:#6B6F76}
+.file .t{flex:1;min-width:0}.file .t b{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.mtext{white-space:pre-wrap;line-height:1.6}
+.yt{position:relative;padding-top:56.25%;border-radius:12px;overflow:hidden;margin:10px 0}.yt iframe{position:absolute;inset:0;width:100%;height:100%;border:0}
+.gb{display:flex;gap:6px;flex-wrap:wrap;margin:8px 0}.gb button{min-height:44px;min-width:56px;border-radius:10px;border:1.5px solid var(--line);background:#fff;font-weight:800;font-size:16px;cursor:pointer}
+.gb button.on{border-color:var(--acc);background:var(--acc2);color:var(--acc)}
+.rv{display:grid;grid-template-columns:1.4fr 1fr;gap:14px}@media (max-width:800px){.rv{grid-template-columns:1fr}}
+.rvimgs img{width:100%;border-radius:10px;border:1px solid var(--line);margin-bottom:8px;display:block;background:#fff}
+.bank{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:10px;max-height:58vh;overflow:auto;padding:2px}
+.bk{border:1.5px solid var(--line);border-radius:12px;background:#fff;cursor:pointer;overflow:hidden;text-align:left;padding:0}
+.bk img{width:100%;aspect-ratio:16/10;object-fit:cover;display:block;background:#F1F0EC}.bk div{padding:8px 10px;font-size:14px;font-weight:700;line-height:1.3}.bk.on{border-color:var(--acc);box-shadow:0 0 0 2px var(--acc) inset}
+.cnt{display:inline-grid;place-items:center;min-width:22px;height:22px;padding:0 6px;border-radius:999px;background:var(--bad);color:#fff;font-size:12px;font-weight:800;margin-left:4px}
+.jt td.s{text-align:center;font-weight:700}.jt td.s.sub{color:var(--warn)}.jt td.s.na{color:#B8B6AF}
+.fab{display:flex;gap:8px;flex-wrap:wrap;margin:10px 0}
+.stabs{display:grid;grid-template-columns:repeat(3,1fr);gap:4px;background:#ECEBE6;border-radius:14px;padding:4px}.stabs button{padding:10px 4px;border-radius:10px;text-align:center}.stabs button.on{background:#fff;color:var(--ink);box-shadow:0 1px 3px rgba(0,0,0,.08)}
 </style>
 </head>
 <body>
@@ -99,7 +144,7 @@ table.tb th{font-size:12px;color:var(--mut);text-transform:uppercase;letter-spac
 <script src="fb/qrcode.js"></script>
 <script>
 "use strict";
-/* ============ Общее ============ */
+/* ================= Общее ================= */
 const $ = s => document.querySelector(s), $$ = s => [...document.querySelectorAll(s)];
 const app = $("#app");
 const esc = s => String(s == null ? "" : s).replace(/[&<>"']/g, c => ({"&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"}[c]));
@@ -109,6 +154,7 @@ const LS = {get: k => { try { return JSON.parse(localStorage.getItem("portal_" +
 const toast = t => { const d = document.createElement("div"); d.className = "toast"; d.textContent = t; document.body.appendChild(d); setTimeout(() => d.remove(), 2800); };
 const MON = {kk: ["қаң", "ақп", "нау", "сәу", "мам", "мау", "шіл", "там", "қыр", "қаз", "қар", "жел"], ru: ["янв", "фев", "мар", "апр", "мая", "июн", "июл", "авг", "сен", "окт", "ноя", "дек"]};
 const fmtD = ts => { if (!ts) return ""; const d = new Date(ts); return `${d.getDate()} ${MON[LG][d.getMonth()]} ${d.getFullYear()}`; };
+const fmtDS = ts => { if (!ts) return ""; const d = new Date(ts); return `${d.getDate()} ${MON[LG][d.getMonth()]}`; };
 const fmtDT = ts => { if (!ts) return ""; const d = new Date(ts); return `${d.getDate()} ${MON[LG][d.getMonth()]}, ${String(d.getHours()).padStart(2, "0")}:${String(d.getMinutes()).padStart(2, "0")}`; };
 const PROJ = (window.FB_CONFIG && FB_CONFIG.projectId) || "mock";
 const emailFor = (gid, sid, v) => `${gid}.${sid}${v ? "." + v : ""}@stud-${PROJ}.app`.toLowerCase();
@@ -118,51 +164,88 @@ const pin4 = () => String(Math.floor(1000 + Math.random() * 9000));
 const scoreCls = p => p == null ? "na" : p >= 85 ? "hi" : p < 50 ? "lo" : "";
 const EXTRA = DB.mock ? location.search.replace(/^\?/, "").split("&").filter(x => /^(mock|broker)/.test(x)).join("&") : "";
 const withX = u => EXTRA ? u + (u.includes("?") ? "&" : "?") + EXTRA : u;
+const BASE = location.origin + location.pathname.replace(/index\.html$/, "");
 const MODS = [
-  {slug: "photoshop", name: "Photoshop", sub: T("Практика · ОН 2.1", "Практика · ОН 2.1"), j: true},
-  {slug: "illustrator", name: "Illustrator", sub: T("Практика · ОН 2.2 · 3D", "Практика · ОН 2.2 · 3D"), j: true},
-  {slug: "diagrammy", name: "Excel · Диаграммы", sub: T("№19 практика", "Практика №19"), j: true},
-  {slug: "sortirovka", name: "Excel · Сортировка", sub: T("№20 практика", "Практика №20"), j: true},
-  {slug: "excel", name: "Excel · «Что если»", sub: T("Квиз + практика · журналсыз", "Квиз + практика · без журнала"), j: false},
-  {slug: "handoff", name: "Handoff · квиз", sub: T("Photoshop квиз · журналсыз", "Квиз Photoshop · без журнала"), j: false}];
-const modOf = s => MODS.find(m => m.slug === s) || {name: s, sub: ""};
+  {slug: "photoshop", name: "Photoshop", j: true}, {slug: "illustrator", name: "Illustrator", j: true},
+  {slug: "diagrammy", name: "Excel · Диаграммы", j: true}, {slug: "sortirovka", name: "Excel · Сортировка", j: true},
+  {slug: "excel", name: "Excel · «Что если»", j: false}, {slug: "handoff", name: "Handoff · квиз", j: false}];
+const modOf = s => MODS.find(m => m.slug === s) || {name: s};
+let UNSUB = [];
+const keep = f => { UNSUB.push(f); return f; };
+const unsubAll = () => { UNSUB.forEach(f => { try { f(); } catch (e) {} }); UNSUB = []; };
 function modal(html, onClose) {
   const m = document.createElement("div"); m.className = "modal"; m.innerHTML = `<div>${html}</div>`; document.body.appendChild(m);
   const close = () => { m.remove(); onClose && onClose(); };
   m.addEventListener("click", e => { if (e.target === m || e.target.closest("[data-x]")) close(); });
-  return {el: m, close};
+  return {el: m, close, q: s => m.querySelector(s)};
 }
 function qrSvg(text) { try { const q = qrcode(0, "M"); q.addData(text); q.make(); return q.createSvgTag({cellSize: 4, margin: 2, scalable: true}); } catch (e) { return ""; } }
-const BASE = location.origin + location.pathname.replace(/index\.html$/, "");
-let UNSUB = [];
-const unsubAll = () => { UNSUB.forEach(f => { try { f(); } catch (e) {} }); UNSUB = []; };
-
+const linkify = t => esc(t).replace(/(https?:\/\/[^\s<]+)/g, u => `<a href="${u}" target="_blank" rel="noopener">${u.length > 60 ? u.slice(0, 57) + "…" : u}</a>`);
+const ytId = u => { const m = String(u).match(/(?:youtu\.be\/|youtube\.com\/(?:watch\?v=|shorts\/|embed\/))([\w-]{11})/); return m ? m[1] : null; };
+/* шаги из банка: [[ru|en]], {{img:x}}, клавиши */
+function fmtStep(x, lg, base) {
+  return esc(String(x == null ? "" : x).replace(/\[\[([^|\]]*)\|([^\]]*)\]\]/g, (m, a, b) => "\u0001" + (lg === "en" ? b : a) + "\u0002"))
+    .replace(/\u0001([^\u0002]*)\u0002/g, (m, p) => `<span class="mp">${p.replace(/ → /g, " › ")}</span>`)
+    .replace(/((?:Ctrl|Alt|Shift|Cmd)(?:\+[A-Za-zА-Яа-я0-9\[\]↓↑]+)+)/g, "<kbd>$1</kbd>")
+    .replace(/\s*\{\{img:([\w-]+)\}\}/g, (m, n) => `<a class="simg" href="${base}${n}.jpg" target="_blank"><img src="${base}${n}.jpg" alt="" loading="lazy"></a>`)
+    .replace(/(https?:\/\/[^\s<,)»]+)/g, u => `<a href="${u}" target="_blank" rel="noopener">${u.replace(/^https?:\/\/(www\.)?/, "").replace(/\/$/, "")}</a>`);
+}
+const checkOk = (c, v) => { if (c.opts) return v !== "" && v != null && (v | 0) === c.c; const x = parseFloat(String(v == null ? "" : v).replace(/[\s ]/g, "").replace("%", "").replace(",", ".")); if (!isFinite(x)) return false; const tol = c.tol != null ? c.tol : Math.max(0.5, Math.abs(c.a) * 0.002); return Math.abs(x - c.a) <= tol || (c.pct && Math.abs(x * 100 - c.a) <= tol); };
+function compressImage(file, max = 1280) {
+  return new Promise((res, rej) => { const url = URL.createObjectURL(file), img = new Image();
+    img.onload = () => { try { let w = img.naturalWidth || 1000, h = img.naturalHeight || 1000; const k = Math.min(1, max / Math.max(w, h)); w = Math.round(w * k); h = Math.round(h * k);
+      const c = document.createElement("canvas"); c.width = w; c.height = h; const x = c.getContext("2d"); x.fillStyle = "#fff"; x.fillRect(0, 0, w, h); x.drawImage(img, 0, 0, w, h);
+      let q = 0.8, d = c.toDataURL("image/jpeg", q); while (d.length > 600000 && q > 0.35) { q -= 0.1; d = c.toDataURL("image/jpeg", q); } URL.revokeObjectURL(url); res(d); } catch (e) { rej(e); } };
+    img.onerror = () => { URL.revokeObjectURL(url); rej(new Error("bad image")); }; img.src = url; });
+}
+const readDataURL = f => new Promise((res, rej) => { const r = new FileReader(); r.onload = () => res(r.result); r.onerror = rej; r.readAsDataURL(f); });
+const CH = 700000;
+async function saveFile(gid, file) {
+  if (file.size > 10 * 1024 * 1024) throw new Error(T("Файл 10 МБ-тан үлкен", "Файл больше 10 МБ"));
+  const d = await readDataURL(file), fid = DB.id(), n = Math.ceil(d.length / CH);
+  for (let i = 0; i < n; i++) await DB.doc(`groups/${gid}/files/${fid}/c/${i}`).set({d: d.slice(i * CH, (i + 1) * CH)});
+  const meta = {fid, name: file.name, size: file.size, mime: file.type || "", n}; await DB.doc(`groups/${gid}/files/${fid}`).set(meta); return meta;
+}
+async function loadFile(gid, f) {
+  const parts = []; for (let i = 0; i < f.n; i++) { const c = await DB.doc(`groups/${gid}/files/${f.fid}/c/${i}`).get(); parts.push(c ? c.d : ""); }
+  const blob = await (await fetch(parts.join(""))).blob(); return URL.createObjectURL(new Blob([blob], {type: f.mime || blob.type}));
+}
+const fsize = b => b > 1048576 ? (b / 1048576).toFixed(1) + " МБ" : Math.max(1, Math.round(b / 1024)) + " КБ";
+const fext = n => (String(n).split(".").pop() || "").toUpperCase().slice(0, 4);
+function filesHtml(files) {
+  return files && files.length ? `<div class="files">${files.map((f, i) => `<div class="file"><div class="fi ${/PDF/.test(fext(f.name)) ? "" : /DOC/.test(fext(f.name)) ? "w" : "o"}">${esc(fext(f.name))}</div><div class="t"><b>${esc(f.name)}</b><span class="small mut">${fsize(f.size)}</span></div><button class="btn ghost sm" data-file="${i}">${T("Ашу", "Открыть")}</button></div>`).join("")}</div>` : "";
+}
+function bindFiles(root, gid, files) {
+  root.querySelectorAll("[data-file]").forEach(b => b.onclick = async () => { const f = files[+b.dataset.file]; b.disabled = true; b.textContent = "…";
+    try { const url = await loadFile(gid, f); const a = document.createElement("a"); a.className = "btn sm"; a.href = url; a.target = "_blank"; a.rel = "noopener";
+      if (!/pdf|image/.test(f.mime)) a.download = f.name; a.textContent = /pdf|image/.test(f.mime) ? T("Ашу ↗", "Открыть ↗") : T("Жүктеу ⬇", "Скачать ⬇"); b.replaceWith(a); a.click();
+    } catch (e) { b.disabled = false; b.textContent = T("Қате", "Ошибка"); toast(e.message); } });
+}
 function setLang(l) { LG = l; localStorage.setItem("portal_lang", l); document.documentElement.lang = l; $$(".lang button").forEach(b => b.classList.toggle("on", b.dataset.lg === l)); route(); }
-$$(".lang button").forEach(b => b.onclick = () => setLang(b.dataset.lg));
-$$(".lang button").forEach(b => b.classList.toggle("on", b.dataset.lg === LG));
+$$(".lang button").forEach(b => { b.onclick = () => setLang(b.dataset.lg); b.classList.toggle("on", b.dataset.lg === LG); });
 if (DB.mock) { const d = document.createElement("div"); d.className = "mockb"; d.textContent = "тестовая база"; document.body.appendChild(d); }
+let BANKS = null; const banks = async () => BANKS || (BANKS = await (await fetch("fb/banks.json")).json());
 
-/* ============ Маршруты ============ */
+/* ================= Маршруты ================= */
 function route() {
-  unsubAll();
-  const h = location.hash.replace(/^#\/?/, "").split("/");
+  unsubAll(); document.onkeydown = null;
+  const h = location.hash.replace(/^#\/?/, "").split("/").map(decodeURIComponent);
   const me = LS.get("me");
   if (h[0] === "s") return studentLogin();
-  if (h[0] === "me") return me ? studentHome(me) : (location.hash = "#/s");
+  if (h[0] === "me") { if (!me) return (location.hash = "#/s"); return h[1] === "p" ? studentPost(me, h[2]) : studentHome(me, h[1] || "tasks"); }
   if (h[0] === "t") return teacher(h.slice(1));
   if (me && h[0] === "") return (location.hash = "#/me");
   landing();
 }
 window.addEventListener("hashchange", route);
-
 function landing() {
-  app.innerHTML = `<h1>${T("Сәлем! 👋", "Здравствуйте! 👋")}</h1><p class="mut">${T("Сабаққа кіру үшін төмендегі батырманы басыңыз.", "Чтобы войти на занятие, нажмите кнопку ниже.")}</p>
+  app.innerHTML = `<h1>${T("Сәлем! 👋", "Здравствуйте! 👋")}</h1><p class="mut">${T("Тапсырмалар, дәрістер және бағалар — бір жерде.", "Задания, лекции и оценки — в одном месте.")}</p>
     <div class="hero"><button class="big main" id="go-s"><b>🎓 ${T("Мен студентпін", "Я студент")}</b><span class="mut">${T("Топ коды → атың → PIN", "Код группы → имя → PIN")}</span></button>
-    <button class="big" id="go-t"><b>👩‍🏫 ${T("Мен оқытушымын", "Я преподаватель")}</b><span class="mut">${T("Топтар, сабақтар, журнал", "Группы, занятия, журнал")}</span></button></div>`;
+    <button class="big" id="go-t"><b>👩‍🏫 ${T("Мен оқытушымын", "Я преподаватель")}</b><span class="mut">${T("Топтар, тапсырмалар, тексеру", "Группы, задания, проверка")}</span></button></div>`;
   $("#go-s").onclick = () => location.hash = "#/s"; $("#go-t").onclick = () => location.hash = "#/t";
 }
 
-/* ============ Студент: вход ============ */
+/* ================= Студент: вход ================= */
 function studentLogin() {
   const st = {step: 0, code: LS.get("lastCode") || "", gid: null, gname: "", list: [], pick: null, pin: ""};
   const bar = n => `<div class="steps">${[0, 1, 2].map(i => `<i class="${i <= n ? "on" : ""}"></i>`).join("")}</div>`;
@@ -170,18 +253,16 @@ function studentLogin() {
     if (st.step === 0) {
       app.innerHTML = `${bar(0)}<h1>${T("Топ коды", "Код группы")}</h1><p class="mut">${T("Кодты оқытушы береді (мысалы: БУХ22).", "Код даёт преподаватель (например: БУХ22).")}</p>
         <input type="text" id="code" autocomplete="off" autocapitalize="characters" value="${esc(st.code)}" placeholder="БУХ22" style="font-size:24px;text-align:center;letter-spacing:3px">
-        <div class="err" id="err"></div><button class="btn wide" id="nx">${T("Әрі қарай →", "Далее →")}</button>
-        <p style="text-align:center"><a href="#/">← ${T("Артқа", "Назад")}</a></p>`;
+        <div class="err" id="err"></div><button class="btn wide" id="nx">${T("Әрі қарай →", "Далее →")}</button><p style="text-align:center"><a href="#/">← ${T("Артқа", "Назад")}</a></p>`;
       const go = async () => { const c = normCode($("#code").value); if (!c) return; $("#nx").disabled = true; $("#err").textContent = "";
         try { const r = await DB.doc("codes/" + c).get(); if (!r) { $("#err").textContent = T("Мұндай топ жоқ. Кодты тексеріңіз.", "Такой группы нет. Проверьте код."); $("#nx").disabled = false; return; }
           const g = await DB.doc("groups/" + r.gid).get(); st.code = c; st.gid = r.gid; st.gname = g ? g.name : c;
           st.list = (await DB.col(`groups/${r.gid}/students`).get()).filter(s => !s.off).sort((a, b) => a.name.localeCompare(b.name, "ru")); LS.set("lastCode", c); st.step = 1; draw();
-        } catch (e) { $("#err").textContent = T("Байланыс қатесі. Қайталаңыз.", "Ошибка связи. Повторите.") ; $("#nx").disabled = false; } };
-      $("#nx").onclick = go; $("#code").onkeydown = e => { if (e.key === "Enter") go(); }; $("#code").focus();
+        } catch (e) { $("#err").textContent = T("Байланыс қатесі. Қайталаңыз.", "Ошибка связи. Повторите."); $("#nx").disabled = false; } };
+      $("#nx").onclick = go; $("#code").onkeydown = e => { if (e.key === "Enter") go(); };
     } else if (st.step === 1) {
       app.innerHTML = `${bar(1)}<h1>${T("Өз атыңызды таңдаңыз", "Выберите своё имя")}</h1><p class="mut">${esc(st.gname)}</p>
-        ${st.list.length > 12 ? `<input type="search" id="q" placeholder="${T("Іздеу…", "Поиск…")}" style="margin-bottom:10px">` : ""}
-        <div class="names" id="nm"></div><p><a href="#" id="bk">← ${T("Басқа топ", "Другая группа")}</a></p>`;
+        ${st.list.length > 12 ? `<input type="search" id="q" placeholder="${T("Іздеу…", "Поиск…")}" style="margin-bottom:10px">` : ""}<div class="names" id="nm"></div><p><a href="#" id="bk">← ${T("Басқа топ", "Другая группа")}</a></p>`;
       const fill = q => { $("#nm").innerHTML = st.list.filter(s => !q || s.name.toLowerCase().includes(q)).map(s => `<button data-s="${s.id}">${esc(s.name)}</button>`).join("") || `<div class="empty">${T("Тізім бос — оқытушыға айтыңыз", "Список пуст — скажите преподавателю")}</div>`;
         $$("[data-s]").forEach(b => b.onclick = () => { st.pick = st.list.find(x => x.id === b.dataset.s); st.pin = ""; st.step = 2; draw(); }); };
       fill(""); const q = $("#q"); if (q) q.oninput = () => fill(q.value.trim().toLowerCase());
@@ -191,68 +272,148 @@ function studentLogin() {
         <div class="pin">${[0, 1, 2, 3].map(i => `<i class="${st.pin.length > i ? "f" : ""}">${st.pin.length > i ? "•" : ""}</i>`).join("")}</div><div class="err" id="err"></div>
         <div class="pad">${[1, 2, 3, 4, 5, 6, 7, 8, 9].map(n => `<button data-k="${n}">${n}</button>`).join("")}<button data-k="b">⌫</button><button data-k="0">0</button><button data-k="x" style="font-size:15px">${T("Артқа", "Назад")}</button></div>`;
       const press = async k => {
-        if (k === "x") { st.step = 1; return draw(); }
-        if (k === "b") { st.pin = st.pin.slice(0, -1); return draw(); }
+        if (k === "x") { st.step = 1; return draw(); } if (k === "b") { st.pin = st.pin.slice(0, -1); return draw(); }
         if (st.pin.length >= 4) return; st.pin += k; draw();
-        if (st.pin.length === 4) {
-          try { await DB.auth.student(st.pick.email, pwFor(st.pin));
+        if (st.pin.length === 4) { try { await DB.auth.student(st.pick.email, pwFor(st.pin));
             LS.set("me", {gid: st.gid, sid: st.pick.id, name: st.pick.name, gname: st.gname, code: st.code}); location.hash = "#/me";
-          } catch (e) { st.pin = ""; draw(); $("#err").textContent = /network/.test(e.code || "") ? T("Байланыс жоқ", "Нет связи") : /too-many/.test(e.code || "") ? T("Тым көп әрекет. 1 минут күтіңіз.", "Слишком много попыток. Подождите минуту.") : T("PIN қате. Оқытушыдан сұраңыз.", "Неверный PIN. Спросите у преподавателя."); }
-        } };
+          } catch (e) { st.pin = ""; draw(); $("#err").textContent = /network/.test(e.code || "") ? T("Байланыс жоқ", "Нет связи") : /too-many/.test(e.code || "") ? T("Тым көп әрекет. 1 минут күтіңіз.", "Слишком много попыток. Подождите минуту.") : T("PIN қате. Оқытушыдан сұраңыз.", "Неверный PIN. Спросите у преподавателя."); } } };
       $$("[data-k]").forEach(b => b.onclick = () => press(b.dataset.k));
-      document.onkeydown = e => { if (location.hash !== "#/s") { document.onkeydown = null; return; } if (/^\d$/.test(e.key)) press(e.key); if (e.key === "Backspace") press("b"); };
+      document.onkeydown = e => { if (/^\d$/.test(e.key)) press(e.key); if (e.key === "Backspace") press("b"); };
     }
   };
   draw();
 }
 
-/* ============ Студент: кабинет ============ */
-function studentHome(me) {
-  app.innerHTML = `<div style="display:flex;align-items:center;gap:10px"><div style="flex:1"><h1 style="margin:0">${esc(me.name)}</h1><div class="mut">${esc(me.gname)}</div></div><button class="btn ghost sm" id="out">${T("Шығу", "Выйти")}</button></div>
-    <div id="live"></div>
-    <div class="tabs"><button data-t="g" class="on">📊 ${T("Бағаларым", "Мои оценки")}</button><button data-t="w">🖼 ${T("Жұмыстарым", "Мои работы")}</button></div>
-    <div id="tab"></div>`;
+/* ================= Студент: кабинет ================= */
+const SD = {posts: [], subs: {}, marks: {}, hist: []};
+function stuWatch(me, cb) {
+  const p = `groups/${me.gid}/students/${me.sid}`;
+  keep(DB.col(`groups/${me.gid}/posts`).on(l => { SD.posts = l.filter(x => !x.draft).sort((a, b) => (b.date || 0) - (a.date || 0)); cb(); }, e => cb(e)));
+  keep(DB.col(p + "/subs").on(l => { SD.subs = {}; l.forEach(x => SD.subs[x.id] = x); cb(); }));
+  keep(DB.col(p + "/marks").on(l => { SD.marks = {}; l.forEach(x => SD.marks[x.id] = x); cb(); }));
+}
+function taskState(id) { const s = SD.subs[id], m = SD.marks[id];
+  if (m && (!s || (m.at || 0) >= (s.at || 0))) return {k: "graded", m, s}; if (s) return {k: "sent", s, m}; return {k: "todo"}; }
+function stuHead(me) {
+  return `<div class="hdr"><div style="flex:1;min-width:0"><h1>${esc(me.name)}</h1><div class="mut">${esc(me.gname)}</div></div><button class="btn ghost sm" id="out">${T("Шығу", "Выйти")}</button></div><div id="live"></div>`;
+}
+function bindStuHead(me) {
   $("#out").onclick = async () => { await DB.auth.out(); LS.del("me"); location.hash = "#/"; };
-  UNSUB.push(DB.doc(`groups/${me.gid}/live/current`).on(L => {
-    const el = $("#live"); if (!el) return;
-    if (L && L.active) { const m = modOf(L.slug), url = withX(`${L.slug}/?r=${encodeURIComponent(L.room)}&b=${L.b || 0}&sid=${encodeURIComponent(me.sid)}&n=${encodeURIComponent(me.name)}`);
-      el.innerHTML = `<div class="card live"><div><span class="dot"></span><b>${T("Қазір сабақ жүріп жатыр", "Сейчас идёт занятие")}</b></div><h2 style="margin:6px 0 0">${esc(L.title || m.name)}</h2><div class="mut">${esc(m.name)}</div>
-        <a class="btn ok wide" href="${url}">${T("Сабаққа кіру →", "Войти на занятие →")}</a></div>`;
-    } else el.innerHTML = `<div class="card"><b>${T("Қазір сабақ жоқ", "Сейчас занятий нет")}</b><div class="mut small">${T("Оқытушы сабақты бастағанда, осы жерде «Кіру» батырмасы шығады — бетті жаңартудың қажеті жоқ.", "Когда преподаватель начнёт занятие, здесь появится кнопка «Войти» — обновлять страницу не нужно.")}</div></div>`;
-  }));
-  const tab = t => { $$(".tabs button").forEach(b => b.classList.toggle("on", b.dataset.t === t)); unsubTab(); t === "g" ? myGrades(me) : myWorks(me); };
-  $$(".tabs button").forEach(b => b.onclick = () => tab(b.dataset.t)); tab("g");
+  keep(DB.doc(`groups/${me.gid}/live/current`).on(L => { const el = $("#live"); if (!el) return;
+    el.innerHTML = L && L.active ? `<div class="card live"><div><span class="dot"></span><b>${T("Қазір сабақта", "Сейчас на паре")}: ${esc(L.title || modOf(L.slug).name)}</b></div>
+      <a class="btn ok wide" href="${withX(`${L.slug}/?r=${encodeURIComponent(L.room)}&b=${L.b || 0}&sid=${encodeURIComponent(me.sid)}&n=${encodeURIComponent(me.name)}`)}">${T("Кіру →", "Войти →")}</a></div>` : ""; }));
 }
-let TABU = null; const unsubTab = () => { if (TABU) { TABU(); TABU = null; } };
-function taskRows(r) {
-  return (r.tasks || []).map((x, k) => `<div class="tk"><div class="n ${x.done ? "ok" : ""}">${k + 1}</div><div style="flex:1"><b>${esc(x.title)}</b><div class="small mut">${x.done ? "✓ " + T("орындалды", "выполнено") : x.sub ? T("жіберілді", "отправлено") : T("орындалмады", "не выполнено")}${x.sec ? " · " + (x.sec < 60 ? Math.round(x.sec) + " " + T("сек", "сек") : Math.round(x.sec / 60) + " " + T("мин", "мин")) : ""}${x.tg ? ` · <b>${T("Оқытушы", "Преподаватель")}: ${esc(x.tg)}</b>` : x.ag ? ` · ${T("уақыт бағасы", "оценка по времени")}: ${esc(x.ag)}` : ""}</div>${x.cm ? `<div class="cm">💬 ${esc(x.cm)}</div>` : ""}</div></div>`).join("");
+function studentHome(me, tab) {
+  app.innerHTML = stuHead(me) + `<div class="tabs stabs"><button data-t="tasks">${T("Тапсырма", "Задания")} <span id="ntodo"></span></button><button data-t="mats">${T("Дәрістер", "Материалы")}</button><button data-t="grades">${T("Бағалар", "Оценки")}</button></div><div id="tab"><p class="mut">${T("Жүктелуде…", "Загрузка…")}</p></div>`;
+  bindStuHead(me);
+  $$(".tabs button").forEach(b => { b.classList.toggle("on", b.dataset.t === tab); b.onclick = () => location.hash = "#/me/" + b.dataset.t; });
+  if (tab === "grades") keep(DB.col(`groups/${me.gid}/students/${me.sid}/hist`).on(l => { SD.hist = l; draw(); }));
+  let painted = "";
+  stuWatch(me, err => { if (err) { $("#tab").innerHTML = `<div class="empty">${T("Кіру мерзімі өтті. Шығып, қайта кіріңіз.", "Сессия истекла. Выйдите и войдите снова.")}</div>`; return; } draw(); });
+  function draw() {
+    const el = $("#tab"); if (!el) return;
+    const tasks = SD.posts.filter(p => p.type === "task"), mats = SD.posts.filter(p => p.type === "mat");
+    const todo = tasks.filter(p => taskState(p.id).k === "todo");
+    const sig = JSON.stringify([tab, SD.posts.map(p => [p.id, p.title, p.due]), SD.subs, Object.keys(SD.marks).map(k => [k, SD.marks[k].score, SD.marks[k].at]), SD.hist.length]);
+    if (sig === painted) return; painted = sig;
+    $("#ntodo").innerHTML = todo.length ? `<span class="cnt">${todo.length}</span>` : "";
+    if (tab === "tasks") {
+      const card = p => { const s = taskState(p.id), over = p.due && s.k === "todo" && Date.now() > p.due + 864e5;
+        return `<a class="pc" href="#/me/p/${p.id}"><div class="ic">📝</div><div class="t"><b>${esc(p.title)}</b><div class="small mut">${p.due ? `${T("Мерзімі", "Срок")}: ${fmtDS(p.due)}` : fmtDS(p.date)}${over ? ` · <span style="color:var(--bad);font-weight:700">${T("кешікті", "просрочено")}</span>` : ""}</div></div>
+          <div class="st">${s.k === "graded" ? `<span class="score ${scoreCls(s.m.score)}">${s.m.score}</span>` : s.k === "sent" ? `<span class="chip warn">${T("Тексерілуде", "На проверке")}</span>` : `<span class="chip blue">${T("Тапсыру", "Сдать")}</span>`}</div></a>`; };
+      const done = tasks.filter(p => taskState(p.id).k !== "todo");
+      el.innerHTML = !tasks.length ? `<div class="empty">${T("Әзірге тапсырма жоқ. Оқытушы жариялағанда осында шығады.", "Заданий пока нет. Когда преподаватель опубликует — они появятся здесь.")}</div>`
+        : `${todo.length ? `<div class="sect">${T("Орындау керек", "Нужно сделать")} (${todo.length})</div><div class="list">${todo.map(card).join("")}</div>` : `<div class="card" style="text-align:center">🎉 ${T("Барлығы тапсырылды!", "Всё сдано!")}</div>`}
+          ${done.length ? `<div class="sect">${T("Тапсырылған", "Сданные")} (${done.length})</div><div class="list">${done.map(card).join("")}</div>` : ""}`;
+    } else if (tab === "mats") {
+      el.innerHTML = !mats.length ? `<div class="empty">${T("Материалдар әзірге жоқ.", "Материалов пока нет.")}</div>`
+        : `<div class="list">${mats.map(p => `<a class="pc" href="#/me/p/${p.id}"><div class="ic m">📚</div><div class="t"><b>${esc(p.title)}</b><div class="small mut">${fmtD(p.date)}${p.files && p.files.length ? " · 📎 " + p.files.length : ""}</div></div><span class="mut">›</span></a>`).join("")}</div>`;
+    } else {
+      const rows = tasks.map(p => ({t: p.title, d: p.date, s: SD.marks[p.id] ? SD.marks[p.id].score : null, id: p.id})).concat(SD.hist.map(h => ({t: h.title, d: h.date, s: h.p100 != null ? h.p100 : null, live: true}))).sort((a, b) => (b.d || 0) - (a.d || 0));
+      const vals = rows.map(r => r.s).filter(v => v != null), avg = vals.length ? Math.round(vals.reduce((a, b) => a + b, 0) / vals.length) : null;
+      el.innerHTML = `<div class="card" style="display:flex;align-items:center;gap:14px"><div class="score ${scoreCls(avg)}" style="font-size:24px;padding:10px 14px">${avg != null ? avg : "—"}</div><div><b>${T("Орташа балл", "Средний балл")}</b><div class="mut small">${vals.length} ${T("бағаланды", "оценено")}</div></div></div>
+        <div class="list">${rows.map(r => `<${r.id ? `a href="#/me/p/${r.id}"` : "div"} class="pc"><div class="ic">${r.live ? "🎯" : "📝"}</div><div class="t"><b>${esc(r.t)}</b><div class="small mut">${fmtD(r.d)}${r.live ? " · " + T("сабақта", "на паре") : ""}</div></div><div class="st"><span class="score ${scoreCls(r.s)}">${r.s != null ? r.s : "—"}</span></div></${r.id ? "a" : "div"}>`).join("") || `<div class="empty">${T("Бағалар жоқ", "Оценок нет")}</div>`}</div>`;
+    }
+  }
 }
-function myGrades(me) {
-  const el = $("#tab"); el.innerHTML = `<p class="mut">${T("Жүктелуде…", "Загрузка…")}</p>`;
-  TABU = DB.col(`groups/${me.gid}/students/${me.sid}/hist`).on(list => {
-    list.sort((a, b) => (b.date || 0) - (a.date || 0));
-    const vals = list.map(x => x.p100).filter(x => x != null), avg = vals.length ? Math.round(vals.reduce((a, b) => a + b, 0) / vals.length) : null;
-    el.innerHTML = !list.length ? `<div class="empty">${T("Әзірге бағалар жоқ. Сабақтан кейін осында шығады.", "Пока оценок нет. Они появятся здесь после занятия.")}</div>`
-      : `${avg != null ? `<div class="card" style="display:flex;align-items:center;gap:14px"><div class="score ${scoreCls(avg)}" style="font-size:22px;padding:10px 14px">${avg}</div><div><b>${T("Орташа балл", "Средний балл")}</b><div class="mut small">${vals.length} ${T("сабақ", "занятий")}</div></div></div>` : ""}
-        <div class="list">${list.map((x, i) => `<div class="row" data-i="${i}"><div class="score ${scoreCls(x.p100)}">${x.p100 != null ? x.p100 : x.score != null ? x.score : "—"}</div><div class="t"><b>${esc(x.title || modOf(x.slug).name)}</b><span class="mut small">${fmtD(x.date)}${x.letter ? " · " + x.letter : ""}${x.tasks ? " · " + x.tasks.filter(t => t.done).length + "/" + x.tasks.length + " " + T("тапсырма", "заданий") : ""}</span></div><span class="mut">›</span></div>`).join("")}</div>`;
-    $$("[data-i]").forEach(b => b.onclick = async () => { const x = list[+b.dataset.i];
-      const md = modal(`<div class="mh"><h2>${esc(x.title || "")}</h2><button class="btn ghost sm" data-x>✕</button></div><div class="mut">${fmtD(x.date)}</div>
-        ${x.p100 != null ? `<div class="card" style="display:flex;gap:12px;align-items:center"><div class="score ${scoreCls(x.p100)}" style="font-size:22px;padding:10px 14px">${x.p100}</div><div><b>/ 100 · ${esc(x.letter || "")}</b>${x.hk && x.hk.n ? `<div class="small mut">${T("Пернелер", "Горячие клавиши")}: ${x.hk.c}/${x.hk.n}</div>` : ""}</div></div>` : ""}
-        <div class="card">${taskRows(x) || `<div class="mut">${T("Ұпай", "Баллы")}: ${x.score || 0}${x.rank ? " · " + T("орын", "место") + " " + x.rank : ""}</div>`}</div><div id="ww"></div>`);
-      try { const ws = (await DB.col(`groups/${me.gid}/students/${me.sid}/works`).get()).filter(w => w.sess === x.sess);
-        if (ws.length) md.el.querySelector("#ww").innerHTML = `<h3>${T("Жұмыстар", "Работы")}</h3><div class="works">${ws.map(w => `<a href="${w.data}" target="_blank" download="${esc(w.task || "work")}.jpg"><img src="${w.data}" alt=""><span>${esc(w.task || "")}</span></a>`).join("")}</div>`; } catch (e) {}
-    });
-  }, () => { el.innerHTML = `<div class="empty">${T("Кіру мерзімі өтті. Қайта кіріңіз.", "Сессия истекла. Войдите снова.")}</div>`; });
-}
-function myWorks(me) {
-  const el = $("#tab"); el.innerHTML = `<p class="mut">${T("Жүктелуде…", "Загрузка…")}</p>`;
-  DB.col(`groups/${me.gid}/students/${me.sid}/works`).get().then(ws => { ws.sort((a, b) => (b.ts || 0) - (a.ts || 0));
-    el.innerHTML = ws.length ? `<div class="works">${ws.map(w => `<a href="${w.data}" target="_blank" download="${esc(w.task || "work")}.jpg"><img src="${w.data}" alt="" loading="lazy"><span><b>${esc(w.task || "")}</b><br>${esc(w.title || "")} · ${fmtD(w.ts)}</span></a>`).join("")}</div>`
-      : `<div class="empty">${T("Жұмыстар әлі жоқ.", "Работ пока нет.")}</div>`; }).catch(() => el.innerHTML = `<div class="empty">${T("Жүктеу мүмкін болмады", "Не удалось загрузить")}</div>`);
+function studentPost(me, pid) {
+  app.innerHTML = `<p><a href="#/me/tasks">← ${T("Артқа", "Назад")}</a></p><div id="pv"><p class="mut">${T("Жүктелуде…", "Загрузка…")}</p></div>`;
+  let painted = "", draft = null;
+  stuWatch(me, () => draw());
+  function draw() {
+    const p = SD.posts.find(x => x.id === pid), el = $("#pv"); if (!el) return; if (!p) { if (SD.posts.length) el.innerHTML = `<div class="empty">${T("Табылмады", "Не найдено")}</div>`; return; }
+    const st = taskState(pid), sig = JSON.stringify([p, st.k, st.s && st.s.at, st.m && st.m.at]);
+    if (sig === painted) return; painted = sig;
+    if (p.type === "mat") {
+      el.innerHTML = `<h1>${esc(p.title)}</h1><div class="mut small">${fmtD(p.date)}</div>${p.text ? `<div class="box mtext">${linkify(p.text)}</div>` : ""}
+        ${[...new Set((p.links || []).concat((String(p.text || "").match(/https?:\/\/\S+/g) || []).filter(ytId)))].map(u => ytId(u) ? `<div class="yt"><iframe src="https://www.youtube-nocookie.com/embed/${ytId(u)}" allowfullscreen></iframe></div>` : `<p><a href="${esc(u)}" target="_blank" rel="noopener">🔗 ${esc(u)}</a></p>`).join("")}
+        ${(p.imgs || []).map(d => `<img class="exim" src="${d}" style="margin:8px 0">`).join("")}${filesHtml(p.files)}`;
+      bindFiles(el, me.gid, p.files || []); return;
+    }
+    const tk = p.task || {}, base = p.base || "", langs = p.langs || null, lg = LS.get("lg_" + (p.slug || "x")) || "ru";
+    const steps = tk.steps || [], SK = "stp_" + pid; let si = Math.min(+(LS.get(SK) || 0), Math.max(0, steps.length - 1)); const list = LS.get("stepList") === 1;
+    el.innerHTML = `<h1>${esc(p.title)}</h1><div class="mut small">${p.due ? `${T("Мерзімі", "Срок")}: <b>${fmtD(p.due)}</b>` : fmtD(p.date)}${tk.min ? ` · ~${tk.min} ${T("мин", "мин")}` : ""}</div>
+      ${st.k === "graded" ? `<div class="subbox graded"><div style="display:flex;gap:14px;align-items:center"><div class="big-score">${st.m.score}<span class="mut" style="font-size:16px"> / 100</span></div><div><b>${T("Оқытушы бағалады", "Оценено преподавателем")}</b><div class="small mut">${fmtDT(st.m.at)}</div></div></div>${st.m.comment ? `<div class="cm" style="margin-top:10px">💬 ${esc(st.m.comment)}</div>` : ""}</div>` : ""}
+      ${tk.goal || p.text ? `<div class="goal2"><b>🎯 ${T("Не жасаймыз?", "Что делаем?")}</b>${linkify(tk.goal || p.text)}</div>` : ""}
+      ${tk.ex ? `<details class="dd" ${steps.length ? "" : "open"}><summary>🖼 ${T("Мысал — осындай нәтиже", "Образец результата")}</summary><div><img class="exim" src="${/^data:|^https?:/.test(tk.ex) ? tk.ex : base + tk.ex + ".jpg"}" alt=""></div></details>` : ""}
+      ${(p.imgs || []).map(d => `<img class="exim" src="${d}" style="margin:8px 0">`).join("")}${filesHtml(p.files)}
+      ${steps.length ? `<div class="box stp"><div style="display:flex;align-items:center;gap:8px;margin-bottom:6px"><h3 style="margin:0;flex:1">${T("Қадамдар", "Шаги")}</h3><a href="#" id="sm" class="small">${list ? T("Біртіндеп", "По одному") : T("Тізіммен", "Списком")}</a></div>
+        ${langs ? `<div class="fab" style="margin:0 0 8px"><span class="small mut" style="align-self:center">${esc(p.langLabel || "")}</span>${langs.map(([k, n]) => `<button class="btn ${lg === k ? "" : "ghost"} sm" data-lg="${k}">${esc(n)}</button>`).join("")}</div>` : ""}
+        ${list ? `<ol>${steps.map(z => `<li>${fmtStep(z, lg, base)}</li>`).join("")}</ol>` : `<div id="one"></div>`}</div>` : ""}
+      ${tk.table ? `<div class="box"><h3>📋 ${T("Тапсырма деректері", "Данные для задания")}</h3><button class="btn wide" id="cpy">${T("Кестені көшіру", "Скопировать таблицу")}</button><div class="small mut" style="margin-top:6px">${T("A1 ұяшығына қойыңыз.", "Вставьте в ячейку A1.")}</div></div>` : ""}
+      ${(tk.hints && tk.hints.length) || (tk.ai && tk.ai.length) || (tk.vp && tk.vp.length) ? `<details class="dd"><summary>💡 ${T("Көмек керек пе?", "Нужна помощь?")}</summary><div>${(tk.hints || []).map(h => `<p>• ${fmtStep(h, lg, base)}</p>`).join("")}${(tk.ai || []).length ? `<p><b>🤖 ${T("ЖИ көмекшісі", "ИИ-помощник")}</b></p>` + tk.ai.map(h => `<p>• ${fmtStep(h, lg, base)}</p>`).join("") : ""}${(tk.vp || []).length ? `<p><b>🌐 ${T("Бағдарлама жоқ па?", "Нет программы?")}</b></p>` + tk.vp.map(h => `<p>• ${fmtStep(h, lg, base)}</p>`).join("") : ""}</div></details>` : ""}
+      <div class="subbox ${st.k === "graded" ? "graded" : ""}" id="sub"></div>`;
+    const one = $("#one"), drawStep = () => { if (!one) return; const n = steps.length;
+      one.innerHTML = `<div class="small mut">${T("Қадам", "Шаг")} <b style="font-size:18px;color:var(--ink)">${si + 1}</b> / ${n}</div><div class="stpdots">${steps.map((_, k) => `<i class="${k < si ? "d" : k === si ? "c" : ""}" data-j="${k}"></i>`).join("")}</div>
+        <div class="one">${fmtStep(steps[si], lg, base)}</div><div style="display:flex;gap:8px;margin-top:12px"><button class="btn ghost" id="sp" style="width:60px" ${si === 0 ? "disabled" : ""}>←</button>
+        ${si < n - 1 ? `<button class="btn" id="sn" style="flex:1">${T("Келесі қадам →", "Следующий шаг →")}</button>` : `<button class="btn ok" id="sg" style="flex:1">${T("Тапсыруға өту ↓", "Перейти к сдаче ↓")}</button>`}</div>`;
+      const mv = k => { si = Math.max(0, Math.min(n - 1, k)); LS.set(SK, si); drawStep(); };
+      const a = $("#sp"); if (a) a.onclick = () => mv(si - 1); const b = $("#sn"); if (b) b.onclick = () => mv(si + 1); const c = $("#sg"); if (c) c.onclick = () => $("#sub").scrollIntoView({behavior: "smooth"});
+      one.querySelectorAll("[data-j]").forEach(d => d.onclick = () => mv(+d.dataset.j)); };
+    drawStep();
+    const sm = $("#sm"); if (sm) sm.onclick = e => { e.preventDefault(); LS.set("stepList", list ? 0 : 1); painted = ""; draw(); };
+    $$("[data-lg]").forEach(b => b.onclick = () => { LS.set("lg_" + (p.slug || "x"), b.dataset.lg); painted = ""; draw(); });
+    const cp = $("#cpy"); if (cp) cp.onclick = async () => { const t = tk.table, txt = t.head.join("\t") + "\n" + t.rows.map(r => r.join("\t")).join("\n"); try { await navigator.clipboard.writeText(txt); toast(T("Көшірілді ✓", "Скопировано ✓")); } catch (e) { const ta = document.createElement("textarea"); ta.value = txt; document.body.appendChild(ta); ta.select(); document.execCommand("copy"); ta.remove(); toast(T("Көшірілді ✓", "Скопировано ✓")); } };
+    bindFiles(el, me.gid, p.files || []);
+    drawSub();
+    function drawSub() {
+      const box = $("#sub"), chks = tk.checks || [], needImg = tk.shot !== false;
+      if (!draft) draft = {imgs: null, text: st.s ? st.s.text || "" : "", ans: st.s && st.s.ans ? st.s.ans.slice() : chks.map(() => ""), edit: st.k === "todo"};
+      if (!draft.edit) {
+        box.innerHTML = `<h3>${st.k === "graded" ? "✅ " + T("Бағаланды", "Оценено") : "📨 " + T("Жіберілді — тексерілуде", "Отправлено — на проверке")}</h3><div class="small mut">${fmtDT(st.s && st.s.at)}${st.s && st.s.n ? ` · ${st.s.n} ${T("сурет", "фото")}` : ""}</div>
+          ${st.s && st.s.ok && st.s.ok.length ? `<div class="small" style="margin-top:6px">${T("Тексеру", "Проверка")}: ${st.s.ok.filter(Boolean).length}/${st.s.ok.length} ✓</div>` : ""}${st.s && st.s.text ? `<div class="ans">${esc(st.s.text)}</div>` : ""}
+          <div id="myimgs" class="thumbs"></div><button class="btn ghost wide" id="re">${T("Қайта жіберу", "Отправить заново")}</button>`;
+        if (st.s && st.s.n) (async () => { const w = $("#myimgs"); for (let i = 0; i < st.s.n; i++) { const d = await DB.doc(`groups/${me.gid}/students/${me.sid}/subimg/${pid}_${i}`).get(); if (d && w) w.insertAdjacentHTML("beforeend", `<div><a href="${d.d}" target="_blank"><img src="${d.d}"></a></div>`); } })();
+        $("#re").onclick = () => { draft.edit = true; draft.imgs = []; drawSub(); }; return; }
+      if (!draft.imgs) draft.imgs = [];
+      box.innerHTML = `<h3>📤 ${T("Жұмысты тапсыру", "Сдать работу")}</h3>
+        <p class="small mut" style="margin:0 0 8px">${needImg ? T("Скриншот немесе фото қосыңыз (4-ке дейін).", "Добавьте скриншот или фото работы (до 4).") : ""} ${chks.length ? T("Сандарды енгізіңіз — бірден тексеріледі.", "Введите числа — они проверятся сразу.") : ""}</p>
+        ${chks.map((c, i) => `<div class="chk" data-c="${i}"><label>${esc(c.l)}</label>${c.opts ? `<select data-a="${i}"><option value="">—</option>${c.opts.map((o, k) => `<option value="${k}" ${String(draft.ans[i]) === String(k) ? "selected" : ""}>${esc(o)}</option>`).join("")}</select>` : `<input type="text" inputmode="decimal" data-a="${i}" value="${esc(draft.ans[i])}" placeholder="${T("сан", "число")}">`}<span class="r"></span></div>`).join("")}
+        <div class="thumbs">${draft.imgs.map((d, i) => `<div><img src="${d}"><button data-rm="${i}">✕</button></div>`).join("")}</div>
+        ${draft.imgs.length < 4 ? `<label class="pick">📷 ${T("Сурет қосу", "Добавить фото / скриншот")}<input type="file" accept="image/*" multiple hidden id="fi"></label>` : ""}
+        <textarea id="tx" placeholder="${T("Пікір немесе жауап (міндетті емес)", "Комментарий или ответ (необязательно)")}" style="min-height:80px;margin-top:10px">${esc(draft.text)}</textarea>
+        <div class="err" id="serr"></div><button class="btn ok wide" id="send">${T("Жіберу", "Отправить")}</button>${st.k !== "todo" ? `<button class="btn ghost wide" id="cancel" style="margin-top:8px">${T("Болдырмау", "Отмена")}</button>` : ""}`;
+      const mark = () => box.querySelectorAll(".chk").forEach(r => { const i = +r.dataset.c, v = draft.ans[i]; if (v === "" || v == null) { r.className = "chk"; r.querySelector(".r").textContent = ""; return; } const ok = checkOk(chks[i], v); r.className = "chk " + (ok ? "ok" : "no"); r.querySelector(".r").textContent = ok ? "✓" : "✗"; });
+      mark(); box.querySelectorAll("[data-a]").forEach(inp => inp.oninput = inp.onchange = () => { draft.ans[+inp.dataset.a] = inp.value; mark(); });
+      $("#tx").oninput = e => draft.text = e.target.value;
+      box.querySelectorAll("[data-rm]").forEach(b => b.onclick = () => { draft.imgs.splice(+b.dataset.rm, 1); drawSub(); });
+      const fi = $("#fi"); if (fi) fi.onchange = async e => { for (const f of [...e.target.files].slice(0, 4 - draft.imgs.length)) { try { draft.imgs.push(await compressImage(f)); } catch (er) { toast(T("Суретті ашу мүмкін болмады", "Не удалось открыть картинку")); } } drawSub(); };
+      const cc = $("#cancel"); if (cc) cc.onclick = () => { draft.edit = false; drawSub(); };
+      $("#send").onclick = async () => {
+        if (needImg && !draft.imgs.length && !draft.text.trim()) { $("#serr").textContent = T("Кемінде бір сурет қосыңыз", "Добавьте хотя бы одно фото"); return; }
+        const b = $("#send"); b.disabled = true; b.textContent = T("Жіберілуде…", "Отправляю…");
+        try { const P = `groups/${me.gid}/students/${me.sid}`, old = st.s ? st.s.n || 0 : 0;
+          for (let i = 0; i < draft.imgs.length; i++) await DB.doc(`${P}/subimg/${pid}_${i}`).set({d: draft.imgs[i]});
+          for (let i = draft.imgs.length; i < old; i++) await DB.doc(`${P}/subimg/${pid}_${i}`).del();
+          await DB.doc(`${P}/subs/${pid}`).set({n: draft.imgs.length, text: draft.text.trim(), ans: draft.ans, ok: chks.map((c, i) => checkOk(c, draft.ans[i])), at: Date.now(), name: me.name, title: p.title});
+          draft = null; toast(T("Жіберілді ✓", "Отправлено ✓")); painted = ""; draw();
+        } catch (e) { b.disabled = false; b.textContent = T("Жіберу", "Отправить"); $("#serr").textContent = T("Жіберу мүмкін болмады: ", "Не удалось отправить: ") + (e.message || e); } };
+    }
+  }
 }
 
-/* ============ Преподаватель ============ */
-let TD = {groups: [], sessions: []};
+/* ================= Преподаватель ================= */
+const TD = {groups: [], sessions: []};
 function teacher(path) {
   const u = DB.auth.user();
   if (!u || /^U_|stud-/.test(u.uid + u.email)) {
@@ -261,160 +422,264 @@ function teacher(path) {
     $("#gin").onclick = async () => { try { await DB.auth.teacher(); route(); } catch (e) { $("#err").textContent = e.message || String(e); } };
     return;
   }
-  const tab = path[0] || "today";
-  app.innerHTML = `<div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap"><h1 style="margin:0;flex:1">${T("Оқытушы кабинеті", "Кабинет преподавателя")}</h1><span class="mut small">${esc(u.email)}</span><button class="btn ghost sm" id="tout">${T("Шығу", "Выйти")}</button></div>
-    <div class="tabs noprint">${[["today", "▶ " + T("Сабақ", "Занятие")], ["groups", "👥 " + T("Топтар", "Группы")], ["hist", "🗂 " + T("Тарих", "История")]].map(([k, n]) => `<button data-t="${k}" class="${tab === k ? "on" : ""}">${n}</button>`).join("")}</div><div id="tv"></div>`;
-  $$(".tabs button").forEach(b => b.onclick = () => location.hash = "#/t/" + b.dataset.t);
-  $("#tout").onclick = async () => { await DB.auth.out(); location.hash = "#/"; };
-  const fail = e => { $("#tv").innerHTML = `<div class="card" style="border-color:#F2C2C9"><b>${T("Рұқсат жоқ", "Нет доступа")}</b><p class="mut">${esc(e && e.message || e)}</p><p class="small">${T("Firebase ережелеріндегі email осы аккаунтпен сәйкес келетінін тексеріңіз.", "Проверьте, что email в правилах Firebase совпадает с этим аккаунтом.")}</p></div>`; };
-  UNSUB.push(DB.col("groups").on(gs => { TD.groups = gs.sort((a, b) => (a.name || "").localeCompare(b.name || "", "ru")); render(); }, fail));
-  UNSUB.push(DB.col("sessions").on(ss => { TD.sessions = ss.sort((a, b) => (b.date || 0) - (a.date || 0)); render(); }, fail));
+  const fail = e => { app.innerHTML = `<div class="card" style="border-color:#F2C2C9"><b>${T("Рұқсат жоқ", "Нет доступа")}</b><p class="mut">${esc(e && e.message || e)}</p><p class="small">${T("Firebase ережелеріндегі email осы аккаунтпен сәйкес келетінін тексеріңіз.", "Проверьте, что email в правилах Firebase совпадает с этим аккаунтом.")}</p><button class="btn ghost sm" id="tout2">${T("Шығу", "Выйти")}</button></div>`; const b = $("#tout2"); if (b) b.onclick = async () => { await DB.auth.out(); location.hash = "#/"; }; };
+  let ready = 0;
+  const go = () => { if (ready < 2) return; if (path[0] === "g" && path[1]) tGroup(path[1], path[2] || "feed"); else if (path[0] === "live") tLive(); else if (path[0] === "hist") path[1] ? tSession(path[1]) : tHist(); else tHome(); };
+  keep(DB.col("groups").on(gs => { const was = ready; TD.groups = gs.sort((a, b) => (a.name || "").localeCompare(b.name || "", "ru")); if (ready < 2) ready++; if (was < 2) go(); }, fail));
+  keep(DB.col("sessions").on(ss => { const was = ready; TD.sessions = ss.sort((a, b) => (b.date || 0) - (a.date || 0)); if (ready < 2) ready++; if (was < 2) go(); }, fail));
+  app.innerHTML = `<p class="mut">${T("Жүктелуде…", "Загрузка…")}</p>`;
+}
+function tTop(title, back) {
+  return `<div class="hdr noprint">${back ? `<a href="${back}" class="btn ghost sm">←</a>` : ""}<h1>${title}</h1><button class="btn ghost sm" id="tout">${T("Шығу", "Выйти")}</button></div>`;
+}
+function bindTop() { const b = $("#tout"); if (b) b.onclick = async () => { await DB.auth.out(); location.hash = "#/"; }; }
+function tHome() {
+  const live = TD.sessions.filter(s => s.status === "live");
+  app.innerHTML = tTop(T("Оқытушы кабинеті", "Кабинет преподавателя")) + `
+    ${live.length ? `<div class="list">${live.map(s => `<div class="row" style="cursor:default"><span class="dot"></span><div class="t"><b>${esc(s.title)}</b><span class="mut small">${esc(s.gname || "")} · ${T("сабақта", "на паре")}</span></div><a class="btn sm" href="${withX(`${s.slug}/?host&sess=${s.id}`)}" target="_blank">${T("Пульт", "Пульт")}</a><button class="btn bad sm" data-end="${s.id}">${T("Аяқтау", "Завершить")}</button></div>`).join("")}</div>` : ""}
+    <div class="sect">${T("Топтар", "Группы")}</div><div class="list" id="gl">${TD.groups.map(g => `<a class="pc" href="#/t/g/${g.id}"><div class="ic">👥</div><div class="t"><b>${esc(g.name)}</b><div class="small mut">${T("Код", "Код")}: ${esc(g.code)}</div></div><div class="st" data-cnt="${g.id}"></div></a>`).join("") || `<div class="empty">${T("Алдымен топ құрыңыз", "Сначала создайте группу")}</div>`}</div>
+    <div class="fab"><button class="btn" id="ng">+ ${T("Жаңа топ", "Новая группа")}</button><a class="btn ghost" href="#/t/hist">🗂 ${T("Сабақтар тарихы", "История пар")}</a></div>
+    <div class="card"><h3>${T("Студенттерге сілтеме", "Ссылка для студентов")}</h3><div class="qr">${qrSvg(BASE)}<div><b style="font-size:18px;word-break:break-all">${esc(BASE.replace(/^https?:\/\//, ""))}</b><p class="mut small">${T("Студент: топ коды → аты → PIN.", "Студент: код группы → имя → PIN.")}</p></div></div></div>`;
+  bindTop(); bindEnd();
+  TD.groups.forEach(g => pendingCount(g.id, n => { const el = $(`[data-cnt="${g.id}"]`); if (el) el.innerHTML = n ? `<span class="chip warn">${n} ${T("тексеру", "на проверку")}</span>` : ""; }));
+  $("#ng").onclick = newGroup;
+}
+function bindEnd() { $$("[data-end]").forEach(b => b.onclick = async () => { const s = TD.sessions.find(x => x.id === b.dataset.end); if (!confirm(T("Сабақты аяқтау керек пе?", "Завершить пару?"))) return;
+  await DB.doc("sessions/" + s.id).set({status: "ended"}, true); await DB.doc(`groups/${s.gid}/live/current`).set({active: false}, true); toast(T("Аяқталды", "Завершено")); }); }
+/* счётчик непроверенных: подписка на subs и marks каждого студента */
+function watchGroupSubs(gid, cb) {
+  const st = {studs: [], subs: {}, marks: {}}, inner = [];
+  const emit = () => cb(st);
+  keep(DB.col(`groups/${gid}/students`).on(list => {
+    inner.splice(0).forEach(f => f()); st.studs = list.filter(s => !s.off).sort((a, b) => a.name.localeCompare(b.name, "ru")); st.subs = {}; st.marks = {};
+    st.studs.forEach(s => { inner.push(DB.col(`groups/${gid}/students/${s.id}/subs`).on(l => { st.subs[s.id] = {}; l.forEach(x => st.subs[s.id][x.id] = x); emit(); }));
+      inner.push(DB.col(`groups/${gid}/students/${s.id}/marks`).on(l => { st.marks[s.id] = {}; l.forEach(x => st.marks[s.id][x.id] = x); emit(); })); });
+    emit(); }));
+  keep(() => inner.forEach(f => f()));
+}
+const pendingOf = st => { const out = []; st.studs.forEach(s => Object.values(st.subs[s.id] || {}).forEach(x => { const m = (st.marks[s.id] || {})[x.id]; if (!m || (m.at || 0) < (x.at || 0)) out.push({s, sub: x}); })); return out.sort((a, b) => (a.sub.at || 0) - (b.sub.at || 0)); };
+function pendingCount(gid, cb) { watchGroupSubs(gid, st => cb(pendingOf(st).length)); }
+function newGroup() {
+  const md = modal(`<div class="mh"><h2>${T("Жаңа топ", "Новая группа")}</h2><button class="btn ghost sm" data-x>✕</button></div>
+    <label class="l">${T("Атауы", "Название")}</label><input type="text" id="gn" placeholder="БУХ 2-2"><label class="l">${T("Кіру коды (студенттер енгізеді)", "Код для входа (вводят студенты)")}</label><input type="text" id="gc" placeholder="БУХ22" style="text-transform:uppercase">
+    <div class="err" id="err"></div><button class="btn wide" id="ok">${T("Құру", "Создать")}</button>`);
+  const gn = md.q("#gn"), gc = md.q("#gc"); gn.oninput = () => { if (!gc.dataset.t) gc.value = normCode(gn.value); }; gc.oninput = () => gc.dataset.t = 1;
+  md.q("#ok").onclick = async () => { const name = gn.value.trim(), code = normCode(gc.value), err = md.q("#err");
+    if (!name || code.length < 3) { err.textContent = T("Атауы мен кодын (3+ таңба) жазыңыз", "Укажите название и код (3+ символа)"); return; }
+    if (await DB.doc("codes/" + code).get()) { err.textContent = T("Бұл код бос емес", "Такой код уже занят"); return; }
+    const gid = DB.id(); await DB.doc("groups/" + gid).set({name, code, created: Date.now()}); await DB.doc("codes/" + code).set({gid}); md.close(); location.hash = "#/t/g/" + gid; };
+}
+
+/* ---------- Группа ---------- */
+function tGroup(gid, tab) {
+  const g = TD.groups.find(x => x.id === gid); if (!g) { app.innerHTML = `<div class="empty">${T("Топ табылмады", "Группа не найдена")}</div>`; return; }
+  app.innerHTML = tTop(esc(g.name) + ` <span class="chip">${esc(g.code)}</span>`, "#/t") + `
+    <div class="tabs noprint">${[["feed", "📝 " + T("Тапсырмалар мен материалдар", "Задания и материалы")], ["check", "✅ " + T("Тексеру", "Проверка") + ' <span id="pc"></span>'], ["journal", "📊 " + T("Журнал", "Журнал")], ["students", "👥 " + T("Студенттер", "Студенты")]].map(([k, n]) => `<button data-t="${k}" class="${tab === k ? "on" : ""}">${n}</button>`).join("")}</div><div id="tv"><p class="mut">${T("Жүктелуде…", "Загрузка…")}</p></div>`;
+  bindTop(); $$(".tabs button").forEach(b => b.onclick = () => location.hash = `#/t/g/${gid}/${b.dataset.t}`);
+  const S = {posts: [], gs: null};
+  keep(DB.col(`groups/${gid}/posts`).on(l => { S.posts = l.sort((a, b) => (b.date || 0) - (a.date || 0)); paint(); }));
+  watchGroupSubs(gid, st => { S.gs = st; const n = pendingOf(st).length; const pc = $("#pc"); if (pc) pc.innerHTML = n ? `<span class="cnt">${n}</span>` : ""; paint(); });
   let painted = "";
-  function render() {
-    const sig = tab + JSON.stringify(TD.groups.map(g => [g.id, g.name])) + JSON.stringify(TD.sessions.map(s => [s.id, s.status, s.n, s.avg]));
+  function paint() {
+    if (!S.gs) return;
+    const sig = tab + JSON.stringify([S.posts.map(p => [p.id, p.title, p.due, p.type]), S.gs.studs.map(s => [s.id, s.name]), S.gs.subs, S.gs.marks]);
     if (sig === painted) return; painted = sig;
-    if (tab === "today") tToday(); else if (tab === "groups") path[1] ? tGroup(path[1], path[2]) : tGroups(); else path[1] ? tSession(path[1]) : tHist();
+    if (tab === "feed") gFeed(g, S); else if (tab === "check") gCheck(g, S); else if (tab === "journal") gJournal(g, S); else gStudents(g, S);
   }
 }
-function tToday() {
-  const el = $("#tv"), live = TD.sessions.filter(s => s.status === "live");
-  const sel = LS.get("lastStart") || {};
-  el.innerHTML = `${live.length ? `<h2>${T("Жүріп жатқан сабақтар", "Идут сейчас")}</h2><div class="list">${live.map(s => `<div class="row" style="cursor:default"><span class="dot"></span><div class="t"><b>${esc(s.title)}</b><span class="mut small">${esc(s.gname || "")} · ${esc(modOf(s.slug).name)} · ${fmtDT(s.date)}</span></div>
-      <a class="btn sm" href="${withX(`${s.slug}/?host&sess=${s.id}`)}" target="_blank">${T("Пульт", "Пульт")}</a><button class="btn bad sm" data-end="${s.id}">${T("Аяқтау", "Завершить")}</button></div>`).join("")}</div>` : ""}
-    <div class="card"><h2>${T("Жаңа сабақ бастау", "Начать занятие")}</h2>
-      ${!TD.groups.length ? `<div class="empty">${T("Алдымен топ құрыңыз:", "Сначала создайте группу:")} <a href="#/t/groups">${T("Топтар", "Группы")} →</a></div>` : `
-      <label class="l">1. ${T("Топ", "Группа")}</label><select id="sg">${TD.groups.map(g => `<option value="${g.id}" ${sel.g === g.id ? "selected" : ""}>${esc(g.name)} (${esc(g.code)})</option>`).join("")}</select>
-      <label class="l">2. ${T("Не өтеміз?", "Что проводим?")}</label><div class="mods">${MODS.map(m => `<button class="mod ${sel.m === m.slug ? "on" : ""}" data-m="${m.slug}"><b>${esc(m.name)}</b><small>${esc(m.sub)}</small></button>`).join("")}</div>
-      <label class="l">3. ${T("Сабақ атауы (журналда көрінеді)", "Название занятия (будет в журнале)")}</label><input type="text" id="st" placeholder="${T("Мысалы: 3D Mapping, 16 қараша", "Например: Сортировка, 16 ноября")}">
-      <p class="small mut">${T("Бастағанда пульт жаңа бетте ашылады. Студенттер өз кабинетінде «Кіру» батырмасын көреді — код қажет емес.", "Пульт откроется в новой вкладке. Студенты увидят кнопку «Войти» в своём кабинете — код не нужен.")}</p>
-      <button class="btn wide" id="go">▶ ${T("Сабақты бастау", "Начать занятие")}</button>`}</div>
-    <div class="card"><h3>${T("Студенттерге сілтеме", "Ссылка для студентов")}</h3><div class="qr">${qrSvg(BASE)}<div><b style="font-size:18px;word-break:break-all">${esc(BASE.replace(/^https?:\/\//, ""))}</b><p class="mut small">${T("Экранға көрсетіңіз немесе Discord-қа жіберіңіз. Студент: топ коды → аты → PIN.", "Покажите на экране или отправьте в Discord. Студент: код группы → имя → PIN.")}</p></div></div></div>`;
-  let mod = sel.m || null;
-  $$("[data-m]").forEach(b => b.onclick = () => { mod = b.dataset.m; $$("[data-m]").forEach(x => x.classList.toggle("on", x === b)); const st = $("#st"); if (st && !st.value) st.placeholder = modOf(mod).name; });
-  $$("[data-end]").forEach(b => b.onclick = async () => { const s = TD.sessions.find(x => x.id === b.dataset.end); if (!confirm(T("Сабақты аяқтау керек пе?", "Завершить занятие?"))) return;
-    await DB.doc("sessions/" + s.id).set({status: "ended"}, true); await DB.doc(`groups/${s.gid}/live/current`).set({active: false}, true); toast(T("Аяқталды", "Завершено")); });
-  const go = $("#go"); if (go) go.onclick = async () => {
-    if (!mod) { toast(T("Не өтетінімізді таңдаңыз", "Выберите, что проводим")); return; }
-    const g = TD.groups.find(x => x.id === $("#sg").value), m = modOf(mod), title = $("#st").value.trim() || m.name;
-    LS.set("lastStart", {g: g.id, m: mod});
-    if (!m.j) { window.open(withX(`${mod}/?host`), "_blank"); toast(T("Бұл модуль журналсыз — студенттер код арқылы кіреді", "Этот модуль без журнала — студенты входят по коду")); return; }
-    const w = window.open("about:blank", "_blank");
-    const id = DB.id(); await DB.doc("sessions/" + id).set({gid: g.id, gname: g.name, slug: mod, title, date: Date.now(), status: "live"});
-    const url = withX(`${mod}/?host&sess=${id}`); if (w) w.location = url; else location.href = url;
-  };
+function gFeed(g, S) {
+  const el = $("#tv"), n = S.gs.studs.length;
+  const cnt = p => { let s = 0, m = 0; S.gs.studs.forEach(st => { if ((S.gs.subs[st.id] || {})[p.id]) s++; if ((S.gs.marks[st.id] || {})[p.id]) m++; }); return {s, m}; };
+  el.innerHTML = `<div class="fab"><button class="btn" id="nt">+ ${T("Тапсырма", "Задание")}</button><button class="btn ghost" id="nm">+ ${T("Дәріс / материал", "Лекция / материал")}</button><button class="btn ghost" id="nl">▶ ${T("Сабақта: квиз / практика", "На паре: квиз / практика")}</button></div>
+    <div class="list">${S.posts.map(p => { const c = cnt(p); return `<div class="pc" data-open="${p.id}"><div class="ic ${p.type === "mat" ? "m" : ""}">${p.type === "mat" ? "📚" : "📝"}</div><div class="t"><b>${esc(p.title)}</b><div class="small mut">${fmtD(p.date)}${p.due ? " · " + T("мерзімі", "срок") + " " + fmtDS(p.due) : ""}${p.files && p.files.length ? " · 📎" + p.files.length : ""}</div></div>
+      <div class="st">${p.type === "task" ? `<span class="chip ${c.s === n && n ? "ok" : ""}">${T("тапсырды", "сдали")} ${c.s}/${n}</span>` : ""}</div></div>`; }).join("") || `<div class="empty">${T("Әзірге ештеңе жоқ. «+ Тапсырма» немесе «+ Дәріс» басыңыз.", "Пока пусто. Нажмите «+ Задание» или «+ Лекция».")}</div>`}</div>`;
+  $("#nt").onclick = () => taskForm(g); $("#nm").onclick = () => matForm(g); $("#nl").onclick = () => liveStart(g);
+  $$("[data-open]").forEach(b => b.onclick = () => postAdmin(g, S.posts.find(p => p.id === b.dataset.open), S));
 }
-function tGroups() {
-  const el = $("#tv");
-  el.innerHTML = `<div style="display:flex;gap:10px;align-items:center"><h2 style="flex:1;margin:0">${T("Топтар", "Группы")}</h2><button class="btn sm" id="ng">+ ${T("Топ", "Группа")}</button></div>
-    <div class="list" style="margin-top:12px">${TD.groups.map(g => `<a class="row" href="#/t/groups/${g.id}"><div class="t"><b>${esc(g.name)}</b><span class="mut small">${T("Код", "Код")}: <b>${esc(g.code)}</b></span></div><span class="mut">›</span></a>`).join("") || `<div class="empty">${T("Топ әлі жоқ", "Групп пока нет")}</div>`}</div>`;
-  $("#ng").onclick = () => {
-    const md = modal(`<div class="mh"><h2>${T("Жаңа топ", "Новая группа")}</h2><button class="btn ghost sm" data-x>✕</button></div>
-      <label class="l">${T("Атауы", "Название")}</label><input type="text" id="gn" placeholder="БУХ 2-2">
-      <label class="l">${T("Кіру коды (студенттер енгізеді)", "Код для входа (вводят студенты)")}</label><input type="text" id="gc" placeholder="БУХ22" style="text-transform:uppercase">
-      <div class="err" id="err"></div><button class="btn wide" id="ok">${T("Құру", "Создать")}</button>`);
-    const gn = md.el.querySelector("#gn"), gc = md.el.querySelector("#gc");
-    gn.oninput = () => { if (!gc.dataset.t) gc.value = normCode(gn.value); }; gc.oninput = () => gc.dataset.t = 1;
-    md.el.querySelector("#ok").onclick = async () => { const name = gn.value.trim(), code = normCode(gc.value); const err = md.el.querySelector("#err");
-      if (!name || code.length < 3) { err.textContent = T("Атауы мен кодын (3+ таңба) жазыңыз", "Укажите название и код (3+ символа)"); return; }
-      if (await DB.doc("codes/" + code).get()) { err.textContent = T("Бұл код бос емес", "Такой код уже занят"); return; }
-      const gid = DB.id(); await DB.doc("groups/" + gid).set({name, code, created: Date.now()}); await DB.doc("codes/" + code).set({gid}); md.close(); location.hash = "#/t/groups/" + gid; };
-  };
+function postAdmin(g, p, S) {
+  const rows = S.gs.studs.map(st => { const s = (S.gs.subs[st.id] || {})[p.id], m = (S.gs.marks[st.id] || {})[p.id]; return {st, s, m}; });
+  const md = modal(`<div class="mh"><h2>${esc(p.title)}</h2><button class="btn ghost sm" data-x>✕</button></div><div class="mut small">${fmtD(p.date)}${p.due ? " · " + T("мерзімі", "срок") + " " + fmtD(p.due) : ""}</div>
+    <div class="fab"><button class="btn ghost sm" id="ed">✎ ${T("Өзгерту", "Изменить")}</button><button class="btn bad sm" id="del">🗑 ${T("Жою", "Удалить")}</button></div>
+    ${p.type === "task" ? `<div class="tbw"><table class="tb"><tr><th>${T("Студент", "Студент")}</th><th>${T("Күйі", "Статус")}</th><th>/100</th></tr>${rows.map(r => `<tr><td>${esc(r.st.name)}</td><td>${r.s ? (r.m && (r.m.at || 0) >= (r.s.at || 0) ? `<span class="chip ok">${T("бағаланды", "оценено")}</span>` : `<button class="btn sm" data-rv="${r.st.id}">${T("Тексеру", "Проверить")}</button>`) : `<span class="chip">${T("тапсырмаған", "не сдал")}</span>`}</td><td>${r.m ? `<span class="score ${scoreCls(r.m.score)}">${r.m.score}</span>` : ""}</td></tr>`).join("")}</table></div>`
+      : `${p.text ? `<div class="box mtext">${linkify(p.text)}</div>` : ""}${filesHtml(p.files)}`}`);
+  bindFiles(md.el, g.id, p.files || []);
+  md.el.querySelectorAll("[data-rv]").forEach(b => b.onclick = () => { md.close(); review(g, S, p.id, b.dataset.rv); });
+  md.q("#ed").onclick = () => { md.close(); p.type === "mat" ? matForm(g, p) : taskForm(g, p); };
+  md.q("#del").onclick = async () => { if (!confirm(T("Жою керек пе? Студенттердің жұмыстары сақталады.", "Удалить? Работы студентов сохранятся."))) return; await DB.doc(`groups/${g.id}/posts/${p.id}`).del(); md.close(); toast(T("Жойылды", "Удалено")); };
 }
-async function tGroup(gid, sub) {
-  const el = $("#tv"), g = TD.groups.find(x => x.id === gid); if (!g) { el.innerHTML = `<p class="mut">${T("Жүктелуде…", "Загрузка…")}</p>`; return; }
-  el.innerHTML = `<p><a href="#/t/groups">← ${T("Топтар", "Группы")}</a></p><h2>${esc(g.name)} <span class="chip">${T("код", "код")}: ${esc(g.code)}</span></h2>
-    <div style="display:flex;gap:8px;flex-wrap:wrap" class="noprint"><button class="btn sm" id="add">+ ${T("Студенттер қосу", "Добавить студентов")}</button><button class="btn ghost sm" id="cards">🖨 ${T("PIN карточкалары", "Карточки с PIN")}</button><button class="btn ghost sm" id="jr">⬇ ${T("Журнал (Excel)", "Журнал (Excel)")}</button></div>
-    <div id="stl" style="margin-top:12px"><p class="mut">${T("Жүктелуде…", "Загрузка…")}</p></div>`;
-  let studs = [], secrets = {};
-  const load = async () => { studs = (await DB.col(`groups/${gid}/students`).get()).filter(s => !s.off).sort((a, b) => a.name.localeCompare(b.name, "ru"));
-    (await DB.col(`groups/${gid}/secrets`).get()).forEach(s => secrets[s.id] = s.pin); draw(); };
+/* ---------- Новое задание ---------- */
+async function taskForm(g, edit) {
+  const md = modal(`<div class="mh"><h2>${edit ? T("Тапсырманы өзгерту", "Изменить задание") : T("Жаңа тапсырма", "Новое задание")}</h2><button class="btn ghost sm" data-x>✕</button></div>
+    ${edit ? "" : `<div class="tabs"><button class="on" data-src="bank">📚 ${T("Банктен", "Из банка")}</button><button data-src="own">✎ ${T("Өз тапсырмам", "Своё задание")}</button></div>`}<div id="tf"></div>`);
+  const bk = await banks(); let src = edit ? "own" : "bank", sel = null, mod = LS.get("bankMod") || bk[0].slug, q = "";
+  const own = {title: edit ? edit.title : "", text: edit ? (edit.task && edit.task.goal) || edit.text || "" : "", steps: edit && edit.task ? (edit.task.steps || []).join("\n") : "", due: edit && edit.due ? new Date(edit.due).toISOString().slice(0, 10) : "", imgs: edit ? (edit.imgs || []).slice() : [], files: edit ? (edit.files || []).slice() : []};
   const draw = () => {
-    const ss = TD.sessions.filter(s => s.gid === gid);
-    $("#stl").innerHTML = !studs.length ? `<div class="empty">${T("Студенттер жоқ. «Студенттер қосу» басып, тізімді Excel-ден қойыңыз.", "Студентов нет. Нажмите «Добавить студентов» и вставьте список из Excel.")}</div>`
-      : `<div class="tbw"><table class="tb"><tr><th>№</th><th>${T("Аты-жөні", "ФИО")}</th><th>PIN</th><th></th></tr>${studs.map((s, i) => `<tr><td>${i + 1}</td><td><a href="#" data-card="${s.id}">${esc(s.name)}</a></td><td><span class="pinv" data-pin="${s.id}">••••</span></td>
-        <td style="white-space:nowrap"><button class="btn ghost sm" data-reset="${s.id}">${T("Жаңа PIN", "Новый PIN")}</button> <button class="btn bad sm" data-del="${s.id}">✕</button></td></tr>`).join("")}</table></div>
-        <p class="small mut">${T("PIN көру үшін нүктелерді басыңыз.", "Нажмите на точки, чтобы увидеть PIN.")} ${ss.length} ${T("сабақ өтті", "занятий проведено")}.</p>`;
-    $$("[data-pin]").forEach(b => b.onclick = () => b.textContent = b.textContent === "••••" ? (secrets[b.dataset.pin] || "?") : "••••");
-    $$("[data-card]").forEach(b => b.onclick = e => { e.preventDefault(); studentCard(gid, studs.find(s => s.id === b.dataset.card)); });
-    $$("[data-del]").forEach(b => b.onclick = async () => { const s = studs.find(x => x.id === b.dataset.del); if (!confirm(T(`${s.name} тізімнен алынсын ба? Тарихы сақталады.`, `Убрать ${s.name} из списка? История сохранится.`))) return;
-      await DB.doc(`groups/${gid}/students/${s.id}`).set({off: true}, true); load(); });
-    $$("[data-reset]").forEach(b => b.onclick = async () => { const s = studs.find(x => x.id === b.dataset.reset); b.disabled = true;
-      try { const pin = pin4(), v = (s.v || 0) + 1, email = emailFor(gid, s.id, v); await DB.auth.create(email, pwFor(pin));
-        await DB.doc(`groups/${gid}/students/${s.id}`).set({email, v}, true); await DB.doc(`groups/${gid}/secrets/${s.id}`).set({pin}); secrets[s.id] = pin; s.email = email; s.v = v;
-        toast(`${s.name}: PIN ${pin}`); draw(); } catch (e) { toast(e.message); b.disabled = false; } });
+    const el = md.q("#tf");
+    if (src === "bank") {
+      const B = bk.find(b => b.slug === mod), list = B.tasks.filter(t => !q || t.title.toLowerCase().includes(q));
+      el.innerHTML = `<div class="fab">${bk.map(b => `<button class="btn ${b.slug === mod ? "" : "ghost"} sm" data-mod="${b.slug}">${esc(b.name)}</button>`).join("")}</div>
+        <input type="search" id="bq" placeholder="${T("Іздеу…", "Поиск…")}" value="${esc(q)}" style="margin-bottom:10px">
+        <div class="bank">${list.map(t => `<button class="bk ${sel && sel.id === t.id ? "on" : ""}" data-id="${esc(t.id)}">${t.ex ? `<img src="${B.slug}/ex/${t.ex}.jpg" loading="lazy" onerror="this.style.visibility='hidden'">` : `<img alt="">`}<div>${esc(t.title)}</div></button>`).join("")}</div>
+        <label class="l">${T("Мерзімі (міндетті емес)", "Срок сдачи (необязательно)")}</label><input type="date" id="due" value="${own.due}" style="min-height:48px;border-radius:12px;border:1.5px solid var(--line);padding:0 12px">
+        <button class="btn wide" id="pub" style="margin-top:12px" ${sel ? "" : "disabled"}>${sel ? T("Жариялау: ", "Опубликовать: ") + esc(sel.title) : T("Тапсырманы таңдаңыз", "Выберите задание")}</button>`;
+      el.querySelectorAll("[data-mod]").forEach(b => b.onclick = () => { mod = b.dataset.mod; LS.set("bankMod", mod); sel = null; draw(); });
+      const bq = el.querySelector("#bq"); bq.oninput = () => { q = bq.value.trim().toLowerCase(); const pos = bq.selectionStart; draw(); const n = md.q("#bq"); n.focus(); n.setSelectionRange(pos, pos); };
+      el.querySelectorAll("[data-id]").forEach(b => b.onclick = () => { sel = B.tasks.find(t => t.id === b.dataset.id); own.due = md.q("#due").value; draw(); });
+      el.querySelector("#pub").onclick = async () => { const due = md.q("#due").value; const t = JSON.parse(JSON.stringify(sel));
+        await DB.doc(`groups/${g.id}/posts/${DB.id()}`).set({type: "task", title: t.title, date: Date.now(), due: due ? new Date(due + "T23:59").getTime() : null, slug: B.slug, base: B.slug + "/ex/", langs: B.langs, langLabel: B.langLabel, task: t});
+        md.close(); toast(T("Жарияланды ✓ — студенттер көреді", "Опубликовано ✓ — студенты уже видят")); };
+    } else {
+      el.innerHTML = `<label class="l">${T("Атауы", "Название")}</label><input type="text" id="ot" value="${esc(own.title)}">
+        <label class="l">${T("Не істеу керек (қысқаша)", "Что нужно сделать (коротко)")}</label><textarea id="ox" style="min-height:90px">${esc(own.text)}</textarea>
+        <label class="l">${T("Қадамдар — әр жолға бір қадам (міндетті емес)", "Шаги — по одному в строке (необязательно)")}</label><textarea id="os" style="min-height:120px">${esc(own.steps)}</textarea>
+        <label class="l">${T("Мысал сурет / файлдар", "Образец / файлы")}</label><div class="thumbs">${own.imgs.map((d, i) => `<div><img src="${d}"><button data-ri="${i}">✕</button></div>`).join("")}</div>${filesHtml(own.files).replace(/data-file="(\d+)">[^<]*</g, 'data-rf="$1">✕<')}
+        <div class="fab"><label class="btn ghost sm">🖼 ${T("Сурет", "Картинка")}<input type="file" accept="image/*" multiple hidden id="oi"></label><label class="btn ghost sm">📎 PDF / Word<input type="file" accept=".pdf,.doc,.docx,.ppt,.pptx,.xls,.xlsx" multiple hidden id="of"></label></div>
+        <label class="l">${T("Мерзімі (міндетті емес)", "Срок сдачи (необязательно)")}</label><input type="date" id="due" value="${own.due}" style="min-height:48px;border-radius:12px;border:1.5px solid var(--line);padding:0 12px">
+        <div class="err" id="err"></div><button class="btn wide" id="pub" style="margin-top:12px">${edit ? T("Сақтау", "Сохранить") : T("Жариялау", "Опубликовать")}</button>`;
+      const sync = () => { own.title = md.q("#ot").value; own.text = md.q("#ox").value; own.steps = md.q("#os").value; own.due = md.q("#due").value; };
+      el.querySelectorAll("[data-ri]").forEach(b => b.onclick = () => { sync(); own.imgs.splice(+b.dataset.ri, 1); draw(); });
+      el.querySelectorAll("[data-rf]").forEach(b => b.onclick = () => { sync(); own.files.splice(+b.dataset.rf, 1); draw(); });
+      md.q("#oi").onchange = async e => { sync(); for (const f of e.target.files) own.imgs.push(await compressImage(f, 1400)); draw(); };
+      md.q("#of").onchange = async e => { sync(); const err = md.q("#err"); for (const f of e.target.files) { err.textContent = T("Жүктелуде: ", "Загружаю: ") + f.name; try { own.files.push(await saveFile(g.id, f)); } catch (x) { toast(x.message); } } draw(); };
+      md.q("#pub").onclick = async () => { sync(); if (!own.title.trim()) { md.q("#err").textContent = T("Атауын жазыңыз", "Укажите название"); return; }
+        const steps = own.steps.split("\n").map(x => x.trim()).filter(Boolean);
+        const base = edit && edit.task ? edit.task : {};
+        const doc = {type: "task", title: own.title.trim(), text: "", due: own.due ? new Date(own.due + "T23:59").getTime() : null, imgs: own.imgs, files: own.files,
+          task: Object.assign({}, base, {title: own.title.trim(), goal: own.text.trim(), steps})};
+        if (edit) await DB.doc(`groups/${g.id}/posts/${edit.id}`).set(doc, true); else await DB.doc(`groups/${g.id}/posts/${DB.id()}`).set(Object.assign(doc, {date: Date.now()}));
+        md.close(); toast(edit ? T("Сақталды ✓", "Сохранено ✓") : T("Жарияланды ✓", "Опубликовано ✓")); };
+    }
   };
-  $("#add").onclick = () => {
-    const md = modal(`<div class="mh"><h2>${T("Студенттер қосу", "Добавить студентов")}</h2><button class="btn ghost sm" data-x>✕</button></div>
-      <p class="mut small">${T("Excel-ден аты-жөндер бағанын көшіріп қойыңыз — әр жолға бір студент. Әрқайсысына 4 санды PIN автоматты беріледі.", "Скопируйте столбец ФИО из Excel и вставьте — по одному студенту в строке. Каждому автоматически выдаётся PIN из 4 цифр.")}</p>
-      <textarea id="ta" placeholder="Ахметов Ержан&#10;Иванова Анна&#10;…"></textarea><div id="pr" class="mut small" style="margin:8px 0"></div><button class="btn wide" id="ok">${T("Қосу", "Добавить")}</button>`);
-    md.el.querySelector("#ok").onclick = async () => {
-      const names = md.el.querySelector("#ta").value.split(/\r?\n/).map(x => x.split("\t")[0].replace(/\s+/g, " ").trim()).filter(x => x && x.length < 60);
-      const have = new Set(studs.map(s => s.name.toLowerCase())), todo = names.filter(n => !have.has(n.toLowerCase())); if (!todo.length) { toast(T("Жаңа аты жоқ", "Новых имён нет")); return; }
-      const ok = md.el.querySelector("#ok"), pr = md.el.querySelector("#pr"); ok.disabled = true; let n = 0;
-      for (const name of todo) { const sid = DB.id(), pin = pin4(), email = emailFor(gid, sid);
-        try { await DB.auth.create(email, pwFor(pin)); await DB.doc(`groups/${gid}/students/${sid}`).set({name, email, created: Date.now()}); await DB.doc(`groups/${gid}/secrets/${sid}`).set({pin}); n++; }
-        catch (e) { pr.innerHTML += `<div style="color:var(--bad)">${esc(name)}: ${esc(e.message)}</div>`; }
-        pr.firstChild && pr.firstChild.nodeType === 3 ? pr.firstChild.textContent = `${n} / ${todo.length}` : pr.insertAdjacentText("afterbegin", `${n} / ${todo.length}`); }
-      toast(T(`${n} студент қосылды`, `Добавлено студентов: ${n}`)); md.close(); load(); };
-  };
-  $("#cards").onclick = () => {
-    const md = modal(`<div class="mh noprint"><h2>${T("PIN карточкалары", "Карточки с PIN")}</h2><button class="btn sm" id="pp">🖨 ${T("Басып шығару", "Печать")}</button><button class="btn ghost sm" data-x>✕</button></div>
-      <div class="cards">${studs.map(s => `<div class="pcard"><b>${esc(s.name)}</b><div class="small">${esc(BASE.replace(/^https?:\/\//, ""))}</div><div class="small">${T("Топ коды", "Код группы")}: <b>${esc(g.code)}</b></div><div class="p">${esc(secrets[s.id] || "????")}</div><div class="small mut">PIN — ${T("ешкімге көрсетпеңіз", "никому не показывайте")}</div></div>`).join("")}</div>`);
-    md.el.querySelector("#pp").onclick = () => window.print();
-  };
-  $("#jr").onclick = () => groupJournal(g, studs);
-  load();
+  md.el.querySelectorAll("[data-src]").forEach(b => b.onclick = () => { src = b.dataset.src; md.el.querySelectorAll("[data-src]").forEach(x => x.classList.toggle("on", x === b)); draw(); });
+  draw();
 }
-async function studentCard(gid, s) {
-  const md = modal(`<div class="mh"><h2>${esc(s.name)}</h2><button class="btn ghost sm" data-x>✕</button></div><div id="sc"><p class="mut">${T("Жүктелуде…", "Загрузка…")}</p></div>`);
-  const [hist, works] = await Promise.all([DB.col(`groups/${gid}/students/${s.id}/hist`).get(), DB.col(`groups/${gid}/students/${s.id}/works`).get()]);
-  hist.sort((a, b) => (b.date || 0) - (a.date || 0)); works.sort((a, b) => (b.ts || 0) - (a.ts || 0));
-  const vals = hist.map(x => x.p100).filter(x => x != null), avg = vals.length ? Math.round(vals.reduce((a, b) => a + b, 0) / vals.length) : null;
-  md.el.querySelector("#sc").innerHTML = `<div class="card" style="display:flex;gap:14px;align-items:center"><div class="score ${scoreCls(avg)}" style="font-size:22px;padding:10px 14px">${avg != null ? avg : "—"}</div><div><b>${T("Орташа", "Средний балл")}</b><div class="mut small">${hist.length} ${T("сабақ", "занятий")} · ${works.length} ${T("жұмыс", "работ")}</div></div></div>
-    <div class="list">${hist.map(x => `<details class="card" style="margin:0"><summary style="cursor:pointer;display:flex;gap:10px;align-items:center"><span class="score ${scoreCls(x.p100)}">${x.p100 != null ? x.p100 : x.score || "—"}</span><b style="flex:1">${esc(x.title)}</b><span class="mut small">${fmtD(x.date)}</span></summary>${taskRows(x)}</details>`).join("") || `<div class="empty">${T("Тарих жоқ", "Истории нет")}</div>`}</div>
-    ${works.length ? `<h3 style="margin-top:16px">${T("Жұмыстар", "Работы")}</h3><div class="works">${works.map(w => `<a href="${w.data}" target="_blank" download="${esc(s.name + " — " + (w.task || ""))}.jpg"><img src="${w.data}" loading="lazy"><span><b>${esc(w.task || "")}</b><br>${fmtD(w.ts)}</span></a>`).join("")}</div>` : ""}`;
+function matForm(g, edit) {
+  const md = modal(`<div class="mh"><h2>${edit ? T("Материалды өзгерту", "Изменить материал") : T("Дәріс / материал", "Лекция / материал")}</h2><button class="btn ghost sm" data-x>✕</button></div><div id="mf"></div>`);
+  const m = {title: edit ? edit.title : "", text: edit ? edit.text || "" : "", links: edit ? (edit.links || []).join("\n") : "", imgs: edit ? (edit.imgs || []).slice() : [], files: edit ? (edit.files || []).slice() : []};
+  const draw = () => {
+    md.q("#mf").innerHTML = `<label class="l">${T("Тақырыбы", "Тема")}</label><input type="text" id="mt" value="${esc(m.title)}" placeholder="${T("Мысалы: 3D Mapping — дәріс", "Например: Сортировка и фильтры — лекция")}">
+      <label class="l">📎 ${T("Файлдар (PDF, Word, PowerPoint — 10 МБ-қа дейін)", "Файлы (PDF, Word, PowerPoint — до 10 МБ)")}</label>${filesHtml(m.files).replace(/data-file="(\d+)">[^<]*</g, 'data-rf="$1">✕<')}
+      <label class="pick" style="color:var(--acc);border-color:#C9D9F0">📎 ${T("Файл қосу", "Добавить файл")}<input type="file" multiple hidden id="mfi"></label><div class="small mut" id="mst"></div>
+      <label class="l">${T("Мәтін (міндетті емес)", "Текст (необязательно)")}</label><textarea id="mx">${esc(m.text)}</textarea>
+      <label class="l">${T("Сілтемелер — YouTube, Google Drive (әр жолға біреу)", "Ссылки — YouTube, Google Drive (по одной в строке)")}</label><textarea id="ml" style="min-height:70px">${esc(m.links)}</textarea>
+      <label class="l">🖼 ${T("Суреттер", "Картинки")}</label><div class="thumbs">${m.imgs.map((d, i) => `<div><img src="${d}"><button data-ri="${i}">✕</button></div>`).join("")}</div><label class="btn ghost sm">+ ${T("Сурет", "Картинка")}<input type="file" accept="image/*" multiple hidden id="mi"></label>
+      <div class="err" id="err"></div><button class="btn wide" id="pub" style="margin-top:12px">${edit ? T("Сақтау", "Сохранить") : T("Жариялау", "Опубликовать")}</button>`;
+    const sync = () => { m.title = md.q("#mt").value; m.text = md.q("#mx").value; m.links = md.q("#ml").value; };
+    md.el.querySelectorAll("[data-rf]").forEach(b => b.onclick = () => { sync(); m.files.splice(+b.dataset.rf, 1); draw(); });
+    md.el.querySelectorAll("[data-ri]").forEach(b => b.onclick = () => { sync(); m.imgs.splice(+b.dataset.ri, 1); draw(); });
+    md.q("#mfi").onchange = async e => { sync(); for (const f of e.target.files) { md.q("#mst").textContent = T("Жүктелуде: ", "Загружаю: ") + f.name + "…"; try { m.files.push(await saveFile(g.id, f)); } catch (x) { toast(x.message); } } draw(); };
+    md.q("#mi").onchange = async e => { sync(); for (const f of e.target.files) m.imgs.push(await compressImage(f, 1400)); draw(); };
+    md.q("#pub").onclick = async () => { sync(); if (!m.title.trim()) { md.q("#err").textContent = T("Тақырыбын жазыңыз", "Укажите тему"); return; }
+      const doc = {type: "mat", title: m.title.trim(), text: m.text.trim(), links: m.links.split("\n").map(x => x.trim()).filter(x => /^https?:\/\//.test(x)), imgs: m.imgs, files: m.files};
+      if (edit) await DB.doc(`groups/${g.id}/posts/${edit.id}`).set(doc, true); else await DB.doc(`groups/${g.id}/posts/${DB.id()}`).set(Object.assign(doc, {date: Date.now()}));
+      md.close(); toast(T("Жарияланды ✓", "Опубликовано ✓")); };
+  };
+  draw();
+}
+/* ---------- Проверка ---------- */
+function gCheck(g, S) {
+  const el = $("#tv"), pend = pendingOf(S.gs), titles = {}; S.posts.forEach(p => titles[p.id] = p.title);
+  el.innerHTML = !pend.length ? `<div class="empty">✅ ${T("Тексеретін жұмыс жоқ", "Все работы проверены")}</div>`
+    : `<p class="mut">${T("Жаңа жұмыстар — ескісінен бастап.", "Новые работы — начиная с самых ранних.")}</p><div class="list">${pend.map(x => `<div class="pc" data-rv="${x.s.id}|${x.sub.id}"><div class="ic">📨</div><div class="t"><b>${esc(x.s.name)}</b><div class="small mut">${esc(titles[x.sub.id] || x.sub.title || "")} · ${fmtDT(x.sub.at)}</div></div><span class="btn sm">${T("Тексеру", "Проверить")}</span></div>`).join("")}</div>`;
+  $$("[data-rv]").forEach(b => b.onclick = () => { const [sid, pid] = b.dataset.rv.split("|"); review(g, S, pid, sid); });
+}
+async function review(g, S, pid, sid) {
+  const p = S.posts.find(x => x.id === pid) || {title: "", task: {}}, st = S.gs.studs.find(x => x.id === sid), sub = (S.gs.subs[sid] || {})[pid] || {}, mk = (S.gs.marks[sid] || {})[pid];
+  const chks = (p.task && p.task.checks) || [];
+  const QC = [T("Жарайсың!", "Отлично!"), T("Ұқыпты", "Аккуратно"), T("Түзету керек", "Нужно доработать"), T("Тапсырманы қайта оқы", "Перечитай задание"), T("Скриншот анық емес", "Скриншот нечёткий"), T("Жұмыс өзіңдікі емес", "Работа не твоя")];
+  const md = modal(`<div class="mh"><h2>${esc(st.name)}</h2><button class="btn ghost sm" data-x>✕</button></div><div class="mut small">${esc(p.title)} · ${fmtDT(sub.at)}</div>
+    <div class="rv" style="margin-top:10px"><div class="rvimgs" id="ri">${sub.n ? `<p class="mut">${T("Жүктелуде…", "Загрузка…")}</p>` : `<div class="empty">${T("Сурет жоқ", "Без фото")}</div>`}</div>
+    <div>${chks.length ? `<div class="box"><b>${T("Сандар", "Числа")}: ${(sub.ok || []).filter(Boolean).length}/${chks.length} ✓</b>${chks.map((c, i) => `<div class="small">${(sub.ok || [])[i] ? "✓" : "✗"} ${esc(c.l)}: <b>${esc(c.opts ? (c.opts[(sub.ans || [])[i]] || "—") : (sub.ans || [])[i] || "—")}</b></div>`).join("")}</div>` : ""}
+      ${sub.text ? `<div class="ans">${esc(sub.text)}</div>` : ""}
+      <label class="l">${T("Баға /100", "Оценка /100")}</label><div class="gb">${[100, 90, 75, 50, 0].map(v => `<button data-g="${v}">${v}</button>`).join("")}</div>
+      <input type="text" inputmode="numeric" id="sc" value="${mk ? mk.score : ""}" placeholder="0–100" style="max-width:140px">
+      <label class="l">${T("Пікір (студент көреді)", "Комментарий (увидит студент)")}</label><div class="fab" style="margin:0 0 6px">${QC.map(q => `<button class="btn ghost sm" data-q="${esc(q)}">${esc(q)}</button>`).join("")}</div>
+      <textarea id="cm" style="min-height:80px">${esc(mk ? mk.comment || "" : "")}</textarea>
+      <div class="err" id="err"></div><button class="btn ok wide" id="sv">${T("Сақтау және келесі →", "Сохранить и следующая →")}</button></div></div>`);
+  const sc = md.q("#sc"), mark = () => md.el.querySelectorAll("[data-g]").forEach(b => b.classList.toggle("on", b.dataset.g === sc.value.trim()));
+  md.el.querySelectorAll("[data-g]").forEach(b => b.onclick = () => { sc.value = b.dataset.g; mark(); }); sc.oninput = mark; mark();
+  md.el.querySelectorAll("[data-q]").forEach(b => b.onclick = () => { const c = md.q("#cm"); c.value = (c.value.trim() ? c.value.trim() + " " : "") + b.dataset.q; });
+  (async () => { const box = md.q("#ri"); if (!sub.n) return; let h = ""; for (let i = 0; i < sub.n; i++) { const d = await DB.doc(`groups/${g.id}/students/${sid}/subimg/${pid}_${i}`).get(); if (d) h += `<a href="${d.d}" target="_blank"><img src="${d.d}"></a>`; } if (box) box.innerHTML = h || `<div class="empty">—</div>`; })();
+  md.q("#sv").onclick = async () => { const v = Math.round(+sc.value.replace(",", ".")); if (sc.value.trim() === "" || !isFinite(v) || v < 0 || v > 100) { md.q("#err").textContent = T("0-ден 100-ге дейін баға қойыңыз", "Поставьте оценку от 0 до 100"); return; }
+    await DB.doc(`groups/${g.id}/students/${sid}/marks/${pid}`).set({score: v, comment: md.q("#cm").value.trim(), at: Date.now(), title: p.title});
+    md.close(); toast(T("Сақталды ✓", "Сохранено ✓"));
+    setTimeout(() => { const nx = pendingOf(S.gs).find(x => !(x.s.id === sid && x.sub.id === pid)); if (nx) review(g, S, nx.sub.id, nx.s.id); }, 400); };
+}
+/* ---------- Журнал ---------- */
+async function gJournal(g, S) {
+  const el = $("#tv"), tasks = S.posts.filter(p => p.type === "task").sort((a, b) => (a.date || 0) - (b.date || 0));
+  const live = TD.sessions.filter(s => s.gid === g.id).sort((a, b) => (a.date || 0) - (b.date || 0));
+  el.innerHTML = `<p class="mut">${T("Жүктелуде…", "Загрузка…")}</p>`;
+  const lres = await Promise.all(live.map(s => DB.col(`sessions/${s.id}/results`).get().catch(() => [])));
+  const cols = tasks.map(p => ({t: p.title, d: p.date, v: st => { const m = (S.gs.marks[st.id] || {})[p.id], s = (S.gs.subs[st.id] || {})[p.id]; return m ? {s: m.score} : s ? {sub: 1} : {}; }}))
+    .concat(live.map((s, k) => ({t: "🎯 " + s.title, d: s.date, v: st => { const r = lres[k].find(x => x.id === st.id); return r ? {s: r.p100 != null ? r.p100 : null} : {}; }})));
+  cols.sort((a, b) => (a.d || 0) - (b.d || 0));
+  const rows = S.gs.studs.map(st => { const vs = cols.map(c => c.v(st)), nums = vs.map(x => x.s).filter(x => x != null); return {st, vs, avg: nums.length ? Math.round(nums.reduce((a, b) => a + b, 0) / nums.length) : null}; });
+  el.innerHTML = `<div class="fab"><button class="btn ghost sm" id="ex">⬇ Excel</button></div><div class="tbw"><table class="tb jt"><tr><th>${T("Студент", "Студент")}</th><th>${T("Орт.", "Ср.")}</th>${cols.map(c => `<th title="${esc(c.t)}">${fmtDS(c.d)}<br><span style="text-transform:none;font-weight:600">${esc(c.t.length > 18 ? c.t.slice(0, 17) + "…" : c.t)}</span></th>`).join("")}</tr>
+    ${rows.map(r => `<tr><td>${esc(r.st.name)}</td><td><span class="score ${scoreCls(r.avg)}">${r.avg != null ? r.avg : "—"}</span></td>${r.vs.map(x => `<td class="s ${x.s != null ? "" : x.sub ? "sub" : "na"}">${x.s != null ? x.s : x.sub ? "✉" : "—"}</td>`).join("")}</tr>`).join("")}</table></div>
+    <p class="small mut">✉ — ${T("тапсырды, әлі бағаланбады", "сдано, ещё не оценено")} · — ${T("тапсырмаған", "не сдано")}</p>`;
+  $("#ex").onclick = () => csvDownload(`${g.name} — журнал.csv`, [[T("Студент", "Студент"), T("Орташа", "Средний"), ...cols.map(c => fmtD(c.d) + " " + c.t)], ...rows.map(r => [r.st.name, r.avg != null ? r.avg : "", ...r.vs.map(x => x.s != null ? x.s : x.sub ? T("тапсырды", "сдано") : "")])]);
 }
 function csvDownload(name, rows) {
   const csv = "﻿" + rows.map(r => r.map(v => { const s = v == null ? "" : String(v); return /[;"\n]/.test(s) ? '"' + s.replace(/"/g, '""') + '"' : s; }).join(";")).join("\r\n");
   const a = document.createElement("a"); a.href = URL.createObjectURL(new Blob([csv], {type: "text/csv;charset=utf-8"})); a.download = name; a.click(); setTimeout(() => URL.revokeObjectURL(a.href), 4000);
 }
-async function groupJournal(g, studs) {
-  const ss = TD.sessions.filter(s => s.gid === g.id).sort((a, b) => (a.date || 0) - (b.date || 0)); toast(T("Журнал дайындалуда…", "Готовлю журнал…"));
-  const res = await Promise.all(ss.map(s => DB.col(`sessions/${s.id}/results`).get()));
-  const rows = [[T("Аты-жөні", "ФИО"), ...ss.map(s => fmtD(s.date) + " " + s.title), T("Орташа", "Средний")]];
-  studs.forEach(st => { const vals = res.map(r => { const x = r.find(y => y.id === st.id); return x ? (x.p100 != null ? x.p100 : x.score) : ""; });
-    const nums = vals.filter(v => v !== "" && v != null && !isNaN(v)); rows.push([st.name, ...vals.map(v => v === "" ? "н/б" : v), nums.length ? Math.round(nums.reduce((a, b) => a + +b, 0) / nums.length) : ""]); });
-  csvDownload(`${g.name} — журнал.csv`, rows);
+/* ---------- Студенты ---------- */
+async function gStudents(g, S) {
+  const el = $("#tv"), studs = S.gs.studs, secrets = {};
+  el.innerHTML = `<div class="fab noprint"><button class="btn sm" id="add">+ ${T("Студенттер қосу", "Добавить студентов")}</button><button class="btn ghost sm" id="cards">🖨 ${T("PIN карточкалары", "Карточки с PIN")}</button></div><div id="stl"></div>`;
+  try { (await DB.col(`groups/${g.id}/secrets`).get()).forEach(s => secrets[s.id] = s.pin); } catch (e) {}
+  const draw = () => { $("#stl").innerHTML = !studs.length ? `<div class="empty">${T("Студенттер жоқ. «Студенттер қосу» басып, тізімді Excel-ден қойыңыз.", "Студентов нет. Нажмите «Добавить студентов» и вставьте список из Excel.")}</div>`
+    : `<div class="tbw"><table class="tb"><tr><th>№</th><th>${T("Аты-жөні", "ФИО")}</th><th>PIN</th><th></th></tr>${studs.map((s, i) => `<tr><td>${i + 1}</td><td>${esc(s.name)}</td><td><a href="#" data-pin="${s.id}">••••</a></td><td style="white-space:nowrap"><button class="btn ghost sm" data-reset="${s.id}">${T("Жаңа PIN", "Новый PIN")}</button> <button class="btn bad sm" data-del="${s.id}">✕</button></td></tr>`).join("")}</table></div>`;
+    $$("[data-pin]").forEach(b => b.onclick = e => { e.preventDefault(); b.textContent = b.textContent === "••••" ? (secrets[b.dataset.pin] || "?") : "••••"; });
+    $$("[data-del]").forEach(b => b.onclick = async () => { const s = studs.find(x => x.id === b.dataset.del); if (!confirm(T(`${s.name} тізімнен алынсын ба? Тарихы сақталады.`, `Убрать ${s.name} из списка? История сохранится.`))) return; await DB.doc(`groups/${g.id}/students/${s.id}`).set({off: true}, true); });
+    $$("[data-reset]").forEach(b => b.onclick = async () => { const s = studs.find(x => x.id === b.dataset.reset); b.disabled = true;
+      try { const pin = pin4(), v = (s.v || 0) + 1, email = emailFor(g.id, s.id, v); await DB.auth.create(email, pwFor(pin)); await DB.doc(`groups/${g.id}/students/${s.id}`).set({email, v}, true); await DB.doc(`groups/${g.id}/secrets/${s.id}`).set({pin}); secrets[s.id] = pin; toast(`${s.name}: PIN ${pin}`); } catch (e) { toast(e.message); b.disabled = false; } }); };
+  draw();
+  $("#add").onclick = () => { const md = modal(`<div class="mh"><h2>${T("Студенттер қосу", "Добавить студентов")}</h2><button class="btn ghost sm" data-x>✕</button></div>
+      <p class="mut small">${T("Excel-ден аты-жөндер бағанын көшіріп қойыңыз — әр жолға бір студент. PIN автоматты беріледі.", "Скопируйте столбец ФИО из Excel и вставьте — по одному студенту в строке. PIN выдаётся автоматически.")}</p>
+      <textarea id="ta" placeholder="Ахметов Ержан&#10;Иванова Анна&#10;…"></textarea><div id="pr" class="mut small" style="margin:8px 0"></div><button class="btn wide" id="ok">${T("Қосу", "Добавить")}</button>`);
+    md.q("#ok").onclick = async () => { const names = md.q("#ta").value.split(/\r?\n/).map(x => x.split("\t")[0].replace(/\s+/g, " ").trim()).filter(x => x && x.length < 60);
+      const have = new Set(studs.map(s => s.name.toLowerCase())), todo = names.filter(n => !have.has(n.toLowerCase())); if (!todo.length) { toast(T("Жаңа аты жоқ", "Новых имён нет")); return; }
+      md.q("#ok").disabled = true; let n = 0;
+      for (const name of todo) { const sid = DB.id(), pin = pin4(), email = emailFor(g.id, sid);
+        try { await DB.auth.create(email, pwFor(pin)); await DB.doc(`groups/${g.id}/students/${sid}`).set({name, email, created: Date.now()}); await DB.doc(`groups/${g.id}/secrets/${sid}`).set({pin}); n++; md.q("#pr").textContent = `${n} / ${todo.length}`; }
+        catch (e) { md.q("#pr").insertAdjacentHTML("beforeend", `<div style="color:var(--bad)">${esc(name)}: ${esc(e.message)}</div>`); } }
+      toast(T(`${n} студент қосылды`, `Добавлено: ${n}`)); md.close(); }; };
+  $("#cards").onclick = () => { const md = modal(`<div class="mh noprint"><h2>${T("PIN карточкалары", "Карточки с PIN")}</h2><button class="btn sm" id="pp">🖨 ${T("Басып шығару", "Печать")}</button><button class="btn ghost sm" data-x>✕</button></div>
+      <div class="cards">${studs.map(s => `<div class="pcard"><b>${esc(s.name)}</b><div class="small">${esc(BASE.replace(/^https?:\/\//, ""))}</div><div class="small">${T("Топ коды", "Код группы")}: <b>${esc(g.code)}</b></div><div class="p">${esc(secrets[s.id] || "????")}</div><div class="small mut">PIN — ${T("ешкімге көрсетпеңіз", "никому не показывайте")}</div></div>`).join("")}</div>`);
+    md.q("#pp").onclick = () => window.print(); };
 }
+/* ---------- Пара: квиз / практика вживую ---------- */
+function liveStart(g) {
+  const md = modal(`<div class="mh"><h2>▶ ${T("Сабақта: квиз / практика", "На паре: квиз / практика")}</h2><button class="btn ghost sm" data-x>✕</button></div>
+    <p class="mut small">${T("Тікелей режим: сіз экраннан басқарасыз, студенттер кабинетінде «Кіру» батырмасын көреді.", "Живой режим: вы ведёте с экрана, студенты видят кнопку «Войти» в своём кабинете.")}</p>
+    <div class="mods">${MODS.map(m => `<button class="mod" data-m="${m.slug}"><b>${esc(m.name)}</b><small>${m.j ? T("журналға сақталады", "сохраняется в журнал") : T("журналсыз", "без журнала")}</small></button>`).join("")}</div>
+    <label class="l">${T("Атауы", "Название")}</label><input type="text" id="lt" placeholder="${T("Мысалы: Квиз — 3D Mapping", "Например: Квиз — сортировка")}"><button class="btn wide" id="lg" style="margin-top:12px">▶ ${T("Бастау", "Начать")}</button>`);
+  let mod = null; md.el.querySelectorAll("[data-m]").forEach(b => b.onclick = () => { mod = b.dataset.m; md.el.querySelectorAll("[data-m]").forEach(x => x.classList.toggle("on", x === b)); });
+  md.q("#lg").onclick = async () => { if (!mod) { toast(T("Модульді таңдаңыз", "Выберите модуль")); return; } const m = modOf(mod), title = md.q("#lt").value.trim() || m.name;
+    if (!m.j) { window.open(withX(`${mod}/?host`), "_blank"); md.close(); return; }
+    const w = window.open("about:blank", "_blank"), id = DB.id(); await DB.doc("sessions/" + id).set({gid: g.id, gname: g.name, slug: mod, title, date: Date.now(), status: "live"});
+    const url = withX(`${mod}/?host&sess=${id}`); if (w) w.location = url; else location.href = url; md.close(); };
+}
+function tLive() { location.hash = "#/t"; }
 function tHist() {
-  const el = $("#tv"); const f = LS.get("histG") || "";
-  const list = TD.sessions.filter(s => !f || s.gid === f);
-  el.innerHTML = `<div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap"><h2 style="flex:1;margin:0">${T("Өткен сабақтар", "Прошедшие занятия")}</h2>
-    <select id="hf" style="max-width:240px;min-height:40px"><option value="">${T("Барлық топтар", "Все группы")}</option>${TD.groups.map(g => `<option value="${g.id}" ${f === g.id ? "selected" : ""}>${esc(g.name)}</option>`).join("")}</select></div>
-    <div class="list" style="margin-top:12px">${list.map(s => `<a class="row" href="#/t/hist/${s.id}"><div class="score ${scoreCls(s.avg)}">${s.avg != null ? s.avg : "—"}</div><div class="t"><b>${esc(s.title)}</b><span class="mut small">${esc(s.gname || "")} · ${esc(modOf(s.slug).name)} · ${fmtDT(s.date)} · ${s.n || 0} ${T("студент", "студ.")}</span></div>${s.status === "live" ? `<span class="chip ok">live</span>` : ""}<span class="mut">›</span></a>`).join("") || `<div class="empty">${T("Әзірге сабақ жоқ", "Занятий пока нет")}</div>`}</div>`;
-  $("#hf").onchange = e => { LS.set("histG", e.target.value); tHist(); };
+  app.innerHTML = tTop(T("Сабақтар тарихы", "История пар"), "#/t") + `<div class="list">${TD.sessions.map(s => `<a class="row" href="#/t/hist/${s.id}"><div class="score ${scoreCls(s.avg)}">${s.avg != null ? s.avg : "—"}</div><div class="t"><b>${esc(s.title)}</b><span class="mut small">${esc(s.gname || "")} · ${fmtDT(s.date)} · ${s.n || 0} ${T("студент", "студ.")}</span></div>${s.status === "live" ? `<span class="chip ok">live</span>` : ""}<span class="mut">›</span></a>`).join("") || `<div class="empty">${T("Әзірге жоқ", "Пока нет")}</div>`}</div>`;
+  bindTop();
 }
 async function tSession(id) {
-  const el = $("#tv"), s = TD.sessions.find(x => x.id === id); if (!s) { el.innerHTML = `<p class="mut">${T("Жүктелуде…", "Загрузка…")}</p>`; return; }
-  el.innerHTML = `<p><a href="#/t/hist">← ${T("Тарих", "История")}</a></p><h2>${esc(s.title)}</h2><div class="mut">${esc(s.gname || "")} · ${esc(modOf(s.slug).name)} · ${fmtDT(s.date)}</div><div id="sv" style="margin-top:10px"><p class="mut">${T("Жүктелуде…", "Загрузка…")}</p></div>`;
+  const s = TD.sessions.find(x => x.id === id); if (!s) { app.innerHTML = `<div class="empty">—</div>`; return; }
+  app.innerHTML = tTop(esc(s.title), "#/t/hist") + `<div class="mut">${esc(s.gname || "")} · ${fmtDT(s.date)}</div><div id="sv"><p class="mut">${T("Жүктелуде…", "Загрузка…")}</p></div>`; bindTop();
   const [res, studs] = await Promise.all([DB.col(`sessions/${id}/results`).get(), DB.col(`groups/${s.gid}/students`).get()]);
-  const by = {}; res.forEach(r => by[r.id] = r);
-  const roster = studs.filter(x => !x.off || by[x.id]).sort((a, b) => a.name.localeCompare(b.name, "ru"));
-  const tasks = (res.find(r => r.tasks) || {}).tasks || [];
-  const absent = roster.filter(x => !by[x.id]);
-  $("#sv").innerHTML = `<div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px"><span class="chip ok">${T("Келді", "Пришли")}: ${res.length}</span><span class="chip ${absent.length ? "warn" : ""}">${T("Келмеді", "Не было")}: ${absent.length}</span>${s.avg != null ? `<span class="chip">${T("Орташа", "Средний")}: ${s.avg}</span>` : ""}
-      <button class="btn ghost sm" id="ex">⬇ Excel</button><button class="btn ghost sm" id="wk">🖼 ${T("Жұмыстар", "Работы")}</button>${s.status === "live" ? `<a class="btn sm" target="_blank" href="${withX(`${s.slug}/?host&sess=${s.id}`)}">${T("Пульт", "Пульт")}</a>` : ""}</div>
-    <div class="tbw"><table class="tb"><tr><th>${T("Студент", "Студент")}</th><th>/100</th>${tasks.map((t, k) => `<th title="${esc(t.title)}">${k + 1}</th>`).join("")}<th>${T("Пікір", "Комментарии")}</th></tr>
-    ${roster.map(st => { const r = by[st.id]; if (!r) return `<tr><td>${esc(st.name)}</td><td colspan="${tasks.length + 2}"><span class="chip warn">${T("келмеді", "не был")}</span></td></tr>`;
-      return `<tr><td>${esc(st.name)}</td><td><span class="score ${scoreCls(r.p100)}">${r.p100 != null ? r.p100 : r.score || 0}</span></td>${tasks.map((t, k) => { const x = (r.tasks || [])[k] || {}; return `<td>${x.tg ? `<b>${esc(x.tg)}</b>` : x.ag ? esc(x.ag) : x.done ? "✓" : x.sub ? "▣" : "·"}</td>`; }).join("")}<td class="small">${(r.tasks || []).filter(x => x.cm).map(x => esc(x.cm)).join("; ")}</td></tr>`; }).join("")}</table></div>
-    <div id="wv"></div>`;
-  $("#ex").onclick = () => csvDownload(`${s.gname || ""} — ${s.title} — ${fmtD(s.date)}.csv`, [[T("Студент", "Студент"), "/100", T("Баға", "Оценка"), ...tasks.map((t, k) => `${k + 1}. ${t.title}`), T("Пікірлер", "Комментарии")],
-    ...roster.map(st => { const r = by[st.id]; if (!r) return [st.name, T("н/б", "н/б")]; return [st.name, r.p100 != null ? r.p100 : r.score, r.letter || "", ...tasks.map((t, k) => { const x = (r.tasks || [])[k] || {}; return x.tg || x.ag || (x.done ? "✓" : ""); }), (r.tasks || []).filter(x => x.cm).map(x => x.cm).join("; ")]; })]);
-  $("#wk").onclick = async () => { $("#wv").innerHTML = `<p class="mut">${T("Жүктелуде…", "Загрузка…")}</p>`; const ws = await DB.col(`sessions/${id}/works`).get(); ws.sort((a, b) => (a.name || "").localeCompare(b.name || "", "ru") || (a.key || "").localeCompare(b.key || ""));
-    $("#wv").innerHTML = ws.length ? `<h3 style="margin-top:14px">${T("Жұмыстар", "Работы")} (${ws.length})</h3><div class="works">${ws.map(w => `<a href="${w.data}" target="_blank" download="${esc(w.name + " — " + w.task)}.jpg"><img src="${w.data}" loading="lazy"><span><b>${esc(w.name)}</b><br>${esc(w.task || "")}</span></a>`).join("")}</div>` : `<div class="empty">${T("Жұмыс жоқ", "Работ нет")}</div>`; };
+  const by = {}; res.forEach(r => by[r.id] = r); const roster = studs.filter(x => !x.off || by[x.id]).sort((a, b) => a.name.localeCompare(b.name, "ru")); const tasks = (res.find(r => r.tasks) || {}).tasks || [];
+  $("#sv").innerHTML = `<div class="fab"><span class="chip ok">${T("Келді", "Пришли")}: ${res.length}</span><span class="chip">${T("Келмеді", "Не было")}: ${roster.length - res.length}</span><button class="btn ghost sm" id="wk">🖼 ${T("Жұмыстар", "Работы")}</button>${s.status === "live" ? `<a class="btn sm" target="_blank" href="${withX(`${s.slug}/?host&sess=${s.id}`)}">${T("Пульт", "Пульт")}</a>` : ""}</div>
+    <div class="tbw"><table class="tb"><tr><th>${T("Студент", "Студент")}</th><th>/100</th>${tasks.map((t, k) => `<th title="${esc(t.title)}">${k + 1}</th>`).join("")}</tr>${roster.map(st => { const r = by[st.id]; if (!r) return `<tr><td>${esc(st.name)}</td><td colspan="${tasks.length + 1}"><span class="chip warn">${T("келмеді", "не был")}</span></td></tr>`;
+      return `<tr><td>${esc(st.name)}</td><td><span class="score ${scoreCls(r.p100)}">${r.p100 != null ? r.p100 : r.score || 0}</span></td>${tasks.map((t, k) => { const x = (r.tasks || [])[k] || {}; return `<td>${x.tg ? `<b>${esc(x.tg)}</b>` : x.ag ? esc(x.ag) : x.done ? "✓" : "·"}</td>`; }).join("")}</tr>`; }).join("")}</table></div><div id="wv"></div>`;
+  $("#wk").onclick = async () => { const ws = await DB.col(`sessions/${id}/works`).get(); $("#wv").innerHTML = ws.length ? `<div class="works" style="margin-top:12px">${ws.map(w => `<a href="${w.data}" target="_blank"><img src="${w.data}" loading="lazy"><span><b>${esc(w.name)}</b><br>${esc(w.task || "")}</span></a>`).join("")}</div>` : `<div class="empty">—</div>`; };
 }
 
 DB.ready.then(() => { route(); DB.auth.onChange(() => { if (/^#\/t/.test(location.hash)) route(); }); }).catch(e => app.innerHTML = `<div class="card">${esc(e.message || e)}</div>`);
+
 </script>
 </body>
 </html>
